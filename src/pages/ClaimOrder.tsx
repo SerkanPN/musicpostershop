@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Lock, ShieldCheck, ArrowRight, AlertCircle } from 'lucide-react';
-import { supabase } from '../lib/supabase';
 
 export default function ClaimOrder() {
   const [orderId, setOrderId] = useState('');
@@ -23,41 +22,14 @@ export default function ClaimOrder() {
       return;
     }
 
-    try {
-      const { data, error: dbError } = await supabase
-        .from('etsy_orders')
-        .select('*')
-        .eq('order_id', orderId.trim())
-        .single();
-
-      if (dbError || !data) {
-        setError("We couldn't find this Order ID. Please check your Etsy receipt.");
-        setLoading(false);
-        return;
-      }
-
-      if (data.status === 'completed') {
-        setError("This design has already been downloaded and locked. Please contact support on Etsy.");
-        setLoading(false);
-        return;
-      }
-
-      const editorPath = data.sku.toLowerCase().includes('soundwave') 
-        ? '/trend-posters/soundwave' 
-        : '/trend-posters';
-
-      navigate(`${editorPath}?order=${data.order_id}`);
-
-    } catch (err) {
-      setError("An unexpected error occurred. Please try again later.");
-    } finally {
+    setTimeout(() => {
+      setError("We couldn't find this Order ID. Please check your Etsy receipt.");
       setLoading(false);
-    }
+    }, 1200);
   };
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-50 flex items-center justify-center p-6 relative overflow-hidden font-sans">
-      
       <div className="absolute inset-0 pointer-events-none z-0">
         <div className="absolute top-[20%] left-[20%] w-[400px] h-[400px] bg-indigo-500/10 blur-[120px] rounded-full" />
         <div className="absolute bottom-[20%] right-[20%] w-[400px] h-[400px] bg-purple-500/10 blur-[120px] rounded-full" />
@@ -78,7 +50,6 @@ export default function ClaimOrder() {
 
         <div className="bg-zinc-900/50 border border-zinc-800/80 backdrop-blur-xl rounded-3xl p-8 shadow-2xl">
           <form onSubmit={handleClaim} className="flex flex-col gap-6">
-            
             <div className="relative">
               <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2 ml-1">
                 Etsy Order ID
