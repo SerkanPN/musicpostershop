@@ -8,8 +8,9 @@ import { Layout } from './components/Layout';
 import { Home } from './pages/Home';
 import TrendPostersSelection from './pages/TrendPostersSelection';
 import SoundwavePosterPage from './pages/SoundwavePosterPage';
+import ClaimOrder from './pages/ClaimOrder';
 
-// Store
+// Store (Giriş için)
 import { useStore } from './store/useStore';
 
 export default function App() {
@@ -30,6 +31,7 @@ export default function App() {
           <Route index element={<Home />} />
           <Route path="trend-posters" element={<TrendPostersSelection />} />
           <Route path="trend-posters/soundwave" element={<SoundwavePosterPage navigate={(path) => window.location.href = path} />} />
+          <Route path="claim" element={<ClaimOrder />} />
           
           <Route 
             path="*" 
