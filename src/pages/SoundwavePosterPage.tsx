@@ -693,7 +693,6 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
 
   const processAudioFile = async (file: File) => {
     try {
-      showToast('Processing audio...');
       const arrayBuffer = await file.arrayBuffer();
       const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
       const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
@@ -704,9 +703,8 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
       setQrLink(`https://musicposters.shop/listen/${simulatedUniqueId}`);
       setShowQR(true);
       
-      showToast('Soundwave generated successfully.');
     } catch (err) {
-      showToast('Error processing audio file.');
+      console.error(err);
     }
   };
 
@@ -1209,13 +1207,7 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
     const canvas = fabricRef.current;
     if (canvas) {
       canvas.discardActiveObject();
-      canvas.requestRenderAll();
-      try {
-        const dataUrl = canvas.toDataURL({ format: 'png', multiplier: 2.0 });
-        setPreviewImage(dataUrl);
-      } catch (err) {
-        setPreviewImage('');
-      }
+      setPreviewImage(canvas.toDataURL({ format: 'png', multiplier: 2.0 })); 
     }
     setShowReviewModal(true);
   };
@@ -1640,7 +1632,7 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
             </svg>
             <h1>Soundwave Poster</h1>
           </div>
-          <button className="back-btn" onClick={() => navigate('/')}>&#10229; Back</button>
+          <button className="back-btn" onClick={() => navigate('/trend-posters')}>&#10229; Back</button>
         </div>
 
         <button className={`accordion-btn${openSections.presets ? ' open' : ''}`} onClick={() => toggleAccordion('presets')}>
