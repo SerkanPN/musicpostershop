@@ -1,16 +1,9 @@
 import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-
-// Layout & Components
 import { Layout } from './components/Layout';
-
-// Sayfalar
-import { Home } from './pages/Home';
 import TrendPostersSelection from './pages/TrendPostersSelection';
 import SoundwavePosterPage from './pages/SoundwavePosterPage';
 import ClaimOrder from './pages/ClaimOrder';
-
-// Store (Giriş için)
 import { useStore } from './store/useStore';
 
 export default function App() {
@@ -28,8 +21,9 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Layout />}>
-          <Route index element={<Home />} />
-          <Route path="trend-posters" element={<TrendPostersSelection />} />
+          {/* ARTIK ANA SAYFAMIZ TREND POSTER SEÇİM EKRANI */}
+          <Route index element={<TrendPostersSelection />} />
+          
           <Route path="trend-posters/soundwave" element={<SoundwavePosterPage navigate={(path) => window.location.href = path} />} />
           <Route path="claim" element={<ClaimOrder />} />
           
