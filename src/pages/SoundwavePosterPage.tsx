@@ -1640,7 +1640,7 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
             </svg>
             <h1>Soundwave Poster</h1>
           </div>
-          <button className="back-btn" onClick={() => navigate('/trend-posters')}>&#10229; Back</button>
+          <button className="back-btn" onClick={() => navigate('/')}>&#10229; Back</button>
         </div>
 
         <button className={`accordion-btn${openSections.presets ? ' open' : ''}`} onClick={() => toggleAccordion('presets')}>
