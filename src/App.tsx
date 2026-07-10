@@ -1,24 +1,15 @@
 import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+
+// Layout & Components
 import { Layout } from './components/Layout';
+
+// Sayfalar
 import { Home } from './pages/Home';
-import { Shop } from './pages/Shop';
-import { Cart } from './pages/Cart';
-import { Tokens } from './pages/Tokens';
-import { Profile } from './pages/Profile';
-import { SellerDashboard } from './pages/SellerDashboard';
-import { Wishlist } from './pages/Wishlist';
-import { ProductDetail } from './pages/ProductDetail';
-import { SpecialForRoom } from './pages/SpecialForRoom'; 
-import { HDTools } from './pages/HDTools';              
-import { MusicPosterSelection } from './pages/MusicPosterSelection';
-import SongPosterSelection from './pages/SongPosterSelection';
-import AlbumPosterBuilder from './pages/AlbumPosterBuilder';
-import SpotifyPosterBuilder from './pages/SpotifyPosterBuilder'; 
-import VinylPosterBuilder from './pages/VinylPosterBuilder';
 import TrendPostersSelection from './pages/TrendPostersSelection';
 import SoundwavePosterPage from './pages/SoundwavePosterPage';
-import ClaimOrder from './pages/ClaimOrder';
+
+// Store
 import { useStore } from './store/useStore';
 
 export default function App() {
@@ -37,33 +28,14 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
-          <Route path="shop" element={<Shop />} />
-          <Route path="product/:slug" element={<ProductDetail />} />
-          <Route path="special" element={<SpecialForRoom />} />
-          <Route path="lab" element={<HDTools />} />
-          <Route path="music-posters" element={<MusicPosterSelection />} />
-          <Route path="custom-album" element={<AlbumPosterBuilder />} />
-          <Route path="song-poster" element={<SongPosterSelection />} />
-          <Route path="song-poster/spotify" element={<SpotifyPosterBuilder />} />
-          <Route path="song-poster/vinyl" element={<VinylPosterBuilder />} />
           <Route path="trend-posters" element={<TrendPostersSelection />} />
           <Route path="trend-posters/soundwave" element={<SoundwavePosterPage navigate={(path) => window.location.href = path} />} />
-          <Route path="claim" element={<ClaimOrder />} />
-          <Route path="cart" element={<Cart />} />
-          <Route path="tokens" element={<Tokens />} />
-          <Route path="profile" element={<Profile />} />
-          <Route path="seller" element={<SellerDashboard />} />
-          <Route path="wishlist" element={<Wishlist />} />
+          
           <Route 
             path="*" 
             element={
               <div className="container mx-auto px-4 py-24 text-center">
-                <h1 className="text-4xl font-black italic tracking-tighter uppercase text-zinc-600">
-                  Resource Not Found
-                </h1>
-                <p className="text-zinc-500 mt-4 font-bold uppercase tracking-widest text-xs">
-                  The requested module is under maintenance or does not exist.
-                </p>
+                <h1 className="text-4xl font-black text-white">404 - NOT FOUND</h1>
               </div>
             } 
           />
