@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Activity, AlignLeft, MapPin, ReceiptText, Star, Mic2, FileText, Camera } from 'lucide-react';
+import { ArrowLeft, Activity, AlignLeft, MapPin, ScrollText, Star, Mic, FileText, Camera } from 'lucide-react';
 
 export default function TrendPostersSelection() {
   const templates = [
@@ -31,7 +31,7 @@ export default function TrendPostersSelection() {
       id: 'receipt',
       title: 'Vintage Receipt',
       desc: 'Turn memories, playlists, or marathon stats into retro supermarket receipts.',
-      icon: ReceiptText,
+      icon: ScrollText,
       path: '#',
       active: false
     },
@@ -47,7 +47,7 @@ export default function TrendPostersSelection() {
       id: 'cassette',
       title: 'Retro Cassette Tape',
       desc: 'Nostalgic 80s mixtape designs customized with your own text and colors.',
-      icon: Mic2,
+      icon: Mic,
       path: '#',
       active: false
     },
