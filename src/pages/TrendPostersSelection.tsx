@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Activity, AlignLeft, MapPin, ScrollText, Star, Mic, FileText, Camera } from 'lucide-react';
+import { Activity, AlignLeft, MapPin, ScrollText, Star, Mic, FileText, Camera } from 'lucide-react';
 
 export default function TrendPostersSelection() {
   const templates = [
@@ -79,7 +79,7 @@ export default function TrendPostersSelection() {
       <div className="flex-1 flex flex-col items-center justify-center p-6 lg:p-12 relative z-10 w-full max-w-7xl mx-auto">
         <div className="text-center mb-16 mt-8">
           <h1 className="text-3xl md:text-5xl font-black tracking-tight text-white mb-2">
-            Choose Trend Poster Style
+            Choose Poster Style
           </h1>
           <p className="text-zinc-400 text-sm font-medium">
             Select a template concept to start designing your personalized artwork.
@@ -115,15 +115,6 @@ export default function TrendPostersSelection() {
               </p>
             </Link>
           ))}
-        </div>
-
-        <div className="mt-16">
-          <Link 
-            to="/" 
-            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg border border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors text-sm font-medium"
-          >
-            <ArrowLeft className="w-4 h-4" /> Back to Main Menu
-          </Link>
         </div>
       </div>
     </div>
