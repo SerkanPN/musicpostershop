@@ -21,12 +21,9 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Layout />}>
-          {/* ARTIK ANA SAYFAMIZ TREND POSTER SEÇİM EKRANI */}
           <Route index element={<TrendPostersSelection />} />
-          
           <Route path="trend-posters/soundwave" element={<SoundwavePosterPage navigate={(path) => window.location.href = path} />} />
           <Route path="claim" element={<ClaimOrder />} />
-          
           <Route 
             path="*" 
             element={
