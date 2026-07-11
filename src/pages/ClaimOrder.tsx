@@ -18,7 +18,7 @@ export default function ClaimOrder() {
 
     if (orderId.trim().toUpperCase() === 'DEMO123') {
       setTimeout(() => {
-        navigate('/editor?order=DEMO123');
+        navigate('/design/demo-token');
       }, 1000);
       return;
     }
@@ -42,11 +42,7 @@ export default function ClaimOrder() {
         return;
       }
 
-      const editorPath = data.sku.toLowerCase().includes('soundwave') 
-        ? '/editor' 
-        : '/';
-
-      navigate(`${editorPath}?order=${data.order_id}`);
+      navigate(`/design/${data.id}`);
 
     } catch (err) {
       setError("An unexpected error occurred. Please try again later.");
