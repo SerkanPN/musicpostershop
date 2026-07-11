@@ -693,6 +693,7 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
 
   const processAudioFile = async (file: File) => {
     try {
+      showToast('Processing audio...');
       const arrayBuffer = await file.arrayBuffer();
       const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
       const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
@@ -703,8 +704,9 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
       setQrLink(`https://musicposters.shop/listen/${simulatedUniqueId}`);
       setShowQR(true);
       
+      showToast('Soundwave generated successfully.');
     } catch (err) {
-      console.error(err);
+      showToast('Error processing audio file.');
     }
   };
 
@@ -1207,7 +1209,13 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
     const canvas = fabricRef.current;
     if (canvas) {
       canvas.discardActiveObject();
-      setPreviewImage(canvas.toDataURL({ format: 'png', multiplier: 2.0 })); 
+      canvas.requestRenderAll();
+      try {
+        const dataUrl = canvas.toDataURL({ format: 'png', multiplier: 2.0 });
+        setPreviewImage(dataUrl);
+      } catch (err) {
+        setPreviewImage('');
+      }
     }
     setShowReviewModal(true);
   };
