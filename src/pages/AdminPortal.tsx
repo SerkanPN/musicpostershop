@@ -9,7 +9,6 @@ import {
   Download, 
   Search, 
   CheckCircle, 
-  Clock, 
   Lock, 
   Unlock, 
   AlertTriangle, 
@@ -85,6 +84,11 @@ interface SupportTicket {
   status: string;
   reply: string | null;
   created_at: string;
+}
+
+interface OrientedSize {
+  w: number;
+  h: number;
 }
 
 function parseAndOrientSize(value: string, orientation: 'portrait' | 'landscape'): OrientedSize {
@@ -245,6 +249,9 @@ export default function AdminPortal() {
   const handleReplySubmit = async () => {
     if (!replyTicketId || !ticketReplyText.trim()) return;
     setSubmittingTicketReply(true);
+    
+    const targetId = isNaN(Number(replyTicketId)) ? replyTicketId : Number(replyTicketId);
+
     try {
       const { error } = await supabase
         .from('support_tickets')
@@ -252,7 +259,7 @@ export default function AdminPortal() {
           status: 'resolved',
           reply: ticketReplyText.trim()
         })
-        .eq('id', replyTicketId);
+        .eq('id', targetId);
 
       if (error) throw error;
 
