@@ -160,7 +160,7 @@ const PRESETS = [
       tl: 'PINK FLOYD', tr: '1979', title: 'COMFORTABLY NUMB', sub: 'THE GUITAR SOLO (04:30 - 06:22)', b1: 'THE WALL', b2: 'HARVEST RECORDS'
     },
     colors: { bg: '#09090b', title: '#f4f4f5', sub: '#a1a1aa', div: '#27272a', bottom: '#d4d4d8', top: '#d4d4d8' },
-    wave: { type: 'gradient', solid: '#000000', stops: 3, grad: ['#2dd4bf', '#818cf8', '#f472b6', '#000000', '#000000'] }
+    wave: { type: 'gradient', solid: '#000000', stops: 3, grad: ['#fbbf24', '#f59e0b', '#ea580c', '#000000', '#000000'] }
   },
   {
     id: 'movie-quote',
@@ -315,10 +315,12 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
   const isRebuildingRef = useRef<boolean>(false);
   const rawAudioDataRef = useRef<Float32Array | null>(null);
 
-  const queryParams = new URLSearchParams(window.location.search);
-  const orderId = queryParams.get('order') || '';
+  const token = window.location.pathname.split('/').pop() || '';
 
   const [isLocked, setIsLocked] = useState<boolean>(false);
+  const [isCheckingToken, setIsCheckingToken] = useState<boolean>(true);
+  const [tokenError, setTokenError] = useState<string>('');
+  
   const [showReviewModal, setShowReviewModal] = useState<boolean>(false);
   const [userConfirmed, setUserConfirmed] = useState<boolean>(false);
   const [previewImage, setPreviewImage] = useState<string>('');
@@ -474,7 +476,72 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
   };
 
   useEffect(() => {
-    if (!canvasElRef.current) return;
+    const checkToken = async () => {
+      if (!token || token === 'demo-token') {
+        setIsCheckingToken(false);
+        return;
+      }
+      
+      try {
+        const { data, error } = await supabase
+          .from('etsy_orders')
+          .select('*')
+          .eq('id', token)
+          .single();
+
+        if (error || !data) {
+          setTokenError('Invalid or expired design link.');
+          setIsCheckingToken(false);
+          return;
+        }
+
+        if (data.status === 'completed') {
+          setIsLocked(true);
+          if (data.design_state) {
+            const ds = data.design_state;
+            setCanvasSize(ds.canvasSize || '30x40');
+            setOrientation(ds.orientation || 'landscape');
+            setBgColor(ds.bgColor || '#fbfbfb');
+            setTopLeftText(ds.topLeftText || '');
+            setTopLeftColor(ds.topLeftColor || '#000000');
+            setTopRightText(ds.topRightText || '');
+            setTopRightColor(ds.topRightColor || '#000000');
+            setMainTitleText(ds.mainTitleText || '');
+            setMainTitleColor(ds.mainTitleColor || '#000000');
+            setSubTitleText(ds.subTitleText || '');
+            setSubTitleColor(ds.subTitleColor || '#333333');
+            setDividerColor(ds.dividerColor || '#999999');
+            setBottom1Text(ds.bottom1Text || '');
+            setBottom1Color(ds.bottom1Color || '#333333');
+            setBottom2Text(ds.bottom2Text || '');
+            setBottom2Color(ds.bottom2Color || '#333333');
+            setWaveMode(ds.waveMode || 'random');
+            setWaveFillType(ds.waveFillType || 'gradient');
+            setWaveSolidColor(ds.waveSolidColor || '#008000');
+            setWaveGradientStops(ds.waveGradientStops || 3);
+            setWaveGradientColors(ds.waveGradientColors || []);
+            setWaveGradientAngle(ds.waveGradientAngle || 0);
+            setWaveDensity(ds.waveDensity || 240);
+            setWaveThickness(ds.waveThickness || 1.5);
+            setWaveHeightScale(ds.waveHeightScale || 50);
+            setWaveWidthScale(ds.waveWidthScale || 80);
+            setShowQR(ds.showQR || false);
+            setQrLink(ds.qrLink || 'https://musicposters.shop');
+            setQrSize(ds.qrSize || 25);
+          }
+        }
+      } catch (err) {
+        setTokenError('Connection error. Please reload.');
+      } finally {
+        setIsCheckingToken(false);
+      }
+    };
+    
+    checkToken();
+  }, [token]);
+
+  useEffect(() => {
+    if (isCheckingToken || tokenError || !canvasElRef.current) return;
     
     const canvas = new fabric.Canvas(canvasElRef.current, {
       width: containerDims.width,
@@ -649,61 +716,7 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
     return () => {
       canvas.dispose();
     };
-  }, [isLocked]);
-
-  useEffect(() => {
-    if (!orderId || orderId === 'DEMO123') return;
-    const checkLockStatus = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('etsy_orders')
-          .select('status, design_state')
-          .eq('order_id', orderId)
-          .single();
-
-        if (!error && data) {
-          if (data.status === 'completed') {
-            setIsLocked(true);
-            if (data.design_state) {
-              const ds = data.design_state;
-              setCanvasSize(ds.canvasSize || '30x40');
-              setOrientation(ds.orientation || 'landscape');
-              setBgColor(ds.bgColor || '#fbfbfb');
-              setTopLeftText(ds.topLeftText || '');
-              setTopLeftColor(ds.topLeftColor || '#000000');
-              setTopRightText(ds.topRightText || '');
-              setTopRightColor(ds.topRightColor || '#000000');
-              setMainTitleText(ds.mainTitleText || '');
-              setMainTitleColor(ds.mainTitleColor || '#000000');
-              setSubTitleText(ds.subTitleText || '');
-              setSubTitleColor(ds.subTitleColor || '#333333');
-              setDividerColor(ds.dividerColor || '#999999');
-              setBottom1Text(ds.bottom1Text || '');
-              setBottom1Color(ds.bottom1Color || '#333333');
-              setBottom2Text(ds.bottom2Text || '');
-              setBottom2Color(ds.bottom2Color || '#333333');
-              setWaveMode(ds.waveMode || 'random');
-              setWaveFillType(ds.waveFillType || 'gradient');
-              setWaveSolidColor(ds.waveSolidColor || '#008000');
-              setWaveGradientStops(ds.waveGradientStops || 3);
-              setWaveGradientColors(ds.waveGradientColors || []);
-              setWaveGradientAngle(ds.waveGradientAngle || 0);
-              setWaveDensity(ds.waveDensity || 240);
-              setWaveThickness(ds.waveThickness || 1.5);
-              setWaveHeightScale(ds.waveHeightScale || 50);
-              setWaveWidthScale(ds.waveWidthScale || 80);
-              setShowQR(ds.showQR || false);
-              setQrLink(ds.qrLink || 'https://musicposters.shop');
-              setQrSize(ds.qrSize || 25);
-            }
-          }
-        }
-      } catch (err) {
-        console.error(err);
-      }
-    };
-    checkLockStatus();
-  }, [orderId]);
+  }, [isCheckingToken, tokenError, isLocked]);
 
   useEffect(() => {
     applyDynamicLayout(fabricRef.current, containerDims, showQR, qrSize);
@@ -1272,7 +1285,7 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
       showQR, qrLink, qrSize
     };
 
-    if (orderId && orderId !== 'DEMO123') {
+    if (token && token !== 'demo-token') {
       try {
         await supabase
           .from('etsy_orders')
@@ -1281,7 +1294,7 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
             design_state: designStateJSON,
             download_started_at: new Date().toISOString()
           })
-          .eq('order_id', orderId);
+          .eq('id', token);
       } catch (err) {
         console.error(err);
       }
@@ -1305,6 +1318,29 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
     }
     setShowReviewModal(true);
   };
+
+  if (isCheckingToken) {
+    return (
+      <div className="min-h-screen bg-zinc-950 text-white flex items-center justify-center font-sans">
+        <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (tokenError) {
+    return (
+      <div className="min-h-screen bg-zinc-950 text-white flex items-center justify-center p-6 font-sans">
+        <div className="text-center max-w-md bg-zinc-900 border border-zinc-800 p-8 rounded-3xl shadow-2xl">
+          <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+          <h1 className="text-2xl font-black uppercase mb-2">Access Denied</h1>
+          <p className="text-zinc-400 text-sm mb-6 leading-relaxed">{tokenError}</p>
+          <button className="w-full btn btn-primary py-3 flex items-center justify-center gap-2">
+            Contact Etsy Support
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`soundwave-poster-page ${isLocked ? 'locked-mode' : ''}`}>
@@ -2002,7 +2038,7 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
             </button>
             <button className="gt-align-btn" title="Align Right" onClick={() => handleAlign('right')}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <line x1="21" y1="3" x2="21" y2="21" strokeWidth="2.5" /><rect x="11" y="8" width="8" height="3" rx="1" /><rect x="6" y="13" width="13" height="3" rx="1" />
+                <line x1="21" y1="3" x2="21" y2="21" strokeWidth="2.5" /><rect x="11" y="8" width="3" height="8" rx="1" /><rect x="6" y="13" width="13" height="3" rx="1" />
               </svg>
             </button>
             <button className="gt-align-btn" title="Distribute H" onClick={() => edDistribute('h')}>
@@ -2017,7 +2053,7 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
             </button>
             <button className="gt-align-btn" title="Center Y" onClick={() => handleAlign('cy')}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <line x1="3" y1="12" x2="21" y2="12" strokeWidth="2.5" /><rect x="8" y="4" width="3" height="16" rx="1" /><rect x="13" y="6" width="3" height="12" rx="1" />
+                <line x1="3" y1="12" x2="21" y2="12" strokeWidth="2.5" /><rect x="8" y="4" width="3" height="16" rx="1" /><rect x="13" h="6" width="3" height="12" rx="1" />
               </svg>
             </button>
             <button className="gt-align-btn" title="Align Bottom" onClick={() => handleAlign('bottom')}>
