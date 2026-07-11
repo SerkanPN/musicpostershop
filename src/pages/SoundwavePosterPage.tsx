@@ -325,6 +325,10 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
   const [userConfirmed, setUserConfirmed] = useState<boolean>(false);
   const [previewImage, setPreviewImage] = useState<string>('');
 
+  const [showSupportModal, setShowSupportModal] = useState<boolean>(false);
+  const [supportMessage, setSupportMessage] = useState<string>('');
+  const [sendingTicket, setSendingTicket] = useState<boolean>(false);
+
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     presets: true,
     size: false,
@@ -938,7 +942,10 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
     
     canvas.setWidth(dims.width * zoom);
     canvas.setHeight(dims.height * zoom);
-    if (bgRectRef.current) bgRectRef.current.set({ width: dims.width, height: dims.height });
+    if (bgRectRef.current) {
+      bgRectRef.current.set({ width: dims.width, height: dims.height });
+      bgRectRef.current.set('dirty', true);
+    }
     
     buildSoundwavePath(canvas, dims);
     buildQRCode(canvas, dims);
@@ -1082,6 +1089,7 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
     const canvas = fabricRef.current;
     if (!canvas || !bgRectRef.current) return;
     bgRectRef.current.set({ fill: bgColor });
+    bgRectRef.current.set('dirty', true);
     canvas.requestRenderAll();
   }, [bgColor]);
 
@@ -1318,6 +1326,56 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
     }
     setShowReviewModal(true);
   };
+
+  const handleSupportClick = () => {
+    setShowSupportModal(true);
+  };
+
+  const submitSupportTicket = async () => {
+    if (!supportMessage.trim()) return;
+    setSendingTicket(true);
+    try {
+      const { error } = await supabase
+        .from('support_tickets')
+        .insert({
+          order_id: orderId || 'DEMO',
+          message: supportMessage.trim()
+        });
+      
+      if (error) throw error;
+      
+      showToast('Support ticket submitted successfully.');
+      setShowSupportModal(false);
+      setSupportMessage('');
+    } catch (err) {
+      showToast('Failed to send message. Try again.');
+    } finally {
+      setSendingTicket(false);
+    }
+  };
+
+  if (isCheckingToken) {
+    return (
+      <div className="min-h-screen bg-zinc-950 text-white flex items-center justify-center font-sans">
+        <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (tokenError) {
+    return (
+      <div className="min-h-screen bg-zinc-950 text-white flex items-center justify-center p-6 font-sans">
+        <div className="text-center max-w-md bg-zinc-900 border border-zinc-800 p-8 rounded-3xl shadow-2xl">
+          <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+          <h1 className="text-2xl font-black uppercase mb-2">Access Denied</h1>
+          <p className="text-zinc-400 text-sm mb-6 leading-relaxed">{tokenError}</p>
+          <button className="w-full btn btn-primary py-3 flex items-center justify-center gap-2">
+            Contact Etsy Support
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`soundwave-poster-page ${isLocked ? 'locked-mode' : ''}`}>
@@ -1679,7 +1737,7 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
             </div>
             <p className="text-xs text-red-300/80">Your design has been finalized. If you made a mistake, please contact support.</p>
           </div>
-          <button className="flex items-center gap-2 bg-red-950 border border-red-900 text-red-200 px-4 py-2 rounded-xl text-xs font-bold hover:bg-red-900 transition-colors cursor-pointer">
+          <button onClick={handleSupportClick} className="flex items-center gap-2 bg-red-950 border border-red-900 text-red-200 px-4 py-2 rounded-xl text-xs font-bold hover:bg-red-900 transition-colors cursor-pointer">
             <MessageCircle className="w-4 h-4" /> Open Support Ticket
           </button>
         </div>
@@ -1741,6 +1799,50 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
               </button>
             </div>
 
+          </div>
+        </div>
+      )}
+
+      {showSupportModal && (
+        <div className="review-modal-overlay">
+          <div className="review-modal-content" style={{ maxWidth: '500px' }}>
+            <div style={{ width: '100%' }}>
+              <h2 className="text-2xl font-black uppercase text-white mb-4 tracking-tight">Open Support Ticket</h2>
+              <p className="text-zinc-400 text-xs mb-6 leading-relaxed">
+                Need to make changes to your locked design? Describe your request below, and our team will update it for you.
+              </p>
+              <div className="form-row" style={{ padding: 0, marginBottom: '20px' }}>
+                <label>Your Message</label>
+                <textarea 
+                  value={supportMessage}
+                  onChange={(e) => setSupportMessage(e.target.value)}
+                  placeholder="Describe the changes you want (e.g., date correction)..."
+                  style={{
+                    width: '100%', background: 'var(--input-bg)', border: '1px solid var(--input-border)',
+                    borderRadius: '8px', color: 'var(--spotify-text)', padding: '12px', fontSize: '12px',
+                    fontFamily: 'inherit', minHeight: '120px', resize: 'vertical', outline: 'none'
+                  }}
+                />
+              </div>
+              <div className="flex gap-3">
+                <button 
+                  disabled={sendingTicket || !supportMessage.trim()}
+                  onClick={submitSupportTicket}
+                  className={`btn ${sendingTicket || !supportMessage.trim() ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed' : 'btn-primary'}`}
+                  style={{ flex: 1, padding: '12px' }}
+                >
+                  {sendingTicket ? 'Sending...' : 'Send Message'}
+                </button>
+                <button 
+                  disabled={sendingTicket}
+                  onClick={() => { setShowSupportModal(false); setSupportMessage(''); }}
+                  className="btn btn-secondary"
+                  style={{ flex: 1, padding: '12px' }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -1964,20 +2066,6 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
       </div>
 
       <div id="canvas-area" ref={containerRef} className={isLocked ? 'locked-mode' : ''}>
-        
-        {isLocked && (
-          <div className="readonly-banner">
-            <div>
-              <div className="flex items-center gap-2 text-red-200 font-bold mb-1">
-                <Lock className="w-4 h-4" /> Design Locked (Read-Only Mode)
-              </div>
-              <p className="text-xs text-red-300/80">Your design has been finalized. If you made a mistake, please contact support.</p>
-            </div>
-            <button className="flex items-center gap-2 bg-red-950 border border-red-900 text-red-200 px-4 py-2 rounded-xl text-xs font-bold hover:bg-red-900 transition-colors cursor-pointer">
-              <MessageCircle className="w-4 h-4" /> Open Support Ticket
-            </button>
-          </div>
-        )}
 
         {!isLocked && (
           <div className="canvas-header-actions">
@@ -2030,7 +2118,7 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
             </button>
             <button className="gt-align-btn" title="Align Right" onClick={() => handleAlign('right')}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <line x1="21" y1="3" x2="21" y2="21" strokeWidth="2.5" /><rect x="11" y="8" width="3" height="8" rx="1" /><rect x="6" h="13" width="13" height="3" rx="1" />
+                <line x1="21" y1="3" x2="21" y2="21" strokeWidth="2.5" /><rect x="11" y="8" width="8" height="3" rx="1" /><rect x="6" h="13" width="13" height="3" rx="1" />
               </svg>
             </button>
             <button className="gt-align-btn" title="Distribute H" onClick={() => edDistribute('h')}>
@@ -2066,6 +2154,7 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
             <button className="gt-group-btn" title="Ungroup" onClick={handleUngroup}>Ungroup</button>
           </div>
 
+          <div className="gt-section-title">ZOOM</div>
           <div className="gt-zoom-row">
             <input 
               type="range" 
