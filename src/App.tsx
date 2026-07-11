@@ -6,26 +6,6 @@ import SoundwavePosterPage from './pages/SoundwavePosterPage';
 import ClaimOrder from './pages/ClaimOrder';
 import { useStore } from './store/useStore';
 
-interface AdminRouteProps {
-  children: React.ReactNode;
-}
-
-function HomeRoute({ children }: AdminRouteProps) {
-  const isAuth = localStorage.getItem('admin_auth') === 'true';
-  const params = new URLSearchParams(window.location.search);
-  
-  if (params.get('admin') === 'true') {
-    localStorage.setItem('admin_auth', 'true');
-    return <>{children}</>;
-  }
-  
-  if (isAuth) {
-    return <>{children}</>;
-  }
-  
-  return <Navigate to="/claim" replace />;
-}
-
 export default function App() {
   const { checkUser } = useStore();
 
@@ -37,16 +17,28 @@ export default function App() {
     }
   }, [checkUser]);
 
+  const hostname = window.location.hostname;
+  const isAdminDomain = hostname.startsWith('serkan1881.') || hostname === 'localhost';
+
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Layout />}>
-          <Route index element={<HomeRoute><TrendPostersSelection /></HomeRoute>} />
-          <Route path="trend-posters" element={<HomeRoute><TrendPostersSelection /></HomeRoute>} />
-          
-          <Route path="editor" element={<SoundwavePosterPage navigate={(path) => window.location.href = path} />} />
-          <Route path="claim" element={<ClaimOrder />} />
-          
+          {isAdminDomain ? (
+            <>
+              <Route index element={<TrendPostersSelection />} />
+              <Route path="trend-posters" element={<TrendPostersSelection />} />
+              <Route path="design/:token" element={<SoundwavePosterPage navigate={(path) => window.location.href = path} />} />
+              <Route path="claim" element={<ClaimOrder />} />
+            </>
+          ) : (
+            <>
+              <Route index element={<Navigate to="/claim" replace />} />
+              <Route path="claim" element={<ClaimOrder />} />
+              <Route path="design/:token" element={<SoundwavePosterPage navigate={(path) => window.location.href = path} />} />
+              <Route path="*" element={<Navigate to="/claim" replace />} />
+            </>
+          )}
           <Route 
             path="*" 
             element={
