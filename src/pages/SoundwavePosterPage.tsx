@@ -2066,6 +2066,20 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
       </div>
 
       <div id="canvas-area" ref={containerRef} className={isLocked ? 'locked-mode' : ''}>
+        
+        {isLocked && (
+          <div className="readonly-banner">
+            <div>
+              <div className="flex items-center gap-2 text-red-200 font-bold mb-1">
+                <Lock className="w-4 h-4" /> Design Locked (Read-Only Mode)
+              </div>
+              <p className="text-xs text-red-300/80">Your design has been finalized. If you made a mistake, please contact support.</p>
+            </div>
+            <button onClick={handleSupportClick} className="flex items-center gap-2 bg-red-950 border border-red-900 text-red-200 px-4 py-2 rounded-xl text-xs font-bold hover:bg-red-900 transition-colors cursor-pointer">
+              <MessageCircle className="w-4 h-4" /> Open Support Ticket
+            </button>
+          </div>
+        )}
 
         {!isLocked && (
           <div className="canvas-header-actions">
