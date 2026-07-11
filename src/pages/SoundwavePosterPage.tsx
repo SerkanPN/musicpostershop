@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import * as fabric from 'fabric';
 import jsPDF from 'jspdf';
 import { AlertTriangle, Lock, MessageCircle, X } from 'lucide-react';
-import { supabase } from '../lib/supabase';
 
 const GOOGLE_FONTS = [
   "Inter", "Montserrat", "Roboto", "Open Sans", "Oswald", "Lato", "Poppins", 
@@ -160,7 +159,7 @@ const PRESETS = [
       tl: 'PINK FLOYD', tr: '1979', title: 'COMFORTABLY NUMB', sub: 'THE GUITAR SOLO (04:30 - 06:22)', b1: 'THE WALL', b2: 'HARVEST RECORDS'
     },
     colors: { bg: '#09090b', title: '#f4f4f5', sub: '#a1a1aa', div: '#27272a', bottom: '#d4d4d8', top: '#d4d4d8' },
-    wave: { type: 'gradient', solid: '#000000', stops: 3, grad: ['#fbbf24', '#f59e0b', '#ea580c', '#000000', '#000000'] }
+    wave: { type: 'gradient', solid: '#000000', stops: 3, grad: ['#2dd4bf', '#818cf8', '#f472b6', '#000000', '#000000'] }
   },
   {
     id: 'movie-quote',
@@ -315,12 +314,7 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
   const isRebuildingRef = useRef<boolean>(false);
   const rawAudioDataRef = useRef<Float32Array | null>(null);
 
-  const token = window.location.pathname.split('/').pop() || '';
-
   const [isLocked, setIsLocked] = useState<boolean>(false);
-  const [isCheckingToken, setIsCheckingToken] = useState<boolean>(true);
-  const [tokenError, setTokenError] = useState<string>('');
-  
   const [showReviewModal, setShowReviewModal] = useState<boolean>(false);
   const [userConfirmed, setUserConfirmed] = useState<boolean>(false);
   const [previewImage, setPreviewImage] = useState<string>('');
@@ -476,72 +470,7 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
   };
 
   useEffect(() => {
-    const checkToken = async () => {
-      if (!token || token === 'demo-token') {
-        setIsCheckingToken(false);
-        return;
-      }
-      
-      try {
-        const { data, error } = await supabase
-          .from('etsy_orders')
-          .select('*')
-          .eq('id', token)
-          .single();
-
-        if (error || !data) {
-          setTokenError('Invalid or expired design link.');
-          setIsCheckingToken(false);
-          return;
-        }
-
-        if (data.status === 'completed') {
-          setIsLocked(true);
-          if (data.design_state) {
-            const ds = data.design_state;
-            setCanvasSize(ds.canvasSize || '30x40');
-            setOrientation(ds.orientation || 'landscape');
-            setBgColor(ds.bgColor || '#fbfbfb');
-            setTopLeftText(ds.topLeftText || '');
-            setTopLeftColor(ds.topLeftColor || '#000000');
-            setTopRightText(ds.topRightText || '');
-            setTopRightColor(ds.topRightColor || '#000000');
-            setMainTitleText(ds.mainTitleText || '');
-            setMainTitleColor(ds.mainTitleColor || '#000000');
-            setSubTitleText(ds.subTitleText || '');
-            setSubTitleColor(ds.subTitleColor || '#333333');
-            setDividerColor(ds.dividerColor || '#999999');
-            setBottom1Text(ds.bottom1Text || '');
-            setBottom1Color(ds.bottom1Color || '#333333');
-            setBottom2Text(ds.bottom2Text || '');
-            setBottom2Color(ds.bottom2Color || '#333333');
-            setWaveMode(ds.waveMode || 'random');
-            setWaveFillType(ds.waveFillType || 'gradient');
-            setWaveSolidColor(ds.waveSolidColor || '#008000');
-            setWaveGradientStops(ds.waveGradientStops || 3);
-            setWaveGradientColors(ds.waveGradientColors || []);
-            setWaveGradientAngle(ds.waveGradientAngle || 0);
-            setWaveDensity(ds.waveDensity || 240);
-            setWaveThickness(ds.waveThickness || 1.5);
-            setWaveHeightScale(ds.waveHeightScale || 50);
-            setWaveWidthScale(ds.waveWidthScale || 80);
-            setShowQR(ds.showQR || false);
-            setQrLink(ds.qrLink || 'https://musicposters.shop');
-            setQrSize(ds.qrSize || 25);
-          }
-        }
-      } catch (err) {
-        setTokenError('Connection error. Please reload.');
-      } finally {
-        setIsCheckingToken(false);
-      }
-    };
-    
-    checkToken();
-  }, [token]);
-
-  useEffect(() => {
-    if (isCheckingToken || tokenError || !canvasElRef.current) return;
+    if (!canvasElRef.current) return;
     
     const canvas = new fabric.Canvas(canvasElRef.current, {
       width: containerDims.width,
@@ -716,7 +645,7 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
     return () => {
       canvas.dispose();
     };
-  }, [isCheckingToken, tokenError, isLocked]);
+  }, [isLocked]);
 
   useEffect(() => {
     applyDynamicLayout(fabricRef.current, containerDims, showQR, qrSize);
@@ -1272,34 +1201,6 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
       URL.revokeObjectURL(url);
     }
 
-    const designStateJSON = {
-      canvasSize, orientation, bgColor,
-      topLeftText, topLeftColor, topLeftFontFamily, topLeftFontSize, topLeftCharSpacing, topLeftFontWeight, topLeftFontStyle,
-      topRightText, topRightColor, topRightFontFamily, topRightFontSize, topRightCharSpacing, topRightFontWeight, topRightFontStyle,
-      mainTitleText, mainTitleColor, mainTitleFontFamily, mainTitleFontSize, mainTitleCharSpacing, mainTitleFontWeight, mainTitleFontStyle,
-      subTitleText, subTitleColor, subTitleFontFamily, subTitleFontSize, subTitleCharSpacing, subTitleFontWeight, subTitleFontStyle,
-      dividerColor,
-      bottom1Text, bottom1Color, bottom1FontFamily, bottom1FontSize, bottom1CharSpacing, bottom1FontWeight, bottom1FontStyle,
-      bottom2Text, bottom2Color, bottom2FontFamily, bottom2FontSize, bottom2CharSpacing, bottom2FontWeight, bottom2FontStyle,
-      waveMode, waveFillType, waveSolidColor, waveGradientStops, waveGradientColors, waveGradientAngle, waveDensity, waveThickness, waveHeightScale, waveWidthScale,
-      showQR, qrLink, qrSize
-    };
-
-    if (token && token !== 'demo-token') {
-      try {
-        await supabase
-          .from('etsy_orders')
-          .update({
-            status: 'completed',
-            design_state: designStateJSON,
-            download_started_at: new Date().toISOString()
-          })
-          .eq('id', token);
-      } catch (err) {
-        console.error(err);
-      }
-    }
-
     setShowReviewModal(false);
     setIsLocked(true);
   };
@@ -1318,29 +1219,6 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
     }
     setShowReviewModal(true);
   };
-
-  if (isCheckingToken) {
-    return (
-      <div className="min-h-screen bg-zinc-950 text-white flex items-center justify-center font-sans">
-        <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
-
-  if (tokenError) {
-    return (
-      <div className="min-h-screen bg-zinc-950 text-white flex items-center justify-center p-6 font-sans">
-        <div className="text-center max-w-md bg-zinc-900 border border-zinc-800 p-8 rounded-3xl shadow-2xl">
-          <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-black uppercase mb-2">Access Denied</h1>
-          <p className="text-zinc-400 text-sm mb-6 leading-relaxed">{tokenError}</p>
-          <button className="w-full btn btn-primary py-3 flex items-center justify-center gap-2">
-            Contact Etsy Support
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className={`soundwave-poster-page ${isLocked ? 'locked-mode' : ''}`}>
@@ -1498,6 +1376,13 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
         .soundwave-poster-page .accordion-btn.open .arrow { transform: rotate(180deg); }
         .soundwave-poster-page .accordion-content { display: none; padding: 14px 0; border-bottom: 1px solid var(--panel-border); }
         .soundwave-poster-page .accordion-content.open { display: block; }
+
+        .soundwave-poster-page .sw-toast {
+          position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+          background: var(--accent); color: #000; padding: 10px 20px; border-radius: 24px;
+          font-size: 13px; font-weight: 600; opacity: 0; transition: all 0.3s; z-index: 9999; pointer-events: none;
+        }
+        .soundwave-poster-page .sw-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
         .soundwave-poster-page #props-panel {
           width: 260px; min-width: 260px; background: var(--panel-bg); border-left: 1px solid var(--panel-border);
@@ -1681,32 +1566,11 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
         }
 
         .readonly-banner {
-          position: fixed; top: 24px; left: 50%; transform: translateX(-50%);
-          background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3);
+          background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3);
           color: #fca5a5; padding: 16px 24px; border-radius: 16px; display: flex; align-items: center; justify-content: space-between;
-          max-width: 800px; width: 90%; box-shadow: 0 10px 30px rgba(0,0,0,0.8); z-index: 1000; backdrop-filter: blur(10px);
+          max-width: 800px; margin: 0 auto 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 100%;
         }
-        .sw-toast {
-          position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
-          background: var(--accent); color: #000; padding: 10px 20px; border-radius: 24px;
-          font-size: 13px; font-weight: 600; opacity: 0; transition: all 0.3s; z-index: 9999; pointer-events: none;
-        }
-        .sw-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
       `}</style>
-
-      {isLocked && (
-        <div className="readonly-banner">
-          <div>
-            <div className="flex items-center gap-2 text-red-200 font-bold mb-1">
-              <Lock className="w-4 h-4" /> Design Locked (Read-Only Mode)
-            </div>
-            <p className="text-xs text-red-300/80">Your design has been finalized. If you made a mistake, please contact support.</p>
-          </div>
-          <button className="flex items-center gap-2 bg-red-950 border border-red-900 text-red-200 px-4 py-2 rounded-xl text-xs font-bold hover:bg-red-900 transition-colors cursor-pointer">
-            <MessageCircle className="w-4 h-4" /> Open Support Ticket
-          </button>
-        </div>
-      )}
 
       {showReviewModal && (
         <div className="review-modal-overlay">
@@ -1776,7 +1640,7 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
             </svg>
             <h1>Soundwave Poster</h1>
           </div>
-          <button className="back-btn" onClick={() => navigate('/claim')}>&#10229; Back</button>
+          <button className="back-btn" onClick={() => navigate('/trend-posters')}>&#10229; Back</button>
         </div>
 
         <button className={`accordion-btn${openSections.presets ? ' open' : ''}`} onClick={() => toggleAccordion('presets')}>
@@ -1987,6 +1851,20 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
       </div>
 
       <div id="canvas-area" ref={containerRef} className={isLocked ? 'locked-mode' : ''}>
+        
+        {isLocked && (
+          <div className="readonly-banner">
+            <div>
+              <div className="flex items-center gap-2 text-red-200 font-bold mb-1">
+                <Lock className="w-4 h-4" /> Design Locked (Read-Only Mode)
+              </div>
+              <p className="text-xs text-red-300/80">Your design has been finalized. If you made a mistake, please contact support.</p>
+            </div>
+            <button className="flex items-center gap-2 bg-red-950 border border-red-900 text-red-200 px-4 py-2 rounded-xl text-xs font-bold hover:bg-red-900 transition-colors cursor-pointer">
+              <MessageCircle className="w-4 h-4" /> Open Support Ticket
+            </button>
+          </div>
+        )}
 
         {!isLocked && (
           <div className="canvas-header-actions">
@@ -2417,7 +2295,7 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
         </div>
       </div>
 
-      <div className="sw-toast">Done</div>
+      <div className={`sw-toast ${toast ? 'show' : ''}`}>&#10003; {toast}</div>
     </div>
   );
 }
