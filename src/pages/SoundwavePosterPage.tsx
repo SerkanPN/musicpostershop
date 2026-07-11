@@ -485,6 +485,8 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
 
   useEffect(() => {
     const checkToken = async () => {
+      const isAdmin = window.location.hostname.startsWith('serkan1881');
+
       if (!token || token === 'demo-token') {
         setIsCheckingToken(false);
         return;
@@ -504,7 +506,12 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
         }
 
         if (data.status === 'completed') {
-          setIsLocked(true);
+          if (isAdmin) {
+            setIsLocked(false);
+          } else {
+            setIsLocked(true);
+          }
+          
           if (data.design_state) {
             const ds = data.design_state;
             setCanvasSize(ds.canvasSize || '30x40');
