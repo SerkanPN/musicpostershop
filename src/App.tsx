@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Layout } from './components/Layout';
-import { Home } from './pages/Home';
+
 import { Shop } from './pages/Shop';
 import { Cart } from './pages/Cart';
 import { Tokens } from './pages/Tokens';
@@ -16,6 +16,8 @@ import SongPosterSelection from './pages/SongPosterSelection';
 import AlbumPosterBuilder from './pages/AlbumPosterBuilder';
 import SpotifyPosterBuilder from './pages/SpotifyPosterBuilder'; 
 import VinylPosterBuilder from './pages/VinylPosterBuilder';
+
+import ClaimOrder from './pages/ClaimOrder';
 import TrendPostersSelection from './pages/TrendPostersSelection';
 import SoundwavePosterPage from './pages/SoundwavePosterPage';
 import AdminPortal from './pages/AdminPortal';
@@ -36,7 +38,7 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Layout />}>
-          <Route index element={<Home />} />
+          <Route index element={<ClaimOrder />} />
           <Route path="shop" element={<Shop />} />
           <Route path="product/:slug" element={<ProductDetail />} />
           <Route path="special" element={<SpecialForRoom />} />
