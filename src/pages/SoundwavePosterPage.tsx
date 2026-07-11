@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import * as fabric from 'fabric';
 import jsPDF from 'jspdf';
-import { AlertTriangle, Lock, MessageCircle, X } from 'lucide-react';
+import { AlertTriangle, Lock, MessageCircle, X, CheckCircle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 const GOOGLE_FONTS = [
@@ -330,6 +330,8 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
   const [showSupportModal, setShowSupportModal] = useState<boolean>(false);
   const [supportMessage, setSupportMessage] = useState<string>('');
   const [sendingTicket, setSendingTicket] = useState<boolean>(false);
+  const [ticketSubmitted, setTicketSubmitted] = useState<boolean>(false);
+  const [isGeneratingFile, setIsGeneratingFile] = useState<boolean>(false);
 
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     presets: true,
@@ -1254,64 +1256,70 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
     const canvas = fabricRef.current;
     if (!canvas) return;
     
-    canvas.discardActiveObject();
-    canvas.renderAll();
+    setIsGeneratingFile(true);
     
-    const multiplier = getMultiplier();
-    const { w, h } = parseAndOrientSize(canvasSize, orientation);
-
-    if (format === 'png') {
-      const dataUrl = canvas.toDataURL({ format: 'png', multiplier });
-      const a = document.createElement('a');
-      a.href = dataUrl;
-      a.download = `soundwave-poster.png`;
-      a.click();
-    } else if (format === 'pdf') {
-      const dataUrl = canvas.toDataURL({ format: 'png', multiplier });
-      const pdf = new jsPDF({ orientation: w > h ? 'landscape' : 'portrait', unit: 'in', format: [w, h] });
-      pdf.addImage(dataUrl, 'PNG', 0, 0, w, h);
-      pdf.save(`soundwave-poster.pdf`);
-    } else if (format === 'svg') {
-      const svg = canvas.toSVG();
-      const blob = new Blob([svg], { type: 'image/svg+xml' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `soundwave-poster.svg`;
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-
-    const designStateJSON = {
-      canvasSize, orientation, bgColor,
-      topLeftText, topLeftColor, topLeftFontFamily, topLeftFontSize, topLeftCharSpacing, topLeftFontWeight, topLeftFontStyle,
-      topRightText, topRightColor, topRightFontFamily, topRightFontSize, topRightCharSpacing, topRightFontWeight, topRightFontStyle,
-      mainTitleText, mainTitleColor, mainTitleFontFamily, mainTitleFontSize, mainTitleCharSpacing, mainTitleFontWeight, mainTitleFontStyle,
-      subTitleText, subTitleColor, subTitleFontFamily, subTitleFontSize, subTitleCharSpacing, subTitleFontWeight, subTitleFontStyle,
-      dividerColor,
-      bottom1Text, bottom1Color, bottom1FontFamily, bottom1FontSize, bottom1CharSpacing, bottom1FontWeight, bottom1FontStyle,
-      bottom2Text, bottom2Color, bottom2FontFamily, bottom2FontSize, bottom2CharSpacing, bottom2FontWeight, bottom2FontStyle,
-      waveMode, waveFillType, waveSolidColor, waveGradientStops, waveGradientColors, waveGradientAngle, waveDensity, waveThickness, waveHeightScale, waveWidthScale,
-      showQR, qrLink, qrSize
-    };
-
-    if (token && token !== 'demo-token') {
+    setTimeout(async () => {
       try {
-        await supabase
-          .from('etsy_orders')
-          .update({
-            status: 'completed',
-            design_state: designStateJSON,
-            download_started_at: new Date().toISOString()
-          })
-          .eq('id', token);
-      } catch (err) {
-        console.error(err);
-      }
-    }
+        canvas.discardActiveObject();
+        canvas.renderAll();
+        
+        const multiplier = getMultiplier();
+        const { w, h } = parseAndOrientSize(canvasSize, orientation);
 
-    setShowReviewModal(false);
-    setIsLocked(true);
+        if (format === 'png') {
+          const dataUrl = canvas.toDataURL({ format: 'png', multiplier });
+          const a = document.createElement('a');
+          a.href = dataUrl;
+          a.download = `soundwave-poster.png`;
+          a.click();
+        } else if (format === 'pdf') {
+          const dataUrl = canvas.toDataURL({ format: 'png', multiplier });
+          const pdf = new jsPDF({ orientation: w > h ? 'landscape' : 'portrait', unit: 'in', format: [w, h] });
+          pdf.addImage(dataUrl, 'PNG', 0, 0, w, h);
+          pdf.save(`soundwave-poster.pdf`);
+        } else if (format === 'svg') {
+          const svg = canvas.toSVG();
+          const blob = new Blob([svg], { type: 'image/svg+xml' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `soundwave-poster.svg`;
+          a.click();
+          URL.revokeObjectURL(url);
+        }
+
+        const designStateJSON = {
+          canvasSize, orientation, bgColor,
+          topLeftText, topLeftColor, topLeftFontFamily, topLeftFontSize, topLeftCharSpacing, topLeftFontWeight, topLeftFontStyle,
+          topRightText, topRightColor, topRightFontFamily, topRightFontSize, topRightCharSpacing, topRightFontWeight, topRightFontStyle,
+          mainTitleText, mainTitleColor, mainTitleFontFamily, mainTitleFontSize, mainTitleCharSpacing, mainTitleFontWeight, mainTitleFontStyle,
+          subTitleText, subTitleColor, subTitleFontFamily, subTitleFontSize, subTitleCharSpacing, subTitleFontWeight, subTitleFontStyle,
+          dividerColor,
+          bottom1Text, bottom1Color, bottom1FontFamily, bottom1FontSize, bottom1CharSpacing, bottom1FontWeight, bottom1FontStyle,
+          bottom2Text, bottom2Color, bottom2FontFamily, bottom2FontSize, bottom2CharSpacing, bottom2FontWeight, bottom2FontStyle,
+          waveMode, waveFillType, waveSolidColor, waveGradientStops, waveGradientColors, waveGradientAngle, waveDensity, waveThickness, waveHeightScale, waveWidthScale,
+          showQR, qrLink, qrSize
+        };
+
+        if (token && token !== 'demo-token') {
+          await supabase
+            .from('etsy_orders')
+            .update({
+              status: 'completed',
+              design_state: designStateJSON,
+              download_started_at: new Date().toISOString()
+            })
+            .eq('id', token);
+        }
+
+        setShowReviewModal(false);
+        setIsLocked(true);
+      } catch (err) {
+        showToast('Export failed. Please try again.');
+      } finally {
+        setIsGeneratingFile(false);
+      }
+    }, 100);
   };
 
   const handleDownloadMasterpieceClick = () => {
@@ -1346,9 +1354,7 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
       
       if (error) throw error;
       
-      showToast('Support ticket submitted successfully.');
-      setShowSupportModal(false);
-      setSupportMessage('');
+      setTicketSubmitted(true);
     } catch (err) {
       showToast('Failed to send message. Try again.');
     } finally {
@@ -1729,7 +1735,24 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
           font-size: 13px; font-weight: 600; opacity: 0; transition: all 0.3s; z-index: 9999; pointer-events: none;
         }
         .sw-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        .file-generator-overlay {
+          position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px);
+          display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10000;
+        }
       `}</style>
+
+      {isGeneratingFile && (
+        <div className="file-generator-overlay">
+          <div className="text-center bg-zinc-900 border border-zinc-800 p-8 rounded-3xl max-w-md shadow-2xl flex flex-col items-center">
+            <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-4" />
+            <h3 className="text-lg font-black uppercase text-white mb-2 tracking-wider">Generating File</h3>
+            <p className="text-zinc-400 text-xs leading-relaxed">
+              Your high-resolution file is being generated... Please wait.
+            </p>
+          </div>
+        </div>
+      )}
 
       {isLocked && (
         <div className="readonly-banner">
@@ -1809,41 +1832,59 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
         <div className="review-modal-overlay">
           <div className="review-modal-content" style={{ maxWidth: '500px' }}>
             <div style={{ width: '100%' }}>
-              <h2 className="text-2xl font-black uppercase text-white mb-4 tracking-tight">Open Support Ticket</h2>
-              <p className="text-zinc-400 text-xs mb-6 leading-relaxed">
-                Need to make changes to your locked design? Describe your request below, and our team will update it for you.
-              </p>
-              <div className="form-row" style={{ padding: 0, marginBottom: '20px' }}>
-                <label>Your Message</label>
-                <textarea 
-                  value={supportMessage}
-                  onChange={(e) => setSupportMessage(e.target.value)}
-                  placeholder="Describe the changes you want (e.g., date correction)..."
-                  style={{
-                    width: '100%', background: 'var(--input-bg)', border: '1px solid var(--input-border)',
-                    borderRadius: '8px', color: 'var(--spotify-text)', padding: '12px', fontSize: '12px',
-                    fontFamily: 'inherit', minHeight: '120px', resize: 'vertical', outline: 'none'
-                  }}
-                />
-              </div>
-              <div className="flex gap-3">
-                <button 
-                  disabled={sendingTicket || !supportMessage.trim()}
-                  onClick={submitSupportTicket}
-                  className={`btn ${sendingTicket || !supportMessage.trim() ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed' : 'btn-primary'}`}
-                  style={{ flex: 1, padding: '12px' }}
-                >
-                  {sendingTicket ? 'Sending...' : 'Send Message'}
-                </button>
-                <button 
-                  disabled={sendingTicket}
-                  onClick={() => { setShowSupportModal(false); setSupportMessage(''); }}
-                  className="btn btn-secondary"
-                  style={{ flex: 1, padding: '12px' }}
-                >
-                  Cancel
-                </button>
-              </div>
+              {ticketSubmitted ? (
+                <div className="text-center py-6">
+                  <CheckCircle className="w-12 h-12 text-emerald-500 mx-auto mb-4" />
+                  <h2 className="text-2xl font-black uppercase text-white mb-2 tracking-tight">Ticket Submitted</h2>
+                  <p className="text-zinc-400 text-xs leading-relaxed mb-6">
+                    Your message has been sent successfully. We will respond to your request within 24 hours.
+                  </p>
+                  <button 
+                    onClick={() => { setShowSupportModal(false); setTicketSubmitted(false); setSupportMessage(''); }}
+                    className="btn btn-primary w-full"
+                  >
+                    Close Window
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <h2 className="text-2xl font-black uppercase text-white mb-4 tracking-tight">Open Support Ticket</h2>
+                  <p className="text-zinc-400 text-xs mb-6 leading-relaxed">
+                    Need to make changes to your locked design? Describe your request below, and our team will update it for you.
+                  </p>
+                  <div className="form-row" style={{ padding: 0, marginBottom: '20px' }}>
+                    <label>Your Message</label>
+                    <textarea 
+                      value={supportMessage}
+                      onChange={(e) => setSupportMessage(e.target.value)}
+                      placeholder="Describe the changes you want (e.g., date correction)..."
+                      style={{
+                        width: '100%', background: 'var(--input-bg)', border: '1px solid var(--input-border)',
+                        borderRadius: '8px', color: 'var(--spotify-text)', padding: '12px', fontSize: '12px',
+                        fontFamily: 'inherit', minHeight: '120px', resize: 'vertical', outline: 'none'
+                      }}
+                    />
+                  </div>
+                  <div className="flex gap-3">
+                    <button 
+                      disabled={sendingTicket || !supportMessage.trim()}
+                      onClick={submitSupportTicket}
+                      className={`btn ${sendingTicket || !supportMessage.trim() ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed' : 'btn-primary'}`}
+                      style={{ flex: 1, padding: '12px' }}
+                    >
+                      {sendingTicket ? 'Sending...' : 'Send Message'}
+                    </button>
+                    <button 
+                      disabled={sendingTicket}
+                      onClick={() => { setShowSupportModal(false); setSupportMessage(''); }}
+                      className="btn btn-secondary"
+                      style={{ flex: 1, padding: '12px' }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -1857,7 +1898,7 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
             </svg>
             <h1>Soundwave Poster</h1>
           </div>
-          <button className="back-btn" onClick={() => navigate('/trend-posters')}>&#10229; Back</button>
+          <button className="back-btn" onClick={() => navigate('/claim')}>&#10229; Back</button>
         </div>
 
         <button className={`accordion-btn${openSections.presets ? ' open' : ''}`} onClick={() => toggleAccordion('presets')}>
@@ -1894,6 +1935,11 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
                 <option value="space-voyager">Space Voyager</option>
               </optgroup>
             </select>
+            {activePreset !== 'custom' && (
+              <p style={{ fontSize: '10px', color: 'var(--spotify-subtext)', marginTop: '8px', lineHeight: '1.4' }}>
+                {PRESETS.find(p => p.id === activePreset)?.desc}
+              </p>
+            )}
           </div>
         </div>
 
@@ -2195,100 +2241,6 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
             </div>
           )}
 
-          {selectedType === EDIT_TYPES.MAIN_TITLE && (
-            <div id="props-fields">
-              <div className="pf-section">
-                <div className="pf-section-title">Main Title</div>
-                <div className="pf-row">
-                  <label>Text</label>
-                  <input type="text" value={mainTitleText}
-                    onChange={(e) => setMainTitleText(e.target.value)} />
-                </div>
-                <div className="pf-row">
-                  <label>Font Family</label>
-                  <select value={mainTitleFontFamily} onChange={(e) => setMainTitleFontFamily(e.target.value)}>
-                    <option value="Josefin Sans, sans-serif">Josefin Sans</option>
-                    {GOOGLE_FONTS.map(f => <option key={f} value={`${f}, sans-serif`}>{f}</option>)}
-                  </select>
-                </div>
-                <div className="pf-row">
-                  <label>Font Style</label>
-                  <FontStyleSelector weight={mainTitleFontWeight} style={mainTitleFontStyle} onChange={(w, s) => { setMainTitleFontWeight(w); setMainTitleFontStyle(s); }} />
-                </div>
-                <div className="pf-row">
-                  <label>Font Size</label>
-                  <div className="pf-range-row">
-                    <input type="range" min="12" max="150" value={mainTitleFontSize} onChange={(e) => setMainTitleFontSize(Number(e.target.value))} />
-                    <span className="pf-range-val">{mainTitleFontSize}px</span>
-                  </div>
-                </div>
-                <div className="pf-row">
-                  <label>Letter Spacing</label>
-                  <div className="pf-range-row">
-                    <input type="range" min="0" max="600" step="10" value={mainTitleCharSpacing} onChange={(e) => setMainTitleCharSpacing(Number(e.target.value))} />
-                    <span className="pf-range-val">{mainTitleCharSpacing}</span>
-                  </div>
-                </div>
-                <div className="pf-row">
-                  <label>Color</label>
-                  <div className="pf-color-row">
-                    <input type="color" value={mainTitleColor}
-                      onChange={(e) => setMainTitleColor(e.target.value)} />
-                    <input type="text" value={mainTitleColor}
-                      onChange={(e) => setMainTitleColor(e.target.value)} />
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {selectedType === EDIT_TYPES.SUB_TITLE && (
-            <div id="props-fields">
-              <div className="pf-section">
-                <div className="pf-section-title">Subtitle</div>
-                <div className="pf-row">
-                  <label>Text</label>
-                  <input type="text" value={subTitleText}
-                    onChange={(e) => setSubTitleText(e.target.value)} />
-                </div>
-                <div className="pf-row">
-                  <label>Font Family</label>
-                  <select value={subTitleFontFamily} onChange={(e) => setSubTitleFontFamily(e.target.value)}>
-                    <option value="DM Sans, sans-serif">DM Sans</option>
-                    {GOOGLE_FONTS.map(f => <option key={f} value={`${f}, sans-serif`}>{f}</option>)}
-                  </select>
-                </div>
-                <div className="pf-row">
-                  <label>Font Style</label>
-                  <FontStyleSelector weight={subTitleFontWeight} style={subTitleFontStyle} onChange={(w, s) => { setSubTitleFontWeight(w); setSubTitleFontStyle(s); }} />
-                </div>
-                <div className="pf-row">
-                  <label>Font Size</label>
-                  <div className="pf-range-row">
-                    <input type="range" min="8" max="72" value={subTitleFontSize} onChange={(e) => setSubTitleFontSize(Number(e.target.value))} />
-                    <span className="pf-range-val">{subTitleFontSize}px</span>
-                  </div>
-                </div>
-                <div className="pf-row">
-                  <label>Letter Spacing</label>
-                  <div className="pf-range-row">
-                    <input type="range" min="0" max="600" step="10" value={subTitleCharSpacing} onChange={(e) => setSubTitleCharSpacing(Number(e.target.value))} />
-                    <span className="pf-range-val">{subTitleCharSpacing}</span>
-                  </div>
-                </div>
-                <div className="pf-row">
-                  <label>Color</label>
-                  <div className="pf-color-row">
-                    <input type="color" value={subTitleColor}
-                      onChange={(e) => setSubTitleColor(e.target.value)} />
-                    <input type="text" value={subTitleColor}
-                      onChange={(e) => setSubTitleColor(e.target.value)} />
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
           {selectedType === EDIT_TYPES.TOP_LEFT && (
             <div id="props-fields">
               <div className="pf-section">
@@ -2377,6 +2329,100 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
                       onChange={(e) => setTopRightColor(e.target.value)} />
                     <input type="text" value={topRightColor}
                       onChange={(e) => setTopRightColor(e.target.value)} />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {selectedType === EDIT_TYPES.MAIN_TITLE && (
+            <div id="props-fields">
+              <div className="pf-section">
+                <div className="pf-section-title">Main Title</div>
+                <div className="pf-row">
+                  <label>Text</label>
+                  <input type="text" value={mainTitleText}
+                    onChange={(e) => setMainTitleText(e.target.value)} />
+                </div>
+                <div className="pf-row">
+                  <label>Font Family</label>
+                  <select value={mainTitleFontFamily} onChange={(e) => setMainTitleFontFamily(e.target.value)}>
+                    <option value="Josefin Sans, sans-serif">Josefin Sans</option>
+                    {GOOGLE_FONTS.map(f => <option key={f} value={`${f}, sans-serif`}>{f}</option>)}
+                  </select>
+                </div>
+                <div className="pf-row">
+                  <label>Font Style</label>
+                  <FontStyleSelector weight={mainTitleFontWeight} style={mainTitleFontStyle} onChange={(w, s) => { setMainTitleFontWeight(w); setMainTitleFontStyle(s); }} />
+                </div>
+                <div className="pf-row">
+                  <label>Font Size</label>
+                  <div className="pf-range-row">
+                    <input type="range" min="12" max="150" value={mainTitleFontSize} onChange={(e) => setMainTitleFontSize(Number(e.target.value))} />
+                    <span className="pf-range-val">{mainTitleFontSize}px</span>
+                  </div>
+                </div>
+                <div className="pf-row">
+                  <label>Letter Spacing</label>
+                  <div className="pf-range-row">
+                    <input type="range" min="0" max="600" step="10" value={mainTitleCharSpacing} onChange={(e) => setMainTitleCharSpacing(Number(e.target.value))} />
+                    <span className="pf-range-val">{mainTitleCharSpacing}</span>
+                  </div>
+                </div>
+                <div className="pf-row">
+                  <label>Color</label>
+                  <div className="pf-color-row">
+                    <input type="color" value={mainTitleColor}
+                      onChange={(e) => setMainTitleColor(e.target.value)} />
+                    <input type="text" value={mainTitleColor}
+                      onChange={(e) => setMainTitleColor(e.target.value)} />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {selectedType === EDIT_TYPES.SUB_TITLE && (
+            <div id="props-fields">
+              <div className="pf-section">
+                <div className="pf-section-title">Subtitle</div>
+                <div className="pf-row">
+                  <label>Text</label>
+                  <input type="text" value={subTitleText}
+                    onChange={(e) => setSubTitleText(e.target.value)} />
+                </div>
+                <div className="pf-row">
+                  <label>Font Family</label>
+                  <select value={subTitleFontFamily} onChange={(e) => setSubTitleFontFamily(e.target.value)}>
+                    <option value="DM Sans, sans-serif">DM Sans</option>
+                    {GOOGLE_FONTS.map(f => <option key={f} value={`${f}, sans-serif`}>{f}</option>)}
+                  </select>
+                </div>
+                <div className="pf-row">
+                  <label>Font Style</label>
+                  <FontStyleSelector weight={subTitleFontWeight} style={subTitleFontStyle} onChange={(w, s) => { setSubTitleFontWeight(w); setSubTitleFontStyle(s); }} />
+                </div>
+                <div className="pf-row">
+                  <label>Font Size</label>
+                  <div className="pf-range-row">
+                    <input type="range" min="8" max="72" value={subTitleFontSize} onChange={(e) => setSubTitleFontSize(Number(e.target.value))} />
+                    <span className="pf-range-val">{subTitleFontSize}px</span>
+                  </div>
+                </div>
+                <div className="pf-row">
+                  <label>Letter Spacing</label>
+                  <div className="pf-range-row">
+                    <input type="range" min="0" max="600" step="10" value={subTitleCharSpacing} onChange={(e) => setSubTitleCharSpacing(Number(e.target.value))} />
+                    <span className="pf-range-val">{subTitleCharSpacing}</span>
+                  </div>
+                </div>
+                <div className="pf-row">
+                  <label>Color</label>
+                  <div className="pf-color-row">
+                    <input type="color" value={subTitleColor}
+                      onChange={(e) => setSubTitleColor(e.target.value)} />
+                    <input type="text" value={subTitleColor}
+                      onChange={(e) => setSubTitleColor(e.target.value)} />
                   </div>
                 </div>
               </div>
