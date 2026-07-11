@@ -1,11 +1,26 @@
-import React, { useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Layout } from './components/Layout';
+import { Home } from './pages/Home';
+import { Shop } from './pages/Shop';
+import { Cart } from './pages/Cart';
+import { Tokens } from './pages/Tokens';
+import { Profile } from './pages/Profile';
+import { SellerDashboard } from './pages/SellerDashboard';
+import { Wishlist } from './pages/Wishlist';
+import { ProductDetail } from './pages/ProductDetail';
+import { SpecialForRoom } from './pages/SpecialForRoom'; 
+import { HDTools } from './pages/HDTools';              
+import { MusicPosterSelection } from './pages/MusicPosterSelection';
+import SongPosterSelection from './pages/SongPosterSelection';
+import AlbumPosterBuilder from './pages/AlbumPosterBuilder';
+import SpotifyPosterBuilder from './pages/SpotifyPosterBuilder'; 
+import VinylPosterBuilder from './pages/VinylPosterBuilder';
 import TrendPostersSelection from './pages/TrendPostersSelection';
 import SoundwavePosterPage from './pages/SoundwavePosterPage';
-import ClaimOrder from './pages/ClaimOrder';
-import { useStore } from './store/useStore';
 import AdminPortal from './pages/AdminPortal';
+import { useStore } from './store/useStore';
+
 export default function App() {
   const { checkUser } = useStore();
 
@@ -17,35 +32,36 @@ export default function App() {
     }
   }, [checkUser]);
 
-  const hostname = window.location.hostname;
-  const isAdminDomain = hostname.startsWith('serkan1881.') || hostname === 'localhost';
-
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Layout />}>
-          {isAdminDomain ? (
-            <>
-              <Route index element={<TrendPostersSelection />} />
-              <Route path="trend-posters" element={<TrendPostersSelection />} />
-              <Route path="design/:token" element={<SoundwavePosterPage navigate={(path) => window.location.href = path} />} />
-              <Route path="claim" element={<ClaimOrder />} />
-            </>
-          ) : (
-            <>
-              <Route index element={<Navigate to="/claim" replace />} />
-              <Route path="claim" element={<ClaimOrder />} />
-              <Route path="design/:token" element={<SoundwavePosterPage navigate={(path) => window.location.href = path} />} />
-              <Route path="*" element={<Navigate to="/claim" replace />} />
-              <Route path="admin-portal" element={<AdminPortal />} />
-              <Route path="admin-portal/:token" element={<AdminPortal />} />
-            </>
-          )}
+          <Route index element={<Home />} />
+          <Route path="shop" element={<Shop />} />
+          <Route path="product/:slug" element={<ProductDetail />} />
+          <Route path="special" element={<SpecialForRoom />} />
+          <Route path="lab" element={<HDTools />} />
+          <Route path="music-posters" element={<MusicPosterSelection />} />
+          <Route path="custom-album" element={<AlbumPosterBuilder />} />
+          <Route path="song-poster" element={<SongPosterSelection />} />
+          <Route path="song-poster/spotify" element={<SpotifyPosterBuilder />} />
+          <Route path="song-poster/vinyl" element={<VinylPosterBuilder />} />
+          <Route path="trend-posters" element={<TrendPostersSelection />} />
+          <Route path="trend-posters/soundwave" element={<SoundwavePosterPage navigate={(path) => window.location.href = path} />} />
+          <Route path="trend-posters/soundwave/:token" element={<SoundwavePosterPage navigate={(path) => window.location.href = path} />} />
+          <Route path="admin-portal" element={<AdminPortal />} />
+          <Route path="cart" element={<Cart />} />
+          <Route path="tokens" element={<Tokens />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="seller" element={<SellerDashboard />} />
+          <Route path="wishlist" element={<Wishlist />} />
           <Route 
             path="*" 
             element={
-              <div className="flex items-center justify-center min-h-screen bg-zinc-950 text-white font-sans">
-                <h1 className="text-4xl font-black uppercase">404 - Not Found</h1>
+              <div className="container mx-auto px-4 py-24 text-center">
+                <h1 className="text-4xl font-black italic tracking-tighter uppercase text-zinc-600">
+                  Resource Not Found
+                </h1>
               </div>
             } 
           />
