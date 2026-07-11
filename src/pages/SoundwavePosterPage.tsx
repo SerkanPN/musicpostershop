@@ -61,6 +61,8 @@ const EXTENDED_PALETTE = [
   { name: 'Forest', hex: '#003300' }
 ];
 
+const DEFAULT_POSTER_COLORS = EXTENDED_PALETTE.slice(0, 12).map(c => c.hex);
+
 const PRESETS = [
   {
     id: 'first-heartbeat',
@@ -147,7 +149,7 @@ const PRESETS = [
     label: 'Pet Memorial',
     desc: 'Immortalize your best friend’s bark, meow, or purr. Warm, earthy colors.',
     texts: {
-      tl: 'CHARLIE THE GOLDEN', tr: '2012 - 2025', title: 'HAPPY BARKS', sub: 'THE BEST BOY', b1: 'THE SOUND OF HOME', b2: 'WE WILL MISS YOU'
+      tl: 'CHARLIE THE GOLDEN', tr: '2012 - 2025', title: 'HAPPY BARKS', sub: 'THE BEST BOY', b1: 'THE SOUND of HOME', b2: 'WE WILL MISS YOU'
     },
     colors: { bg: '#fff7ed', title: '#451a03', sub: '#78350f', div: '#fef3c7', bottom: '#92400e', top: '#92400e' },
     wave: { type: 'gradient', solid: '#000000', stops: 2, grad: ['#d97706', '#92400e', '#000000', '#000000', '#000000'] }
@@ -1338,7 +1340,7 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
       const { error } = await supabase
         .from('support_tickets')
         .insert({
-          order_id: orderId || 'DEMO',
+          order_id: token,
           message: supportMessage.trim()
         });
       
@@ -1855,7 +1857,7 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
             </svg>
             <h1>Soundwave Poster</h1>
           </div>
-          <button className="back-btn" onClick={() => navigate('/claim')}>&#10229; Back</button>
+          <button className="back-btn" onClick={() => navigate('/trend-posters')}>&#10229; Back</button>
         </div>
 
         <button className={`accordion-btn${openSections.presets ? ' open' : ''}`} onClick={() => toggleAccordion('presets')}>
@@ -2152,7 +2154,7 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
             </button>
             <button className="gt-align-btn" title="Align Bottom" onClick={() => handleAlign('bottom')}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <line x1="3" y1="21" x2="21" y2="21" strokeWidth="2.5" /><rect x="8" y="11" width="3" height="8" rx="1" /><rect x="13" y="6" width="3" height="13" rx="1" />
+                <line x1="3" y1="21" x2="21" y2="21" strokeWidth="2.5" /><rect x="8" y="11" width="3" height="8" rx="1" /><rect x="13" h="6" width="13" height="3" rx="1" />
               </svg>
             </button>
             <button className="gt-align-btn" title="Distribute V" onClick={() => edDistribute('v')}>
@@ -2357,7 +2359,7 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
                 <div className="pf-row">
                   <label>Font Size</label>
                   <div className="pf-range-row">
-                    <input type="range" min="8" max="72" value={topRightFontSize} onChange={(e) => setRightFontSize(Number(e.target.value))} />
+                    <input type="range" min="8" max="72" value={topRightFontSize} onChange={(e) => setTopRightFontSize(Number(e.target.value))} />
                     <span className="pf-range-val">{topRightFontSize}px</span>
                   </div>
                 </div>
