@@ -37,6 +37,8 @@ export default function App() {
               <Route path="claim" element={<ClaimOrder />} />
               <Route path="design/:token" element={<SoundwavePosterPage navigate={(path) => window.location.href = path} />} />
               <Route path="*" element={<Navigate to="/claim" replace />} />
+              <Route path="admin-portal" element={<AdminPortal />} />
+              <Route path="admin-portal/:token" element={<AdminPortal />} />
             </>
           )}
           <Route 
