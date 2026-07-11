@@ -5,7 +5,7 @@ import TrendPostersSelection from './pages/TrendPostersSelection';
 import SoundwavePosterPage from './pages/SoundwavePosterPage';
 import ClaimOrder from './pages/ClaimOrder';
 import { useStore } from './store/useStore';
-
+import AdminPortal from './pages/AdminPortal';
 export default function App() {
   const { checkUser } = useStore();
 
