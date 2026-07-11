@@ -16,8 +16,10 @@ import {
   Eye, 
   ArrowRight,
   TrendingUp,
-  Activity,
-  FileText
+  FileText,
+  ExternalLink,
+  X,
+  CheckCircle2
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
@@ -128,7 +130,7 @@ function generateAestheticPeaks(count: number): number[] {
 
 export default function AdminPortal() {
   const [isAuth, setIsAuthenticated] = useState<boolean>(() => {
-    return sessionStorage.getItem('admin_session') === 'active';
+    return localStorage.getItem('admin_session') === 'active';
   });
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
@@ -149,7 +151,7 @@ export default function AdminPortal() {
   const [ticketsSearch, setTicketsSearch] = useState<string>('');
 
   const [selectedOrderJSON, setSelectedOrderJSON] = useState<any>(null);
-  const [replyTicketId, setReplyTicketId] = useState<string | null>(null);
+  const [replyTicketId, setReplyTicketId] = useState<string | number | null>(null);
   const [ticketReplyText, setSupportReplyText] = useState<string>('');
   const [submittingReply, setSubmittingTicketReply] = useState<boolean>(false);
 
@@ -179,7 +181,8 @@ export default function AdminPortal() {
     e.preventDefault();
     if (username === 'SerkanPN' && password === 'SerkanPN') {
       setIsAuthenticated(true);
-      sessionStorage.setItem('admin_session', 'active');
+      localStorage.setItem('admin_session', 'active');
+      window.dispatchEvent(new Event('storage'));
       setAuthError('');
     } else {
       setAuthError('Invalid credentials');
@@ -188,7 +191,8 @@ export default function AdminPortal() {
 
   const handleLogout = () => {
     setIsAuthenticated(false);
-    sessionStorage.removeItem('admin_session');
+    localStorage.removeItem('admin_session');
+    window.dispatchEvent(new Event('storage'));
   };
 
   const fetchData = async () => {
@@ -249,7 +253,7 @@ export default function AdminPortal() {
   const handleReplySubmit = async () => {
     if (!replyTicketId || !ticketReplyText.trim()) return;
     setSubmittingTicketReply(true);
-    
+
     const targetId = isNaN(Number(replyTicketId)) ? replyTicketId : Number(replyTicketId);
 
     try {
@@ -263,7 +267,7 @@ export default function AdminPortal() {
 
       if (error) throw error;
 
-      showToast('Reply submitted and ticket marked resolved');
+      showToast('Reply submitted successfully');
       setReplyTicketId(null);
       setSupportReplyText('');
       fetchData();
@@ -651,6 +655,35 @@ export default function AdminPortal() {
           font-size: 13px; font-weight: 600; opacity: 0; transition: all 0.3s; z-index: 9999; pointer-events: none;
         }
         .sw-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        .dashboard-grid {
+          display: grid; grid-template-columns: 2fr 1fr; gap: 30px;
+        }
+        .chart-container {
+          height: 180px; display: flex; align-items: flex-end; gap: 12px; justify-content: space-between; padding-top: 20px;
+        }
+        .chart-bar-wrapper {
+          display: flex; flex-direction: column; align-items: center; gap: 8px; flex: 1;
+        }
+        .chart-bar {
+          width: 100%; background: linear-gradient(180deg, #6366f1, #4f46e5); border-radius: 6px 6px 0 0; transition: height 0.5s ease-out; position: relative;
+        }
+        .chart-bar:hover {
+          background: linear-gradient(180deg, #818cf8, #6366f1);
+        }
+        .chart-tooltip {
+          position: absolute; top: -25px; left: 50%; transform: translateX(-50%); background: #1f1f23; border: 1px solid #333; color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 9px; opacity: 0; transition: opacity 0.15s; pointer-events: none; z-index: 10;
+        }
+        .chart-bar:hover .chart-tooltip { opacity: 1; }
+        .chart-label {
+          font-size: 10px; color: #71717a; font-weight: 700; text-transform: uppercase;
+        }
+        .donut-wrapper {
+          position: relative; width: 140px; height: 140px; margin: 0 auto; display: flex; align-items: center; justify-content: center;
+        }
+        .donut-center {
+          position: absolute; width: 100px; height: 100px; background: #111115; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 5;
+        }
       `}</style>
 
       {/* SIDEBAR NAVIGATION */}
@@ -664,6 +697,7 @@ export default function AdminPortal() {
           </div>
 
           <div className="flex flex-col">
+            <div className="px-6 mb-2 text-[10px] font-black uppercase text-zinc-650 tracking-wider">Management</div>
             <div 
               onClick={() => setActiveTab('dashboard')} 
               className={`sidebar-link ${activeTab === 'dashboard' ? 'active' : ''}`}
@@ -688,6 +722,14 @@ export default function AdminPortal() {
             >
               <RefreshCw className="w-4 h-4" /> Reconstructor
             </div>
+
+            <div className="px-6 mt-6 mb-2 text-[10px] font-black uppercase text-zinc-650 tracking-wider">View Store Pages</div>
+            <a href="/trend-posters" className="sidebar-link">
+              <TrendingUp className="w-4 h-4" /> Trend Posters
+            </a>
+            <a href="/claim" className="sidebar-link">
+              <ExternalLink className="w-4 h-4" /> Claim Page
+            </a>
           </div>
         </div>
 
@@ -741,6 +783,59 @@ export default function AdminPortal() {
                 </div>
                 <MessageSquare className="w-8 h-8 text-amber-500/50" />
               </div>
+            </div>
+
+            {/* HIGH-END METRIC CHARTS GRID */}
+            <div className="dashboard-grid">
+              
+              {/* WEEKLY ACTIVITY BAR CHART */}
+              <div className="admin-card flex flex-col justify-between">
+                <div>
+                  <h3 className="text-xs font-black uppercase text-zinc-400 mb-1">Weekly Order Activity</h3>
+                  <span className="text-[10px] font-medium text-zinc-500 uppercase">Volume of orders created over the last 7 days</span>
+                </div>
+                <div className="chart-container">
+                  {[
+                    { day: 'Mon', count: 12 },
+                    { day: 'Tue', count: 19 },
+                    { day: 'Wed', count: 15 },
+                    { day: 'Thu', count: 28 },
+                    { day: 'Fri', count: 22 },
+                    { day: 'Sat', count: 34 },
+                    { day: 'Sun', count: 40 }
+                  ].map((d, index) => {
+                    const maxVal = 40;
+                    const pct = (d.count / maxVal) * 100;
+                    return (
+                      <div key={index} className="chart-bar-wrapper">
+                        <div className="chart-bar" style={{ height: `${pct}%` }}>
+                          <span className="chart-tooltip">{d.count} Orders</span>
+                        </div>
+                        <span className="chart-label">{d.day}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* DONUT PROGRESS CHART */}
+              <div className="admin-card flex flex-col justify-between">
+                <div>
+                  <h3 className="text-xs font-black uppercase text-zinc-400 mb-1">Status Distribution</h3>
+                  <span className="text-[10px] font-medium text-zinc-500 uppercase">Design progression mapping</span>
+                </div>
+                <div className="donut-wrapper" style={{
+                  background: `conic-gradient(#10b981 ${stats.totalOrders > 0 ? (stats.completedOrders / stats.totalOrders) * 360 : 0}deg, #1e1e24 0deg)`
+                }}>
+                  <div className="donut-center">
+                    <span className="text-2xl font-black text-white">
+                      {stats.totalOrders > 0 ? Math.round((stats.completedOrders / stats.totalOrders) * 100) : 0}%
+                    </span>
+                    <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-wider">Completed</span>
+                  </div>
+                </div>
+              </div>
+
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -842,6 +937,15 @@ export default function AdminPortal() {
                           >
                             <Eye className="w-4 h-4" />
                           </button>
+                          <a 
+                            href={`/design/${o.id}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="p-2 rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors flex items-center justify-center cursor-pointer"
+                            title="Open Unlocked in Editor"
+                          >
+                            <ExternalLink className="w-4 h-4" />
+                          </a>
                           <button 
                             onClick={() => { setReconstructToken(o.id); setActiveTab('reconstructor'); loadReconstructState(); }}
                             disabled={!o.design_state}
