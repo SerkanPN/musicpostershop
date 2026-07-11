@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import * as fabric from 'fabric';
 import jsPDF from 'jspdf';
 import { AlertTriangle, Lock, MessageCircle, X } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 const GOOGLE_FONTS = [
   "Inter", "Montserrat", "Roboto", "Open Sans", "Oswald", "Lato", "Poppins", 
@@ -313,6 +314,9 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
 
   const isRebuildingRef = useRef<boolean>(false);
   const rawAudioDataRef = useRef<Float32Array | null>(null);
+
+  const queryParams = new URLSearchParams(window.location.search);
+  const orderId = queryParams.get('order') || '';
 
   const [isLocked, setIsLocked] = useState<boolean>(false);
   const [showReviewModal, setShowReviewModal] = useState<boolean>(false);
@@ -646,6 +650,60 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
       canvas.dispose();
     };
   }, [isLocked]);
+
+  useEffect(() => {
+    if (!orderId || orderId === 'DEMO123') return;
+    const checkLockStatus = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('etsy_orders')
+          .select('status, design_state')
+          .eq('order_id', orderId)
+          .single();
+
+        if (!error && data) {
+          if (data.status === 'completed') {
+            setIsLocked(true);
+            if (data.design_state) {
+              const ds = data.design_state;
+              setCanvasSize(ds.canvasSize || '30x40');
+              setOrientation(ds.orientation || 'landscape');
+              setBgColor(ds.bgColor || '#fbfbfb');
+              setTopLeftText(ds.topLeftText || '');
+              setTopLeftColor(ds.topLeftColor || '#000000');
+              setTopRightText(ds.topRightText || '');
+              setTopRightColor(ds.topRightColor || '#000000');
+              setMainTitleText(ds.mainTitleText || '');
+              setMainTitleColor(ds.mainTitleColor || '#000000');
+              setSubTitleText(ds.subTitleText || '');
+              setSubTitleColor(ds.subTitleColor || '#333333');
+              setDividerColor(ds.dividerColor || '#999999');
+              setBottom1Text(ds.bottom1Text || '');
+              setBottom1Color(ds.bottom1Color || '#333333');
+              setBottom2Text(ds.bottom2Text || '');
+              setBottom2Color(ds.bottom2Color || '#333333');
+              setWaveMode(ds.waveMode || 'random');
+              setWaveFillType(ds.waveFillType || 'gradient');
+              setWaveSolidColor(ds.waveSolidColor || '#008000');
+              setWaveGradientStops(ds.waveGradientStops || 3);
+              setWaveGradientColors(ds.waveGradientColors || []);
+              setWaveGradientAngle(ds.waveGradientAngle || 0);
+              setWaveDensity(ds.waveDensity || 240);
+              setWaveThickness(ds.waveThickness || 1.5);
+              setWaveHeightScale(ds.waveHeightScale || 50);
+              setWaveWidthScale(ds.waveWidthScale || 80);
+              setShowQR(ds.showQR || false);
+              setQrLink(ds.qrLink || 'https://musicposters.shop');
+              setQrSize(ds.qrSize || 25);
+            }
+          }
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    checkLockStatus();
+  }, [orderId]);
 
   useEffect(() => {
     applyDynamicLayout(fabricRef.current, containerDims, showQR, qrSize);
@@ -1201,6 +1259,34 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
       URL.revokeObjectURL(url);
     }
 
+    const designStateJSON = {
+      canvasSize, orientation, bgColor,
+      topLeftText, topLeftColor, topLeftFontFamily, topLeftFontSize, topLeftCharSpacing, topLeftFontWeight, topLeftFontStyle,
+      topRightText, topRightColor, topRightFontFamily, topRightFontSize, topRightCharSpacing, topRightFontWeight, topRightFontStyle,
+      mainTitleText, mainTitleColor, mainTitleFontFamily, mainTitleFontSize, mainTitleCharSpacing, mainTitleFontWeight, mainTitleFontStyle,
+      subTitleText, subTitleColor, subTitleFontFamily, subTitleFontSize, subTitleCharSpacing, subTitleFontWeight, subTitleFontStyle,
+      dividerColor,
+      bottom1Text, bottom1Color, bottom1FontFamily, bottom1FontSize, bottom1CharSpacing, bottom1FontWeight, bottom1FontStyle,
+      bottom2Text, bottom2Color, bottom2FontFamily, bottom2FontSize, bottom2CharSpacing, bottom2FontWeight, bottom2FontStyle,
+      waveMode, waveFillType, waveSolidColor, waveGradientStops, waveGradientColors, waveGradientAngle, waveDensity, waveThickness, waveHeightScale, waveWidthScale,
+      showQR, qrLink, qrSize
+    };
+
+    if (orderId && orderId !== 'DEMO123') {
+      try {
+        await supabase
+          .from('etsy_orders')
+          .update({
+            status: 'completed',
+            design_state: designStateJSON,
+            download_started_at: new Date().toISOString()
+          })
+          .eq('order_id', orderId);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
     setShowReviewModal(false);
     setIsLocked(true);
   };
@@ -1376,13 +1462,6 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
         .soundwave-poster-page .accordion-btn.open .arrow { transform: rotate(180deg); }
         .soundwave-poster-page .accordion-content { display: none; padding: 14px 0; border-bottom: 1px solid var(--panel-border); }
         .soundwave-poster-page .accordion-content.open { display: block; }
-
-        .soundwave-poster-page .sw-toast {
-          position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
-          background: var(--accent); color: #000; padding: 10px 20px; border-radius: 24px;
-          font-size: 13px; font-weight: 600; opacity: 0; transition: all 0.3s; z-index: 9999; pointer-events: none;
-        }
-        .soundwave-poster-page .sw-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
         .soundwave-poster-page #props-panel {
           width: 260px; min-width: 260px; background: var(--panel-bg); border-left: 1px solid var(--panel-border);
@@ -1570,6 +1649,12 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
           color: #fca5a5; padding: 16px 24px; border-radius: 16px; display: flex; align-items: center; justify-content: space-between;
           max-width: 800px; margin: 0 auto 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 100%;
         }
+        .sw-toast {
+          position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+          background: var(--accent); color: #000; padding: 10px 20px; border-radius: 24px;
+          font-size: 13px; font-weight: 600; opacity: 0; transition: all 0.3s; z-index: 9999; pointer-events: none;
+        }
+        .sw-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
       `}</style>
 
       {showReviewModal && (
@@ -2295,7 +2380,7 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
         </div>
       </div>
 
-      <div className={`sw-toast ${toast ? 'show' : ''}`}>&#10003; {toast}</div>
+      <div className="sw-toast">Done</div>
     </div>
   );
 }
