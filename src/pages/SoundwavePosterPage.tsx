@@ -1681,9 +1681,10 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
         }
 
         .readonly-banner {
-          background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3);
+          position: fixed; top: 24px; left: 50%; transform: translateX(-50%);
+          background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3);
           color: #fca5a5; padding: 16px 24px; border-radius: 16px; display: flex; align-items: center; justify-content: space-between;
-          max-width: 800px; margin: 0 auto 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 100%;
+          max-width: 800px; width: 90%; box-shadow: 0 10px 30px rgba(0,0,0,0.8); z-index: 1000; backdrop-filter: blur(10px);
         }
         .sw-toast {
           position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
@@ -1692,6 +1693,20 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
         }
         .sw-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
       `}</style>
+
+      {isLocked && (
+        <div className="readonly-banner">
+          <div>
+            <div className="flex items-center gap-2 text-red-200 font-bold mb-1">
+              <Lock className="w-4 h-4" /> Design Locked (Read-Only Mode)
+            </div>
+            <p className="text-xs text-red-300/80">Your design has been finalized. If you made a mistake, please contact support.</p>
+          </div>
+          <button className="flex items-center gap-2 bg-red-950 border border-red-900 text-red-200 px-4 py-2 rounded-xl text-xs font-bold hover:bg-red-900 transition-colors cursor-pointer">
+            <MessageCircle className="w-4 h-4" /> Open Support Ticket
+          </button>
+        </div>
+      )}
 
       {showReviewModal && (
         <div className="review-modal-overlay">
@@ -1761,7 +1776,7 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
             </svg>
             <h1>Soundwave Poster</h1>
           </div>
-          <button className="back-btn" onClick={() => navigate('/trend-posters')}>&#10229; Back</button>
+          <button className="back-btn" onClick={() => navigate('/claim')}>&#10229; Back</button>
         </div>
 
         <button className={`accordion-btn${openSections.presets ? ' open' : ''}`} onClick={() => toggleAccordion('presets')}>
@@ -1972,20 +1987,6 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
       </div>
 
       <div id="canvas-area" ref={containerRef} className={isLocked ? 'locked-mode' : ''}>
-        
-        {isLocked && (
-          <div className="readonly-banner">
-            <div>
-              <div className="flex items-center gap-2 text-red-200 font-bold mb-1">
-                <Lock className="w-4 h-4" /> Design Locked (Read-Only Mode)
-              </div>
-              <p className="text-xs text-red-300/80">Your design has been finalized. If you made a mistake, please contact support.</p>
-            </div>
-            <button className="flex items-center gap-2 bg-red-950 border border-red-900 text-red-200 px-4 py-2 rounded-xl text-xs font-bold hover:bg-red-900 transition-colors cursor-pointer">
-              <MessageCircle className="w-4 h-4" /> Open Support Ticket
-            </button>
-          </div>
-        )}
 
         {!isLocked && (
           <div className="canvas-header-actions">
@@ -2038,7 +2039,7 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
             </button>
             <button className="gt-align-btn" title="Align Right" onClick={() => handleAlign('right')}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <line x1="21" y1="3" x2="21" y2="21" strokeWidth="2.5" /><rect x="11" y="8" width="3" height="8" rx="1" /><rect x="6" y="13" width="13" height="3" rx="1" />
+                <line x1="21" y1="3" x2="21" y2="21" strokeWidth="2.5" /><rect x="11" y="8" width="8" height="3" rx="1" /><rect x="6" y="13" width="13" height="3" rx="1" />
               </svg>
             </button>
             <button className="gt-align-btn" title="Distribute H" onClick={() => edDistribute('h')}>
@@ -2053,7 +2054,7 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
             </button>
             <button className="gt-align-btn" title="Center Y" onClick={() => handleAlign('cy')}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <line x1="3" y1="12" x2="21" y2="12" strokeWidth="2.5" /><rect x="8" y="4" width="3" height="16" rx="1" /><rect x="13" h="6" width="3" height="12" rx="1" />
+                <line x1="3" y1="12" x2="21" y2="12" strokeWidth="2.5" /><rect x="8" y="4" width="3" height="16" rx="1" /><rect x="13" y="6" width="3" height="12" rx="1" />
               </svg>
             </button>
             <button className="gt-align-btn" title="Align Bottom" onClick={() => handleAlign('bottom')}>
