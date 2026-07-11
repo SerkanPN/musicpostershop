@@ -10,7 +10,7 @@ interface AdminRouteProps {
   children: React.ReactNode;
 }
 
-function AdminRoute({ children }: AdminRouteProps) {
+function HomeRoute({ children }: AdminRouteProps) {
   const isAuth = localStorage.getItem('admin_auth') === 'true';
   const params = new URLSearchParams(window.location.search);
   
@@ -19,11 +19,11 @@ function AdminRoute({ children }: AdminRouteProps) {
     return <>{children}</>;
   }
   
-  if (!isAuth) {
-    return <Navigate to="/claim" replace />;
+  if (isAuth) {
+    return <>{children}</>;
   }
   
-  return <>{children}</>;
+  return <Navigate to="/claim" replace />;
 }
 
 export default function App() {
@@ -41,14 +41,16 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Layout />}>
-          <Route index element={<AdminRoute><TrendPostersSelection /></AdminRoute>} />
-          <Route path="trend-posters" element={<AdminRoute><TrendPostersSelection /></AdminRoute>} />
-          <Route path="design/:token" element={<SoundwavePosterPage navigate={(path) => window.location.href = path} />} />
+          <Route index element={<HomeRoute><TrendPostersSelection /></HomeRoute>} />
+          <Route path="trend-posters" element={<HomeRoute><TrendPostersSelection /></HomeRoute>} />
+          
+          <Route path="editor" element={<SoundwavePosterPage navigate={(path) => window.location.href = path} />} />
           <Route path="claim" element={<ClaimOrder />} />
+          
           <Route 
             path="*" 
             element={
-              <div className="flex items-center justify-center min-h-screen bg-zinc-950 text-white">
+              <div className="flex items-center justify-center min-h-screen bg-zinc-950 text-white font-sans">
                 <h1 className="text-4xl font-black uppercase">404 - Not Found</h1>
               </div>
             } 
