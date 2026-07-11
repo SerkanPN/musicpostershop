@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Layout } from './components/Layout';
 
@@ -25,6 +25,7 @@ import { useStore } from './store/useStore';
 
 export default function App() {
   const { checkUser } = useStore();
+  const [isAdminSubdomain, setIsAdminSubdomain] = useState<boolean>(false);
 
   useEffect(() => {
     try {
@@ -32,42 +33,55 @@ export default function App() {
     } catch (error) {
       console.error(error);
     }
+
+    const hostname = window.location.hostname;
+    if (
+      hostname.startsWith('serkan1881.musicposter.shop') || 
+      hostname.startsWith('serkan1881.musicposters.shop') ||
+      hostname.startsWith('serkan1881.localhost')
+    ) {
+      setIsAdminSubdomain(true);
+    }
   }, [checkUser]);
 
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Layout />}>
-          <Route index element={<ClaimOrder />} />
-          <Route path="shop" element={<Shop />} />
-          <Route path="product/:slug" element={<ProductDetail />} />
-          <Route path="special" element={<SpecialForRoom />} />
-          <Route path="lab" element={<HDTools />} />
-          <Route path="music-posters" element={<MusicPosterSelection />} />
-          <Route path="custom-album" element={<AlbumPosterBuilder />} />
-          <Route path="song-poster" element={<SongPosterSelection />} />
-          <Route path="song-poster/spotify" element={<SpotifyPosterBuilder />} />
-          <Route path="song-poster/vinyl" element={<VinylPosterBuilder />} />
-          <Route path="trend-posters" element={<TrendPostersSelection />} />
-          <Route path="trend-posters/soundwave" element={<SoundwavePosterPage navigate={(path) => window.location.href = path} />} />
-          <Route path="trend-posters/soundwave/:token" element={<SoundwavePosterPage navigate={(path) => window.location.href = path} />} />
-          <Route path="admin-portal" element={<AdminPortal />} />
-          <Route path="cart" element={<Cart />} />
-          <Route path="tokens" element={<Tokens />} />
-          <Route path="profile" element={<Profile />} />
-          <Route path="seller" element={<SellerDashboard />} />
-          <Route path="wishlist" element={<Wishlist />} />
-          <Route 
-            path="*" 
-            element={
-              <div className="container mx-auto px-4 py-24 text-center">
-                <h1 className="text-4xl font-black italic tracking-tighter uppercase text-zinc-600">
-                  Resource Not Found
-                </h1>
-              </div>
-            } 
-          />
-        </Route>
+        {isAdminSubdomain ? (
+          <Route path="*" element={<AdminPortal />} />
+        ) : (
+          <Route path="/" element={<Layout />}>
+            <Route index element={<ClaimOrder />} />
+            <Route path="shop" element={<Shop />} />
+            <Route path="product/:slug" element={<ProductDetail />} />
+            <Route path="special" element={<SpecialForRoom />} />
+            <Route path="lab" element={<HDTools />} />
+            <Route path="music-posters" element={<MusicPosterSelection />} />
+            <Route path="custom-album" element={<AlbumPosterBuilder />} />
+            <Route path="song-poster" element={<SongPosterSelection />} />
+            <Route path="song-poster/spotify" element={<SpotifyPosterBuilder />} />
+            <Route path="song-poster/vinyl" element={<VinylPosterBuilder />} />
+            <Route path="trend-posters" element={<TrendPostersSelection />} />
+            <Route path="trend-posters/soundwave" element={<SoundwavePosterPage navigate={(path) => window.location.href = path} />} />
+            <Route path="trend-posters/soundwave/:token" element={<SoundwavePosterPage navigate={(path) => window.location.href = path} />} />
+            <Route path="admin-portal" element={<AdminPortal />} />
+            <Route path="cart" element={<Cart />} />
+            <Route path="tokens" element={<Tokens />} />
+            <Route path="profile" element={<Profile />} />
+            <Route path="seller" element={<SellerDashboard />} />
+            <Route path="wishlist" element={<Wishlist />} />
+            <Route 
+              path="*" 
+              element={
+                <div className="container mx-auto px-4 py-24 text-center">
+                  <h1 className="text-4xl font-black italic tracking-tighter uppercase text-zinc-600">
+                    Resource Not Found
+                  </h1>
+                </div>
+              } 
+            />
+          </Route>
+        )}
       </Routes>
     </BrowserRouter>
   );
