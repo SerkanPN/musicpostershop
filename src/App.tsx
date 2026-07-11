@@ -6,6 +6,7 @@ import SoundwavePosterPage from './pages/SoundwavePosterPage';
 import ClaimOrder from './pages/ClaimOrder';
 import { useStore } from './store/useStore';
 import AdminPortal from './pages/AdminPortal';
+
 export default function App() {
   const { checkUser } = useStore();
 
@@ -18,7 +19,7 @@ export default function App() {
   }, [checkUser]);
 
   const hostname = window.location.hostname;
-  const isAdminDomain = hostname.startsWith('serkan1881.') || hostname === 'localhost';
+  const isAdminDomain = hostname.startsWith('serkan1881.');
 
   return (
     <BrowserRouter>
@@ -26,29 +27,25 @@ export default function App() {
         <Route path="/" element={<Layout />}>
           {isAdminDomain ? (
             <>
-              <Route index element={<TrendPostersSelection />} />
+              <Route index element={<AdminPortal />} />
+              <Route path="admin-portal" element={<AdminPortal />} />
+              <Route path="admin-portal/:token" element={<AdminPortal />} />
               <Route path="trend-posters" element={<TrendPostersSelection />} />
+              <Route path="trend-posters/soundwave" element={<SoundwavePosterPage navigate={(path) => window.location.href = path} />} />
               <Route path="design/:token" element={<SoundwavePosterPage navigate={(path) => window.location.href = path} />} />
               <Route path="claim" element={<ClaimOrder />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
             </>
           ) : (
             <>
               <Route index element={<Navigate to="/claim" replace />} />
               <Route path="claim" element={<ClaimOrder />} />
               <Route path="design/:token" element={<SoundwavePosterPage navigate={(path) => window.location.href = path} />} />
+              <Route path="trend-posters" element={<TrendPostersSelection />} />
+              <Route path="trend-posters/soundwave" element={<SoundwavePosterPage navigate={(path) => window.location.href = path} />} />
               <Route path="*" element={<Navigate to="/claim" replace />} />
-              <Route path="admin-portal" element={<AdminPortal />} />
-              <Route path="admin-portal/:token" element={<AdminPortal />} />
             </>
           )}
-          <Route 
-            path="*" 
-            element={
-              <div className="flex items-center justify-center min-h-screen bg-zinc-950 text-white font-sans">
-                <h1 className="text-4xl font-black uppercase">404 - Not Found</h1>
-              </div>
-            } 
-          />
         </Route>
       </Routes>
     </BrowserRouter>
