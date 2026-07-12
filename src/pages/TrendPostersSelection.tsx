@@ -1,5 +1,20 @@
 import { Link } from 'react-router-dom';
-import { Activity, AlignLeft, MapPin, ScrollText, Star, Mic, FileText, Camera } from 'lucide-react';
+import { 
+  Activity, 
+  AlignLeft, 
+  MapPin, 
+  ScrollText, 
+  Star, 
+  Mic, 
+  FileText, 
+  Camera,
+  Compass,
+  Palette,
+  Newspaper,
+  Heart,
+  Home,
+  Baby
+} from 'lucide-react';
 
 export default function TrendPostersSelection() {
   const templates = [
@@ -64,6 +79,54 @@ export default function TrendPostersSelection() {
       title: 'Polaroid Gallery',
       desc: 'Photo collage templates styled like vintage polaroid films with captions.',
       icon: Camera,
+      path: '#',
+      active: false
+    },
+    {
+      id: 'patent',
+      title: 'Patent & Blueprint',
+      desc: 'Technical schematics and patent blueprints of iconic cars, objects, or instruments.',
+      icon: Compass,
+      path: '#',
+      active: false
+    },
+    {
+      id: 'pantone',
+      title: 'Pantone Color Swatch',
+      desc: 'Minimalist color palette swatches analyzed and extracted directly from your photos.',
+      icon: Palette,
+      path: '#',
+      active: false
+    },
+    {
+      id: 'newspaper',
+      title: 'Newspaper Front Page',
+      desc: 'Vintage front-page newspapers customized with your headlines, articles, and photos.',
+      icon: Newspaper,
+      path: '#',
+      active: false
+    },
+    {
+      id: 'heart',
+      title: 'Heart Typography',
+      desc: 'Transform wedding vows, letters, or song lyrics into a beautiful heart-shaped layout.',
+      icon: Heart,
+      path: '#',
+      active: false
+    },
+    {
+      id: 'airbnb',
+      title: 'AirBNB Welcome Guide',
+      desc: 'Beautiful check-out guidelines, wifi details, and custom rules for vacation rentals.',
+      icon: Home,
+      path: '#',
+      active: false
+    },
+    {
+      id: 'toddler',
+      title: 'Toddler Milestone Panel',
+      desc: 'A charming growth record tracking height, weight, first words, and favorite toys.',
+      icon: Baby,
       path: '#',
       active: false
     }
