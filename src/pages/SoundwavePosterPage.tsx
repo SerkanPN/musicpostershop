@@ -105,6 +105,16 @@ const PRESETS = [
     wave: { type: 'gradient', solid: '#000000', stops: 2, grad: ['#2dd4bf', '#0ea5e9', '#000000', '#000000', '#000000'] }
   },
   {
+    id: 'welcome-home-adoption',
+    label: 'Welcome Home (Adoption)',
+    desc: 'The magical milestone moment of welcoming a new child to their forever home.',
+    texts: {
+      tl: 'THE JACKSON FAMILY', tr: 'ADOPTION DAY', title: 'WELCOME HOME', sub: '"YOU ARE FINALLY HERE"', b1: 'FOREVER AND ALWAYS', b2: '18.11.2024'
+    },
+    colors: { bg: '#fafaf9', title: '#1c1917', sub: '#44403c', div: '#e7e5e4', bottom: '#292524', top: '#292524' },
+    wave: { type: 'gradient', solid: '#000000', stops: 2, grad: ['#818cf8', '#a855f7', '#000000', '#000000', '#000000'] }
+  },
+  {
     id: 'proposal',
     label: 'The Proposal',
     desc: 'Turn a hidden voice recording of a marriage proposal into a timeless piece of art.',
@@ -125,6 +135,16 @@ const PRESETS = [
     wave: { type: 'gradient', solid: '#000000', stops: 3, grad: ['#fcd34d', '#d97706', '#b45309', '#000000', '#000000'] }
   },
   {
+    id: 'wedding-vows',
+    label: 'Wedding Vows',
+    desc: 'Keep the sacred promises spoken on your wedding day forever. A highly emotional, clean elegant design.',
+    texts: {
+      tl: 'EMILY & MICHAEL', tr: 'THE CEREMONY', title: 'THE WEDDING VOWS', sub: '"I PROMISE TO LOVE YOU FOREVER"', b1: 'OUR FOREVER DAY', b2: '12.06.2025'
+    },
+    colors: { bg: '#fffdfa', title: '#1c1917', sub: '#44403c', div: '#e7e5e4', bottom: '#292524', top: '#292524' },
+    wave: { type: 'solid', solid: '#d97706', stops: 2, grad: ['#000000', '#000000', '#000000', '#000000', '#000000'] }
+  },
+  {
     id: 'i-love-you',
     label: 'I Love You Message',
     desc: 'Perfect for long-distance relationships or simple affectionate gestures.',
@@ -135,6 +155,46 @@ const PRESETS = [
     wave: { type: 'gradient', solid: '#000000', stops: 2, grad: ['#818cf8', '#c084fc', '#000000', '#000000', '#000000'] }
   },
   {
+    id: 'late-night-memo',
+    label: 'Late Night Memo',
+    desc: 'Keep the voice messages of a long-distance relationship alive. Cozy violet, cosmic look.',
+    texts: {
+      tl: 'LONDON (UK)', tr: 'TOKYO (JP)', title: 'LATE NIGHT MEMO', sub: '"I MISS YOUR VOICE"', b1: 'DISTANCE MEANS NOTHING', b2: '9,500 KM APART'
+    },
+    colors: { bg: '#faf5ff', title: '#581c87', sub: '#701a75', div: '#f3e8ff', bottom: '#6b21a8', top: '#6b21a8' },
+    wave: { type: 'gradient', solid: '#000000', stops: 3, grad: ['#c084fc', '#f472b6', '#818cf8', '#000000', '#000000'] }
+  },
+  {
+    id: 'apology-memo',
+    label: 'Apology Voice Memo',
+    desc: 'A gentle design for emotional messages, written straight from the heart.',
+    texts: {
+      tl: 'FROM MATT', tr: 'TO LILY', title: 'FORGIVE ME', sub: 'A SINCERE APOLOGY', b1: 'WORDS FROM THE HEART', b2: 'PLEASE HEAR ME OUT'
+    },
+    colors: { bg: '#fffafb', title: '#9f1239', sub: '#be123c', div: '#ffe4e6', bottom: '#e11d48', top: '#e11d48' },
+    wave: { type: 'gradient', solid: '#000000', stops: 2, grad: ['#fda4af', '#f43f5e', '#000000', '#000000', '#000000'] }
+  },
+  {
+    id: 'mothers-day',
+    label: "Mother's Day Message",
+    desc: "A lovely pastel pink design to capture a heartfelt audio message recorded for mom.",
+    texts: {
+      tl: 'FAMILY ARCHIVE', tr: 'MAY 2025', title: 'BEST MOM EVER', sub: 'A MESSAGE FROM YOUR CHILDREN', b1: 'WE LOVE YOU TO THE MOON', b2: 'FOREVER & ALWAYS'
+    },
+    colors: { bg: '#fdf2f8', title: '#831843', sub: '#9d174d', div: '#fbcfe8', bottom: '#9d174d', top: '#9d174d' },
+    wave: { type: 'gradient', solid: '#000000', stops: 2, grad: ['#f472b6', '#fb7185', '#000000', '#000000', '#000000'] }
+  },
+  {
+    id: 'fathers-day',
+    label: "Father's Day Message",
+    desc: "A deep navy and golden theme to celebrate your real-life hero.",
+    texts: {
+      tl: 'FAMILY ARCHIVE', tr: 'JUNE 2025', title: 'OUR REAL HERO', sub: '"THANK YOU FOR EVERYTHING, DAD"', b1: 'COOPERS SQUAD', b2: 'HAPPY FATHER\'S DAY'
+    },
+    colors: { bg: '#f8fafc', title: '#0f172a', sub: '#1e293b', div: '#e2e8f0', bottom: '#334155', top: '#334155' },
+    wave: { type: 'gradient', solid: '#000000', stops: 2, grad: ['#f59e0b', '#0f172a', '#000000', '#000000', '#000000'] }
+  },
+  {
     id: 'memorial',
     label: 'In Loving Memory',
     desc: 'A solemn and respectful tribute. Preserve an old voicemail or video recording.',
@@ -143,6 +203,16 @@ const PRESETS = [
     },
     colors: { bg: '#f4f4f5', title: '#171717', sub: '#404040', div: '#d4d4d8', bottom: '#52525b', top: '#52525b' },
     wave: { type: 'solid', solid: '#27272a', stops: 2, grad: ['#000000', '#000000', '#000000', '#000000', '#000000'] }
+  },
+  {
+    id: 'grandmas-voicemail',
+    label: "Grandma's Voicemail",
+    desc: "A gentle, vintage sepia look designed to preserve a saved telephone recording of your grandmother.",
+    texts: {
+      tl: 'GRANDMA ELEANOR', tr: '1938 - 2024', title: '"HELLO MY DEAR"', sub: 'A SAVED TELEPHONE MESSAGE', b1: 'IN LOVING MEMORY', b2: 'ALWAYS IN OUR HEARTS'
+    },
+    colors: { bg: '#fdfbf7', title: '#451a03', sub: '#78350f', div: '#fed7aa', bottom: '#92400e', top: '#92400e' },
+    wave: { type: 'solid', solid: '#b45309', stops: 2, grad: ['#000000', '#000000', '#000000', '#000000', '#000000'] }
   },
   {
     id: 'pet-memorial',
@@ -213,9 +283,58 @@ const PRESETS = [
     },
     colors: { bg: '#000000', title: '#fef08a', sub: '#fde047', div: '#27272a', bottom: '#fde047', top: '#fde047' },
     wave: { type: 'solid', solid: '#eab308', stops: 2, grad: ['#000000', '#000000', '#000000', '#000000', '#000000'] }
+  },
+  {
+    id: 'car-engine-roar',
+    label: 'Car Engine Roar',
+    desc: 'The raw mechanical roar of an engine. Perfect for car enthusiasts, exhaust clips, and dyno runs.',
+    texts: {
+      tl: 'V8 TWIN TURBO', tr: '507 HP', title: 'THE ENGINE ROAR', sub: 'COLD START & EXHAUST NOTE', b1: 'PORSCHE 911 CARRERA S', b2: 'PLK 34 REG 123'
+    },
+    colors: { bg: '#0b0f19', title: '#f1f5f9', sub: '#94a3b8', div: '#334155', bottom: '#cbd5e1', top: '#cbd5e1' },
+    wave: { type: 'gradient', solid: '#000000', stops: 2, grad: ['#e2e8f0', '#ef4444', '#000000', '#000000', '#000000'] }
+  },
+  {
+    id: 'esports-ggwp',
+    label: 'Esports "GG WP" Call',
+    desc: 'For gamers and esports fans. Immortalize an iconic match-winning caster shoutout or a funny voice chat highlight.',
+    texts: {
+      tl: 'DISCORD AUDIO', tr: 'LEVEL 99', title: '"GG WP"', sub: 'THE WINNING MOMENT', b1: 'LEAGUE OF LEGENDS', b2: 'EUW SERVER'
+    },
+    colors: { bg: '#020617', title: '#38bdf8', sub: '#0ea5e9', div: '#1e293b', bottom: '#7dd3fc', top: '#7dd3fc' },
+    wave: { type: 'gradient', solid: '#000000', stops: 3, grad: ['#818cf8', '#c084fc', '#4f46e5', '#000000', '#000000'] }
+  },
+  {
+    id: 'retirement-farewell',
+    label: 'Retirement Farewell',
+    desc: 'Preserve corporate appreciation and collective warm wishes from colleagues.',
+    texts: {
+      tl: 'SALES TEAM', tr: '30 YEARS OF SERVICE', title: 'HAPPY RETIREMENT', sub: '"THANK YOU FOR BEING A LEGEND"', b1: 'ACME CORPORATION', b2: 'CLASS OF 2024'
+    },
+    colors: { bg: '#f8fafc', title: '#0f172a', sub: '#334155', div: '#e2e8f0', bottom: '#475569', top: '#475569' },
+    wave: { type: 'gradient', solid: '#000000', stops: 2, grad: ['#3b82f6', '#1e3a8a', '#000000', '#000000', '#000000'] }
+  },
+  {
+    id: 'military-deployment',
+    label: 'Military Deployment',
+    desc: 'Honor your loved one’s service. Perfect for deployment voicemails or military unit recordings.',
+    texts: {
+      tl: 'UNIT 101', tr: 'DEPLOYMENT 2024', title: 'GREETINGS FROM AFAR', sub: '"I\'LL BE HOME SOON"', b1: 'HEROES WORK HERE', b2: 'PROTECT & SERVE'
+    },
+    colors: { bg: '#f4f6f0', title: '#1e2515', sub: '#3f4e2b', div: '#d2d9c4', bottom: '#2f3b20', top: '#2f3b20' },
+    wave: { type: 'gradient', solid: '#000000', stops: 2, grad: ['#4d6232', '#1b250f', '#000000', '#000000', '#000000'] }
+  },
+  {
+    id: 'poem-recital',
+    label: 'Poem Recital',
+    desc: 'Transform written poetry readings and literature clips into structural soundwave art.',
+    texts: {
+      tl: 'POETRY SESSION', tr: '1958', title: 'ÜVERCİNKA', sub: 'RECITED BY CEMAL SÜREYA', b1: 'MODERN TURKISH POETRY', b2: 'THE LITERARY COLLECTION'
+    },
+    colors: { bg: '#fcfcfc', title: '#111111', sub: '#444444', div: '#e5e5e5', bottom: '#111111', top: '#111111' },
+    wave: { type: 'solid', solid: '#222222', stops: 2, grad: ['#000000', '#000000', '#000000', '#000000', '#000000'] }
   }
 ];
-
 const DPI = 300;
 const BASE_MAX_W = 600;
 const BASE_MAX_H = 800;
@@ -1937,22 +2056,36 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
                 <option value="first-cry">First Cry</option>
                 <option value="first-word">First Word</option>
                 <option value="first-laugh">First Laugh</option>
+                <option value="mothers-day">Mother's Day Message</option>
+                <option value="fathers-day">Father's Day Message</option>
+                <option value="welcome-home-adoption">Welcome Home (Adoption)</option>
               </optgroup>
               <optgroup label="Love & Wedding">
                 <option value="proposal">The Proposal</option>
                 <option value="wedding-dance">First Dance</option>
+                <option value="wedding-vows">Wedding Vows</option>
                 <option value="i-love-you">I Love You Message</option>
+                <option value="late-night-memo">Late Night Memo</option>
+                <option value="apology-memo">Apology Voice Memo</option>
               </optgroup>
               <optgroup label="Memories & Tributes">
                 <option value="memorial">In Loving Memory</option>
+                <option value="grandmas-voicemail">Grandma's Voicemail</option>
                 <option value="pet-memorial">Pet Memorial</option>
               </optgroup>
               <optgroup label="Music & Pop Culture">
                 <option value="song-chorus">Iconic Song Chorus</option>
                 <option value="movie-quote">Movie Quote</option>
+                <option value="poem-recital">Poem Recital</option>
+              </optgroup>
+              <optgroup label="Hobbies & Passions">
+                <option value="car-engine-roar">Car Engine Roar</option>
+                <option value="esports-ggwp">Esports "GG WP" Call</option>
               </optgroup>
               <optgroup label="Milestones & Other">
                 <option value="graduation">Graduation Speech</option>
+                <option value="retirement-farewell">Retirement Farewell</option>
+                <option value="military-deployment">Military Deployment</option>
                 <option value="inside-joke">Inside Joke / Laughter</option>
                 <option value="time-capsule">Time Capsule</option>
                 <option value="space-voyager">Space Voyager</option>
