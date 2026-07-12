@@ -27,108 +27,108 @@ export default function TrendPostersSelection() {
       active: true
     },
     {
+      id: 'receipt',
+      title: 'Vintage Receipt',
+      desc: 'Turn memories, playlists, or marathon stats into retro supermarket receipts.',
+      icon: ScrollText,
+      path: '/trend-posters/receipt',
+      active: true
+    },
+    {
       id: 'typography',
       title: 'Modern Typography',
       desc: 'Swiss-style minimalist text layouts for quotes and personal manifestos.',
       icon: AlignLeft,
-      path: '#',
-      active: false
+      path: '/trend-posters/typography',
+      active: true
     },
     {
       id: 'coordinates',
       title: 'Map Coordinates',
       desc: 'Minimalist map pins and precise GPS coordinates of your special locations.',
       icon: MapPin,
-      path: '#',
-      active: false
-    },
-    {
-      id: 'receipt',
-      title: 'Vintage Receipt',
-      desc: 'Turn memories, playlists, or marathon stats into retro supermarket receipts.',
-      icon: ScrollText,
-      path: '#',
-      active: false
+      path: '/trend-posters/coordinates',
+      active: true
     },
     {
       id: 'starmap',
       title: 'Astronomy Star Map',
       desc: 'Accurate constellations of the night sky based on a specific date and place.',
       icon: Star,
-      path: '#',
-      active: false
+      path: '/trend-posters/starmap',
+      active: true
     },
     {
       id: 'cassette',
       title: 'Retro Cassette Tape',
       desc: 'Nostalgic 80s mixtape designs customized with your own text and colors.',
       icon: Mic,
-      path: '#',
-      active: false
+      path: '/trend-posters/cassette',
+      active: true
     },
     {
       id: 'typewriter',
       title: 'Typewriter Letter',
       desc: 'Classic typed letters on aged paper backgrounds for vows and poetry.',
       icon: FileText,
-      path: '#',
-      active: false
+      path: '/trend-posters/typewriter',
+      active: true
     },
     {
       id: 'polaroid',
       title: 'Polaroid Gallery',
       desc: 'Photo collage templates styled like vintage polaroid films with captions.',
       icon: Camera,
-      path: '#',
-      active: false
+      path: '/trend-posters/polaroid',
+      active: true
     },
     {
       id: 'patent',
       title: 'Patent & Blueprint',
       desc: 'Technical schematics and patent blueprints of iconic cars, objects, or instruments.',
       icon: Compass,
-      path: '#',
-      active: false
+      path: '/trend-posters/patent',
+      active: true
     },
     {
       id: 'pantone',
       title: 'Pantone Color Swatch',
       desc: 'Minimalist color palette swatches analyzed and extracted directly from your photos.',
       icon: Palette,
-      path: '#',
-      active: false
+      path: '/trend-posters/pantone',
+      active: true
     },
     {
       id: 'newspaper',
       title: 'Newspaper Front Page',
       desc: 'Vintage front-page newspapers customized with your headlines, articles, and photos.',
       icon: Newspaper,
-      path: '#',
-      active: false
+      path: '/trend-posters/newspaper',
+      active: true
     },
     {
       id: 'heart',
       title: 'Heart Typography',
       desc: 'Transform wedding vows, letters, or song lyrics into a beautiful heart-shaped layout.',
       icon: Heart,
-      path: '#',
-      active: false
+      path: '/trend-posters/heart',
+      active: true
     },
     {
       id: 'airbnb',
       title: 'AirBNB Welcome Guide',
       desc: 'Beautiful check-out guidelines, wifi details, and custom rules for vacation rentals.',
       icon: Home,
-      path: '#',
-      active: false
+      path: '/trend-posters/airbnb',
+      active: true
     },
     {
       id: 'toddler',
       title: 'Toddler Milestone Panel',
       desc: 'A charming growth record tracking height, weight, first words, and favorite toys.',
       icon: Baby,
-      path: '#',
-      active: false
+      path: '/trend-posters/toddler',
+      active: true
     }
   ];
 
@@ -171,7 +171,6 @@ export default function TrendPostersSelection() {
               </div>
               <h3 className="text-lg font-bold text-white tracking-tight mb-3">
                 {tpl.title}
-                {!tpl.active && <span className="ml-2 text-[9px] uppercase tracking-widest text-zinc-500 border border-zinc-700 px-2 py-0.5 rounded-full">Soon</span>}
               </h3>
               <p className="text-zinc-400 text-xs leading-relaxed font-medium">
                 {tpl.desc}
