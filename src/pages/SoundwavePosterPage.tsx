@@ -317,7 +317,7 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
   const isRebuildingRef = useRef<boolean>(false);
   const rawAudioDataRef = useRef<Float32Array | null>(null);
 
-  const token = window.location.pathname.split('/').pop() || '';
+  const token = window.location.pathname.split('/').filter(Boolean).pop() || '';
 
   const [isLocked, setIsLocked] = useState<boolean>(false);
   const [isCheckingToken, setIsCheckingToken] = useState<boolean>(true);
@@ -485,11 +485,21 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
 
   useEffect(() => {
     const checkToken = async () => {
-      const isAdmin = window.location.hostname.startsWith('serkan1881');
+      const hostname = window.location.hostname;
+      const isAdmin = hostname.startsWith('serkan1881.') || localStorage.getItem('admin_session') === 'active';
 
-      if (!token || token === 'demo-token') {
-        setIsCheckingToken(false);
-        return;
+      if (isAdmin) {
+        setIsLocked(false);
+        if (!token || token === 'demo-token' || token === 'soundwave' || token.length < 10) {
+          setIsCheckingToken(false);
+          return;
+        }
+      } else {
+        if (!token || token === 'demo-token') {
+          setTokenError('Invalid or expired design link.');
+          setIsCheckingToken(false);
+          return;
+        }
       }
       
       try {
@@ -500,6 +510,10 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
           .single();
 
         if (error || !data) {
+          if (isAdmin) {
+            setIsCheckingToken(false);
+            return;
+          }
           setTokenError('Invalid or expired design link.');
           setIsCheckingToken(false);
           return;
@@ -511,42 +525,44 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
           } else {
             setIsLocked(true);
           }
-          
-          if (data.design_state) {
-            const ds = data.design_state;
-            setCanvasSize(ds.canvasSize || '30x40');
-            setOrientation(ds.orientation || 'landscape');
-            setBgColor(ds.bgColor || '#fbfbfb');
-            setTopLeftText(ds.topLeftText || '');
-            setTopLeftColor(ds.topLeftColor || '#000000');
-            setTopRightText(ds.topRightText || '');
-            setTopRightColor(ds.topRightColor || '#000000');
-            setMainTitleText(ds.mainTitleText || '');
-            setMainTitleColor(ds.mainTitleColor || '#000000');
-            setSubTitleText(ds.subTitleText || '');
-            setSubTitleColor(ds.subTitleColor || '#333333');
-            setDividerColor(ds.dividerColor || '#999999');
-            setBottom1Text(ds.bottom1Text || '');
-            setBottom1Color(ds.bottom1Color || '#333333');
-            setBottom2Text(ds.bottom2Text || '');
-            setBottom2Color(ds.bottom2Color || '#333333');
-            setWaveMode(ds.waveMode || 'random');
-            setWaveFillType(ds.waveFillType || 'gradient');
-            setWaveSolidColor(ds.waveSolidColor || '#008000');
-            setWaveGradientStops(ds.waveGradientStops || 3);
-            setWaveGradientColors(ds.waveGradientColors || []);
-            setWaveGradientAngle(ds.waveGradientAngle || 0);
-            setWaveDensity(ds.waveDensity || 240);
-            setWaveThickness(ds.waveThickness || 1.5);
-            setWaveHeightScale(ds.waveHeightScale || 50);
-            setWaveWidthScale(ds.waveWidthScale || 80);
-            setShowQR(ds.showQR || false);
-            setQrLink(ds.qrLink || 'https://musicposters.shop');
-            setQrSize(ds.qrSize || 25);
-          }
+        }
+
+        if (data.design_state) {
+          const ds = data.design_state;
+          setCanvasSize(ds.canvasSize || '30x40');
+          setOrientation(ds.orientation || 'landscape');
+          setBgColor(ds.bgColor || '#fbfbfb');
+          setTopLeftText(ds.topLeftText || '');
+          setTopLeftColor(ds.topLeftColor || '#000000');
+          setTopRightText(ds.topRightText || '');
+          setTopRightColor(ds.topRightColor || '#000000');
+          setMainTitleText(ds.mainTitleText || '');
+          setMainTitleColor(ds.mainTitleColor || '#000000');
+          setSubTitleText(ds.subTitleText || '');
+          setSubTitleColor(ds.subTitleColor || '#333333');
+          setDividerColor(ds.dividerColor || '#999999');
+          setBottom1Text(ds.bottom1Text || '');
+          setBottom1Color(ds.bottom1Color || '#333333');
+          setBottom2Text(ds.bottom2Text || '');
+          setBottom2Color(ds.bottom2Color || '#333333');
+          setWaveMode(ds.waveMode || 'random');
+          setWaveFillType(ds.waveFillType || 'gradient');
+          setWaveSolidColor(ds.waveSolidColor || '#008000');
+          setWaveGradientStops(ds.waveGradientStops || 3);
+          setWaveGradientColors(ds.waveGradientColors || []);
+          setWaveGradientAngle(ds.waveGradientAngle || 0);
+          setWaveDensity(ds.waveDensity || 240);
+          setWaveThickness(ds.waveThickness || 1.5);
+          setWaveHeightScale(ds.waveHeightScale || 50);
+          setWaveWidthScale(ds.waveWidthScale || 80);
+          setShowQR(ds.showQR || false);
+          setQrLink(ds.qrLink || 'https://musicposters.shop');
+          setQrSize(ds.qrSize || 25);
         }
       } catch (err) {
-        setTokenError('Connection error. Please reload.');
+        if (!isAdmin) {
+          setTokenError('Connection error. Please reload.');
+        }
       } finally {
         setIsCheckingToken(false);
       }
@@ -1877,7 +1893,7 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
                       disabled={sendingTicket || !supportMessage.trim()}
                       onClick={submitSupportTicket}
                       className={`btn ${sendingTicket || !supportMessage.trim() ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed' : 'btn-primary'}`}
-                      style={{ flex: 1, padding: '12px' }}
+                      style={{ flex: 1, padding: '12px 0' }}
                     >
                       {sendingTicket ? 'Sending...' : 'Send Message'}
                     </button>
@@ -1885,7 +1901,7 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
                       disabled={sendingTicket}
                       onClick={() => { setShowSupportModal(false); setSupportMessage(''); }}
                       className="btn btn-secondary"
-                      style={{ flex: 1, padding: '12px' }}
+                      style={{ flex: 1, padding: '12px 0' }}
                     >
                       Cancel
                     </button>
@@ -1905,7 +1921,7 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
             </svg>
             <h1>Soundwave Poster</h1>
           </div>
-          <button className="back-btn" onClick={() => navigate('/claim')}>&#10229; Back</button>
+          <button className="back-btn" onClick={() => navigate('/trend-posters')}>&#10229; Back</button>
         </div>
 
         <button className={`accordion-btn${openSections.presets ? ' open' : ''}`} onClick={() => toggleAccordion('presets')}>
@@ -2318,7 +2334,7 @@ export default function SoundwavePosterPage({ navigate }: SoundwavePosterPagePro
                 <div className="pf-row">
                   <label>Font Size</label>
                   <div className="pf-range-row">
-                    <input type="range" min="8" max="72" value={topRightFontSize} onChange={(e) => setTopRightFontSize(Number(e.target.value))} />
+                    <input type="range" min="8" max="72" value={topRightFontSize} onChange={(e) => setRightFontSize(Number(e.target.value))} />
                     <span className="pf-range-val">{topRightFontSize}px</span>
                   </div>
                 </div>
