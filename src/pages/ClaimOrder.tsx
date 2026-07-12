@@ -9,6 +9,28 @@ export default function ClaimOrder() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
+  // SKU kodunu okuyup hangi editörün açılacağını bulan sistem
+  const resolveDesignRouteFromSKU = (sku: string | null) => {
+    if (!sku) return 'soundwave'; // Default fallback
+    
+    const skuUpper = sku.toUpperCase();
+    if (skuUpper.includes('RECEIPT')) return 'receipt';
+    if (skuUpper.includes('TYPOGRAPHY')) return 'typography';
+    if (skuUpper.includes('COORD') || skuUpper.includes('MAP')) return 'coordinates';
+    if (skuUpper.includes('STAR')) return 'starmap';
+    if (skuUpper.includes('CASSETTE')) return 'cassette';
+    if (skuUpper.includes('TYPEWRITER')) return 'typewriter';
+    if (skuUpper.includes('POLAROID')) return 'polaroid';
+    if (skuUpper.includes('PATENT') || skuUpper.includes('BLUEPRINT')) return 'patent';
+    if (skuUpper.includes('PANTONE') || skuUpper.includes('COLOR')) return 'pantone';
+    if (skuUpper.includes('NEWS')) return 'newspaper';
+    if (skuUpper.includes('HEART')) return 'heart';
+    if (skuUpper.includes('AIRBNB') || skuUpper.includes('WELCOME')) return 'airbnb';
+    if (skuUpper.includes('TODDLER') || skuUpper.includes('BABY')) return 'toddler';
+    
+    return 'soundwave'; // Default
+  };
+
   const handleClaim = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!orderId.trim()) return;
@@ -16,14 +38,16 @@ export default function ClaimOrder() {
     setLoading(true);
     setError('');
 
+    // Demo girişi kontrolü (Doğrudan Soundwave demosuna atar)
     if (orderId.trim().toUpperCase() === 'DEMO123') {
       setTimeout(() => {
-        navigate('/design/demo-token');
+        navigate('/design/soundwave/demo-token');
       }, 1000);
       return;
     }
 
     try {
+      // Veritabanından order_id ile siparişi çek
       const { data, error: dbError } = await supabase
         .from('etsy_orders')
         .select('*')
@@ -42,7 +66,9 @@ export default function ClaimOrder() {
         return;
       }
 
-      navigate(`/design/${data.id}`);
+      // Supabase'den gelen SKU koduna göre rotayı belirle ve ID (token) ile birlikte yönlendir
+      const designRoute = resolveDesignRouteFromSKU(data.sku);
+      navigate(`/design/${designRoute}/${data.id}`);
 
     } catch (err) {
       setError("An unexpected error occurred. Please try again later.");
