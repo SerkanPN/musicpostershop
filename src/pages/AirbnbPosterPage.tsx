@@ -1,4 +1,3 @@
-src/pages/AirbnbPosterPage.tsx
 import React, { useRef } from 'react';
 import * as fabric from 'fabric';
 import PosterEngine from '../components/PosterEngine';
