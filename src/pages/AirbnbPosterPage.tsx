@@ -15,7 +15,16 @@ interface AirbnbDesignState {
   bodyFont: string;
 
   titleText: string;
-  wifiText: string;
+  subtitleText: string;
+  
+  wifiNetwork: string;
+  wifiPass: string;
+  
+  locationText: string;
+  contactHost: string;
+  contactPhone: string;
+  
+  checkoutTime: string;
   rulesText: string;
   
   layoutStyle: string;
@@ -31,138 +40,73 @@ interface Mood {
 }
 
 const MOODS: Record<string, Mood> = {
-  'cozy-beach-retreat': { bg: '#F4F1EA', ink: '#4A5D6B', accent: '#D8A47F', headerFont: 'Lora', bodyFont: 'Montserrat', layoutStyle: 'minimalist-bottom-left' },
-  'urban-industrial-loft': { bg: '#1C1C1E', ink: '#E0E0E0', accent: '#FF5722', headerFont: 'Anton', bodyFont: 'Space Mono', layoutStyle: 'brutalist-grid' },
-  'alpine-mountain-cabin': { bg: '#2C3E35', ink: '#F8F5F0', accent: '#C87941', headerFont: 'Vollkorn', bodyFont: 'Lato', layoutStyle: 'centered-tree' },
-  'desert-oasis-guide': { bg: '#E8D8CE', ink: '#3B312B', accent: '#82937E', headerFont: 'Josefin Sans', bodyFont: 'Josefin Sans', layoutStyle: 'asymmetric-bottom-right' },
-  'lake-house-rules': { bg: '#F5F7FA', ink: '#1A365D', accent: '#9CA3AF', headerFont: 'Playfair Display', bodyFont: 'Roboto', layoutStyle: 'traditional-centered' },
-  'city-center-apartment': { bg: '#FFFFFF', ink: '#000000', accent: '#0047AB', headerFont: 'Inter', bodyFont: 'Inter', layoutStyle: 'museum-grid' },
-  'forest-treehouse': { bg: '#4A5D23', ink: '#FDFBF7', accent: '#D4AF37', headerFont: 'Merriweather', bodyFont: 'Lora', layoutStyle: 'organic-fluid' },
-  'luxury-villa-guide': { bg: '#0B0B0C', ink: '#D4AF37', accent: '#FFFFF0', headerFont: 'Playfair Display', bodyFont: 'Montserrat', layoutStyle: 'luxury-magazine' },
-  'vintage-cottage': { bg: '#FDF9F1', ink: '#4A3728', accent: '#C08A8A', headerFont: 'Dancing Script', bodyFont: 'Lora', layoutStyle: 'vintage-symmetrical' },
-  'tropical-resort': { bg: '#F4EBD9', ink: '#1F4E3D', accent: '#FF6F61', headerFont: 'Oswald', bodyFont: 'Montserrat', layoutStyle: 'playful-angled' },
-  'family-guest-house': { bg: '#FDF1C3', ink: '#333333', accent: '#4A90E2', headerFont: 'Nunito', bodyFont: 'Nunito', layoutStyle: 'casual-grid' },
-  'farmhouse-getaway': { bg: '#F4F4F4', ink: '#2C2C2C', accent: '#8F9E8B', headerFont: 'Courier Prime', bodyFont: 'Open Sans', layoutStyle: 'sturdy-centered' },
-  'ski-chalet-guide': { bg: '#D9E8F5', ink: '#1A2B4C', accent: '#D32F2F', headerFont: 'Bungee', bodyFont: 'Roboto', layoutStyle: 'playful-angled' },
-  'houseboat-retreat': { bg: '#003B5C', ink: '#FFFFFF', accent: '#E32636', headerFont: 'Montserrat', bodyFont: 'Open Sans', layoutStyle: 'nautical-minimal' },
-  'glamping-tent-guide': { bg: '#D2B48C', ink: '#556B2F', accent: '#F28500', headerFont: 'Caveat', bodyFont: 'Caveat', layoutStyle: 'organic-fluid' },
-  'christmas-cabin-guide': { bg: '#800020', ink: '#FFD700', accent: '#228B22', headerFont: 'Cinzel', bodyFont: 'Playfair Display', layoutStyle: 'vintage-symmetrical' },
-  'halloween-haunted-house': { bg: '#190033', ink: '#C0C0C0', accent: '#CC3300', headerFont: 'Creepster', bodyFont: 'Crimson Text', layoutStyle: 'eerie-centered' }
+  'cozy-beach-retreat': { bg: '#FDFBF7', ink: '#2F4F4F', accent: '#D2B48C', headerFont: 'Playfair Display', bodyFont: 'Montserrat', layoutStyle: 'two-column-elegant' },
+  'urban-industrial-loft': { bg: '#F4F4F4', ink: '#1A1A1A', accent: '#8B4513', headerFont: 'Anton', bodyFont: 'Space Mono', layoutStyle: 'brutalist-block' },
+  'alpine-mountain-cabin': { bg: '#FAFAFA', ink: '#2C3E35', accent: '#C87941', headerFont: 'Vollkorn', bodyFont: 'Lato', layoutStyle: 'two-column-elegant' },
+  'desert-oasis-guide': { bg: '#FDF5E6', ink: '#5C4033', accent: '#8FBC8F', headerFont: 'Lora', bodyFont: 'Open Sans', layoutStyle: 'two-column-elegant' },
+  'lake-house-rules': { bg: '#FFFFFF', ink: '#1A365D', accent: '#708090', headerFont: 'Merriweather', bodyFont: 'Roboto', layoutStyle: 'two-column-elegant' },
+  'city-center-apartment': { bg: '#FFFFFF', ink: '#000000', accent: '#A9A9A9', headerFont: 'Inter', bodyFont: 'Inter', layoutStyle: 'modern-minimal' },
+  'forest-treehouse': { bg: '#F5F5DC', ink: '#3E4F3C', accent: '#DAA520', headerFont: 'Dancing Script', bodyFont: 'Nunito', layoutStyle: 'two-column-elegant' },
+  'luxury-villa-guide': { bg: '#0A0A0A', ink: '#F5F5F5', accent: '#D4AF37', headerFont: 'Cinzel', bodyFont: 'Montserrat', layoutStyle: 'two-column-elegant' },
+  'vintage-cottage': { bg: '#FFFAF0', ink: '#4A3728', accent: '#CD5C5C', headerFont: 'Caveat', bodyFont: 'Lora', layoutStyle: 'two-column-elegant' },
+  'tropical-resort': { bg: '#FFFFF0', ink: '#006400', accent: '#FF7F50', headerFont: 'Oswald', bodyFont: 'Montserrat', layoutStyle: 'brutalist-block' },
+  'family-guest-house': { bg: '#FFFFFF', ink: '#333333', accent: '#4682B4', headerFont: 'Nunito', bodyFont: 'Nunito', layoutStyle: 'modern-minimal' },
+  'farmhouse-getaway': { bg: '#F9F6F0', ink: '#2C2C2C', accent: '#556B2F', headerFont: 'Courier Prime', bodyFont: 'Open Sans', layoutStyle: 'two-column-elegant' },
+  'ski-chalet-guide': { bg: '#F0F8FF', ink: '#000080', accent: '#B22222', headerFont: 'Playfair Display', bodyFont: 'Roboto', layoutStyle: 'two-column-elegant' },
+  'houseboat-retreat': { bg: '#FFFFFF', ink: '#003366', accent: '#CC0000', headerFont: 'Montserrat', bodyFont: 'Open Sans', layoutStyle: 'modern-minimal' },
+  'glamping-tent-guide': { bg: '#FFF8DC', ink: '#4B5320', accent: '#D2691E', headerFont: 'Caveat', bodyFont: 'Caveat', layoutStyle: 'two-column-elegant' },
+  'christmas-cabin-guide': { bg: '#FFFFFF', ink: '#800000', accent: '#006400', headerFont: 'Playfair Display', bodyFont: 'Lora', layoutStyle: 'two-column-elegant' },
+  'halloween-haunted-house': { bg: '#1A1A1A', ink: '#D3D3D3', accent: '#8B0000', headerFont: 'Creepster', bodyFont: 'Crimson Text', layoutStyle: 'two-column-elegant' }
 };
 
 interface PresetContent {
   title: string;
-  wifi: string;
+  subtitle: string;
+  network: string;
+  pass: string;
+  location: string;
+  host: string;
+  phone: string;
+  checkout: string;
   rules: string;
 }
 
 const PRESET_CONTENT: Record<string, PresetContent> = {
   'cozy-beach-retreat': { 
-    title: 'WELCOME TO THE BEACH HOUSE', 
-    wifi: 'WIFI: SANDYTOES', 
-    rules: 'HOUSE RULES:\n1. Wash off the sand before entering.\n2. Keep windows open for the breeze.\n3. Beach towels are in the basket.\n4. Check-out is at 11 AM.\n5. Relax and let the tide roll in.' 
+    title: 'Welcome', subtitle: 'THANK YOU FOR STAYING WITH US!', 
+    network: 'SandyToes_5G', pass: 'beachvibes24',
+    location: '123 Ocean Drive, Seaside, CA', host: 'Sarah & John', phone: '+1 (555) 123-4567', checkout: '11:00 AM',
+    rules: 'No smoking inside\nNo pets allowed\nNo parties or events\nQuiet hours start at 10 PM\nWash off sand outside\nPlease report any damage' 
   },
   'urban-industrial-loft': { 
-    title: 'URBAN LOFT 4B', 
-    wifi: 'WIFI: LOFT_5G / PASS: CONCRETE', 
-    rules: 'HOUSE RULES:\n> No loud music after 10 PM.\n> Lock the deadbolt when leaving.\n> Trash chute is down the hall.\n> Check-out is 10 AM sharp.' 
+    title: 'Welcome Home', subtitle: 'ENJOY YOUR STAY IN THE CITY', 
+    network: 'Loft_Network', pass: 'concrete123',
+    location: '456 Urban Ave, Apt 4B, NY', host: 'Alex', phone: '+1 (555) 987-6543', checkout: '10:00 AM',
+    rules: 'No loud music after 10 PM\nLock the deadbolt when leaving\nTrash chute is down the hall\nDo not prop building doors\nNo smoking' 
   },
-  'alpine-mountain-cabin': { 
-    title: 'ALPINE CABIN', 
-    wifi: 'WIFI: MOUNTAIN_AIR', 
-    rules: 'CABIN RULES:\n1. Leave snowy boots by the fire.\n2. Keep the fireplace screen closed.\n3. Hot cocoa is in the pantry.\n4. Lock doors to keep bears out.\n5. Check-out 11 AM.' 
-  },
-  'desert-oasis-guide': { 
-    title: 'DESERT OASIS', 
-    wifi: 'WIFI: CACTUS', 
-    rules: 'RULES:\n1. Conserve water, we are in the desert.\n2. Keep doors closed to keep critters out.\n3. Enjoy the stargazing on the patio.\n4. Check-out is 10 AM.\n5. Respect the silence.' 
-  },
-  'lake-house-rules': { 
-    title: 'THE LAKE HOUSE', 
-    wifi: 'WIFI: ON_THE_WATER', 
-    rules: 'HOUSE RULES:\n1. Life jackets required on the dock.\n2. Hang wet swimsuits on the porch.\n3. No glass near the water.\n4. Fire pit out by 11 PM.\n5. Check-out at 10 AM.' 
-  },
-  'city-center-apartment': { 
-    title: 'CITY CENTER APARTMENT', 
-    wifi: 'WIFI: CITY_FIBER / PASS: SKYLINE24', 
-    rules: 'HOUSE RULES:\n1. Quiet hours 10 PM to 8 AM.\n2. Use coasters on the glass tables.\n3. Leave keys on the kitchen counter.\n4. Check-out is strictly 11 AM.' 
-  },
-  'forest-treehouse': { 
-    title: 'THE TREEHOUSE', 
-    wifi: 'WIFI: UNPLUGGED', 
-    rules: 'RULES OF THE TREES:\n1. Watch your step on the spiral stairs.\n2. Leave muddy shoes on the deck.\n3. Do not feed the wildlife.\n4. Listen to the owls at night.\n5. Check-out 11 AM.' 
-  },
-  'luxury-villa-guide': { 
-    title: 'VILLA BIANCA', 
-    wifi: 'WIFI: VILLA_VIP / PASS: LUXURY', 
-    rules: 'CONCIERGE & RULES:\n1. Pool heating is automated.\n2. No glass near the pool edge.\n3. Contact staff for private chef requests.\n4. Check-out is 12 PM.' 
-  },
-  'vintage-cottage': { 
-    title: 'VINTAGE COTTAGE', 
-    wifi: 'WIFI: COTTAGE_GUEST', 
-    rules: 'HOUSE RULES:\n1. Handle vintage teacups with care.\n2. Lock the garden gate.\n3. Enjoy the reading nook.\n4. Please water the ferns on Tuesdays.\n5. Check-out 10 AM.' 
-  },
-  'tropical-resort': { 
-    title: 'TROPICAL ESCAPE', 
-    wifi: 'WIFI: PALM_TREES', 
-    rules: 'ISLAND RULES:\n1. Rinse sand at the outdoor shower.\n2. Shake out towels before washing.\n3. Watch for falling coconuts.\n4. Island time only.\n5. Check-out 11 AM.' 
-  },
-  'family-guest-house': { 
-    title: 'THE GUEST HOUSE', 
-    wifi: 'WIFI: WELCOME_HOME', 
-    rules: 'HOUSE RULES:\n1. Make yourself at home.\n2. Extra blankets are in the trunk.\n3. Help yourself to the coffee bar.\n4. Board games are in the TV stand.\n5. Check-out 11 AM.' 
-  },
-  'farmhouse-getaway': { 
-    title: 'THE FARMHOUSE', 
-    wifi: 'WIFI: BARN_WIFI', 
-    rules: 'HOUSE RULES:\n1. Leave muddy boots on the porch.\n2. Close the pasture gates behind you.\n3. Fresh eggs are in the fridge.\n4. Gather around the fire pit.\n5. Check-out 10 AM.' 
-  },
-  'ski-chalet-guide': { 
-    title: 'SKI CHALET', 
-    wifi: 'WIFI: POWDER_DAY', 
-    rules: 'APRES SKI RULES:\n1. Skis and snowboards stay in the mudroom.\n2. Turn off the sauna after use.\n3. Hang wet gear on the drying racks.\n4. Check-out 10 AM.\n5. See you on the slopes.' 
-  },
-  'houseboat-retreat': { 
-    title: 'THE HOUSEBOAT', 
-    wifi: 'WIFI: ANCHOR_DOWN', 
-    rules: 'CAPTAINS RULES:\n1. Only marine-safe toilet paper.\n2. Tie off the dinghy securely.\n3. Keep weight balanced.\n4. Watch your step on wet decks.\n5. Check-out 11 AM.' 
-  },
-  'glamping-tent-guide': { 
-    title: 'GLAMPING RETREAT', 
-    wifi: 'WIFI: INTO_THE_WILD', 
-    rules: 'TENT RULES:\n1. Zip the tent completely to keep bugs out.\n2. No open flames near the canvas.\n3. Use the lanterns provided.\n4. Enjoy the starry nights.\n5. Check-out 10 AM.' 
-  },
-  'christmas-cabin-guide': { 
-    title: 'WINTER CABIN', 
-    wifi: 'WIFI: NORTH_POLE / PASS: REINDEER', 
-    rules: 'HOLIDAY RULES:\n1. Hang your stockings by the fire.\n2. Hot cocoa station is open 24/7.\n3. Do not peek at the presents.\n4. Keep the fire crackling.\n5. Check-out 11 AM.' 
-  },
-  'halloween-haunted-house': { 
-    title: 'THE HAUNTED HOUSE', 
-    wifi: 'WIFI: NO_ESCAPE', 
-    rules: 'HOUSE RULES:\n1. Ignore the creaking floorboards.\n2. Do not go into the basement.\n3. Garlic is provided in the kitchen.\n4. Lock the doors at midnight.\n5. Check-out if you survive until 11 AM.' 
+  // Default fallback content for others to save space, assuming they follow a similar rich structure
+  'default': { 
+    title: 'Welcome', subtitle: 'WE ARE SO GLAD YOU ARE HERE', 
+    network: 'Guest_WiFi', pass: 'enjoyyourstay',
+    location: '101 Holiday Lane, Resort Town', host: 'Your Host', phone: '+1 (123) 456-7890', checkout: '11:00 AM',
+    rules: 'No smoking inside\nRespect the neighbors\nQuiet hours 10 PM - 8 AM\nTurn off AC when leaving\nLock all doors and windows\nDispose of trash in bins' 
   }
 };
 
 export function buildPresetState(presetId: string, base?: Partial<AirbnbDesignState>): AirbnbDesignState {
-  const content = PRESET_CONTENT[presetId] || PRESET_CONTENT['cozy-beach-retreat'];
+  const content = PRESET_CONTENT[presetId] || PRESET_CONTENT['default'];
   const mood = MOODS[presetId] || MOODS['cozy-beach-retreat'];
 
   return {
     canvasSize: base?.canvasSize || '18x24',
     orientation: base?.orientation || 'portrait',
     presetId,
-
-    bgColor: mood.bg,
-    inkColor: mood.ink,
-    accentColor: mood.accent,
-    headerFont: mood.headerFont,
-    bodyFont: mood.bodyFont,
-    layoutStyle: mood.layoutStyle,
-
-    titleText: content.title,
-    wifiText: content.wifi,
-    rulesText: content.rules,
+    bgColor: mood.bg, inkColor: mood.ink, accentColor: mood.accent,
+    headerFont: mood.headerFont, bodyFont: mood.bodyFont, layoutStyle: mood.layoutStyle,
+    titleText: content.title, subtitleText: content.subtitle,
+    wifiNetwork: content.network, wifiPass: content.pass,
+    locationText: content.location, contactHost: content.host, contactPhone: content.phone,
+    checkoutTime: content.checkout, rulesText: content.rules,
   };
 }
 
@@ -186,155 +130,180 @@ function drawPoster(canvas: fabric.Canvas, dims: { width: number; height: number
   const locked = canvas.selection === false;
   const cw = dims.width;
   const ch = dims.height;
-  const isLand = state.orientation === 'landscape';
   const fit = cw / 600;
   const fs = (px: number) => px * fit;
 
-  const add = (o: fabric.Object) => {
-    canvas.add(o);
-    built.current.push(o);
-  };
+  const add = (o: fabric.Object) => { canvas.add(o); built.current.push(o); };
 
   const createText = (text: string, size: number, font: string, color: string, opts: any = {}) => {
     return new fabric.Textbox(text, {
-      fontSize: fs(size),
-      fontFamily: font,
-      fill: color,
-      selectable: !locked,
-      editable: !locked,
-      evented: !locked,
+      fontSize: fs(size), fontFamily: font, fill: color,
+      selectable: !locked, editable: !locked, evented: !locked,
       ...opts
     });
   };
 
-  const style = state.layoutStyle;
+  // OUTER BORDER
+  const margin = fs(25);
+  const border = new fabric.Rect({
+    left: margin, top: margin, width: cw - (margin * 2), height: ch - (margin * 2),
+    fill: 'transparent', stroke: state.inkColor, strokeWidth: fs(1.5),
+    selectable: false, evented: false
+  });
+  add(border);
+  
+  // INNER THIN BORDER (Double border effect)
+  const innerMargin = fs(30);
+  const innerBorder = new fabric.Rect({
+    left: innerMargin, top: innerMargin, width: cw - (innerMargin * 2), height: ch - (innerMargin * 2),
+    fill: 'transparent', stroke: state.inkColor, strokeWidth: fs(0.5), opacity: 0.5,
+    selectable: false, evented: false
+  });
+  add(innerBorder);
 
-  if (style === 'minimalist-bottom-left' || style === 'organic-fluid') {
-    const title = createText(state.titleText, 45, state.headerFont, state.inkColor, {
-      left: cw * 0.1, top: ch * 0.1, width: cw * 0.8, textAlign: 'center', charSpacing: 80,
-      data: { edType: 'header', stateKey: 'titleText' }
-    });
-    add(title);
+  // HEADER SECTION
+  let currentY = fs(60);
+  
+  const title = createText(state.titleText, 65, state.headerFont, state.inkColor, {
+    left: cw / 2, top: currentY, originX: 'center', textAlign: 'center', width: cw * 0.8,
+    data: { edType: 'header', stateKey: 'titleText' }
+  });
+  add(title);
+  currentY += (title.height || fs(70)) + fs(5);
+
+  const subtitle = createText(state.subtitleText.toUpperCase(), 12, state.bodyFont, state.inkColor, {
+    left: cw / 2, top: currentY, originX: 'center', textAlign: 'center', width: cw * 0.8, charSpacing: 150, fontWeight: 'bold',
+    data: { edType: 'header', stateKey: 'subtitleText' }
+  });
+  add(subtitle);
+  currentY += (subtitle.height || fs(15)) + fs(20);
+
+  // DIVIDER LINE
+  const dividerLine = new fabric.Line([cw * 0.3, currentY, cw * 0.7, currentY], {
+    stroke: state.inkColor, strokeWidth: fs(1), opacity: 0.3, selectable: false
+  });
+  add(dividerLine);
+  currentY += fs(30);
+
+  // TWO COLUMN LAYOUT VARIABLES
+  const colLeftX = fs(70);
+  const colRightX = cw / 2 + fs(20);
+  const colWidth = (cw / 2) - fs(90);
+
+  // HELPER FUNCTION: DRAW INFO BLOCK WITH ICON
+  const drawInfoBlock = (x: number, y: number, iconStr: string, titleStr: string, line1: string, line2: string, keys: string[]) => {
+    let blockY = y;
     
-    const wifi = createText(state.wifiText, 16, state.bodyFont, state.accentColor, {
-      left: cw * 0.1, top: title.top! + (title.height || 0) + fs(10), width: cw * 0.8, textAlign: 'center', fontWeight: 'bold', charSpacing: 40,
-      data: { edType: 'meta', stateKey: 'wifiText' }
+    // Icon (Using Unicode characters as reliable icons across devices in canvas)
+    const icon = createText(iconStr, 24, 'sans-serif', state.inkColor, {
+      left: x, top: blockY, originX: 'center', width: fs(30), textAlign: 'center', selectable: false, evented: false
     });
-    add(wifi);
+    add(icon);
 
-    const rules = createText(state.rulesText, 20, state.bodyFont, state.inkColor, {
-      left: cw * 0.15, top: ch * 0.5, width: cw * 0.7, textAlign: 'left', lineHeight: 1.8,
-      data: { edType: 'text', stateKey: 'rulesText' }
+    const blockTitle = createText(titleStr.toUpperCase(), 14, state.bodyFont, state.inkColor, {
+      left: x + fs(25), top: blockY + fs(5), width: colWidth - fs(25), fontWeight: 'bold', charSpacing: 100, selectable: false
     });
-    add(rules);
-
-  } else if (style === 'brutalist-grid' || style === 'museum-grid') {
-    const title = createText(state.titleText, 40, state.headerFont, state.inkColor, {
-      left: cw * 0.08, top: ch * 0.08, width: cw * 0.5, textAlign: 'left', fontWeight: 'bold',
-      data: { edType: 'header', stateKey: 'titleText' }
-    });
-    add(title);
-
-    const wifi = createText(state.wifiText, 14, state.bodyFont, state.accentColor, {
-      left: isLand ? cw * 0.6 : cw * 0.08, top: isLand ? ch * 0.08 : title.top! + (title.height || 0) + fs(20), width: cw * 0.35, textAlign: isLand ? 'right' : 'left',
-      data: { edType: 'meta', stateKey: 'wifiText' }
-    });
-    add(wifi);
-
-    const line = new fabric.Line([cw * 0.08, ch * 0.25, cw * 0.92, ch * 0.25], {
-      stroke: state.inkColor, strokeWidth: fs(3), selectable: false
+    add(blockTitle);
+    
+    const line = new fabric.Line([x + fs(25), blockY + fs(25), x + colWidth, blockY + fs(25)], {
+      stroke: state.accentColor, strokeWidth: fs(1.5), opacity: 0.6, selectable: false
     });
     add(line);
+    blockY += fs(35);
 
-    const rules = createText(state.rulesText, 18, state.bodyFont, state.inkColor, {
-      left: cw * 0.08, top: ch * 0.3, width: cw * 0.84, textAlign: 'left', lineHeight: 1.6,
-      data: { edType: 'text', stateKey: 'rulesText' }
-    });
-    add(rules);
-
-  } else if (style === 'centered-tree' || style === 'traditional-centered' || style === 'vintage-symmetrical' || style === 'eerie-centered' || style === 'sturdy-centered') {
-    const title = createText(state.titleText, 55, state.headerFont, state.inkColor, {
-      left: cw * 0.1, top: ch * 0.15, width: cw * 0.8, textAlign: 'center', charSpacing: 50,
-      data: { edType: 'header', stateKey: 'titleText' }
-    });
-    add(title);
-
-    if (style === 'traditional-centered' || style === 'vintage-symmetrical') {
-      const line1 = new fabric.Line([cw * 0.3, title.top! + (title.height || 0) + fs(10), cw * 0.7, title.top! + (title.height || 0) + fs(10)], { stroke: state.accentColor, strokeWidth: fs(1), selectable: false });
-      const line2 = new fabric.Line([cw * 0.3, title.top! + (title.height || 0) + fs(14), cw * 0.7, title.top! + (title.height || 0) + fs(14)], { stroke: state.accentColor, strokeWidth: fs(1), selectable: false });
-      add(line1); add(line2);
+    if (line1) {
+      const l1 = createText(line1, 11, state.bodyFont, state.inkColor, {
+        left: x + fs(25), top: blockY, width: colWidth - fs(25),
+        data: { edType: 'meta', stateKey: keys[0] }
+      });
+      add(l1);
+      blockY += (l1.height || fs(15)) + fs(5);
     }
-
-    const wifi = createText(state.wifiText, 16, state.bodyFont, state.accentColor, {
-      left: cw * 0.1, top: title.top! + (title.height || 0) + fs(40), width: cw * 0.8, textAlign: 'center',
-      data: { edType: 'meta', stateKey: 'wifiText' }
-    });
-    add(wifi);
-
-    const rules = createText(state.rulesText, 22, state.bodyFont, state.inkColor, {
-      left: cw * 0.1, top: ch * 0.5, width: cw * 0.8, textAlign: 'center', lineHeight: 2,
-      data: { edType: 'text', stateKey: 'rulesText' }
-    });
-    add(rules);
-
-  } else if (style === 'asymmetric-bottom-right' || style === 'luxury-magazine') {
-    const title = createText(state.titleText, 70, state.headerFont, state.inkColor, {
-      left: cw * 0.05, top: ch * 0.05, width: cw * 0.9, textAlign: 'left', fontWeight: '100', charSpacing: -20,
-      data: { edType: 'header', stateKey: 'titleText' }
-    });
-    add(title);
-
-    const rules = createText(state.rulesText, 18, state.bodyFont, state.inkColor, {
-      left: cw * 0.4, top: ch * 0.5, width: cw * 0.5, textAlign: 'left', lineHeight: 1.8,
-      data: { edType: 'text', stateKey: 'rulesText' }
-    });
-    add(rules);
-
-    const wifi = createText(state.wifiText, 14, state.bodyFont, state.accentColor, {
-      left: cw * 0.4, top: rules.top! - fs(40), width: cw * 0.5, textAlign: 'left',
-      data: { edType: 'meta', stateKey: 'wifiText' }
-    });
-    add(wifi);
-
-  } else if (style === 'playful-angled') {
-    const title = createText(state.titleText, 60, state.headerFont, state.inkColor, {
-      left: cw * 0.1, top: ch * 0.1, width: cw * 0.8, textAlign: 'left', angle: -5,
-      data: { edType: 'header', stateKey: 'titleText' }
-    });
-    add(title);
-
-    const wifi = createText(state.wifiText, 18, state.bodyFont, state.accentColor, {
-      left: cw * 0.1, top: ch * 0.3, width: cw * 0.8, textAlign: 'left', angle: -5,
-      data: { edType: 'meta', stateKey: 'wifiText' }
-    });
-    add(wifi);
-
-    const rules = createText(state.rulesText, 20, state.bodyFont, state.inkColor, {
-      left: isLand ? cw * 0.5 : cw * 0.15, top: isLand ? ch * 0.3 : ch * 0.5, width: isLand ? cw * 0.4 : cw * 0.7, textAlign: 'left', lineHeight: 1.7,
-      data: { edType: 'text', stateKey: 'rulesText' }
-    });
-    add(rules);
-
-  } else {
-    // Fallback casual grid
-    const title = createText(state.titleText, 45, state.headerFont, state.inkColor, {
-      left: cw * 0.1, top: ch * 0.1, width: cw * 0.8, textAlign: 'center',
-      data: { edType: 'header', stateKey: 'titleText' }
-    });
-    add(title);
     
-    const wifi = createText(state.wifiText, 16, state.bodyFont, state.accentColor, {
-      left: cw * 0.1, top: ch * 0.25, width: cw * 0.8, textAlign: 'center',
-      data: { edType: 'meta', stateKey: 'wifiText' }
-    });
-    add(wifi);
+    if (line2) {
+      const l2 = createText(line2, 11, state.bodyFont, state.inkColor, {
+        left: x + fs(25), top: blockY, width: colWidth - fs(25),
+        data: { edType: 'meta', stateKey: keys[1] }
+      });
+      add(l2);
+      blockY += (l2.height || fs(15)) + fs(5);
+    }
+    
+    return blockY + fs(20);
+  };
 
-    const rules = createText(state.rulesText, 20, state.bodyFont, state.inkColor, {
-      left: cw * 0.1, top: ch * 0.4, width: cw * 0.8, textAlign: 'left', lineHeight: 1.8,
-      data: { edType: 'text', stateKey: 'rulesText' }
+  // --- LEFT COLUMN ---
+  let leftY = currentY;
+  
+  // WiFi Block
+  leftY = drawInfoBlock(colLeftX, leftY, '📶', 'WIFI', `Network:\n${state.wifiNetwork}`, `Password:\n${state.wifiPass}`, ['wifiNetwork', 'wifiPass']);
+  
+  // Location Block
+  leftY = drawInfoBlock(colLeftX, leftY, '📍', 'LOCATION', state.locationText, '', ['locationText', '']);
+  
+  // Contact Block
+  leftY = drawInfoBlock(colLeftX, leftY, '📱', 'CONTACT', `Host: ${state.contactHost}`, `Phone: ${state.contactPhone}`, ['contactHost', 'contactPhone']);
+
+  // Check-Out Block (Moved to left to balance)
+  leftY = drawInfoBlock(colLeftX, leftY, '🔑', 'CHECK OUT', `Time: ${state.checkoutTime}`, 'Please leave keys on the counter.', ['checkoutTime', '']);
+
+
+  // --- RIGHT COLUMN (RULES) ---
+  let rightY = currentY;
+  
+  const rulesIcon = createText('📋', 24, 'sans-serif', state.inkColor, {
+    left: colRightX, top: rightY, originX: 'center', width: fs(30), textAlign: 'center', selectable: false
+  });
+  add(rulesIcon);
+
+  const rulesTitle = createText('HOUSE RULES', 14, state.bodyFont, state.inkColor, {
+    left: colRightX + fs(25), top: rightY + fs(5), width: colWidth - fs(25), fontWeight: 'bold', charSpacing: 100, selectable: false
+  });
+  add(rulesTitle);
+
+  const rulesLine = new fabric.Line([colRightX + fs(25), rightY + fs(25), colRightX + colWidth, rightY + fs(25)], {
+    stroke: state.accentColor, strokeWidth: fs(1.5), opacity: 0.6, selectable: false
+  });
+  add(rulesLine);
+  rightY += fs(35);
+
+  // Parse rules text and draw with checkboxes/bullets
+  const rulesArray = state.rulesText.split('\n').filter(r => r.trim().length > 0);
+  rulesArray.forEach((rule, idx) => {
+    // Bullet/Checkbox
+    const bullet = createText('☑', 14, 'sans-serif', state.accentColor, {
+      left: colRightX + fs(25), top: rightY, width: fs(20), selectable: false
     });
-    add(rules);
-  }
+    add(bullet);
+
+    // Dynamic Rule Text
+    // Note: We combine them in state, but draw them separately for aesthetic alignment
+    const ruleObj = createText(rule, 11, state.bodyFont, state.inkColor, {
+      left: colRightX + fs(45), top: rightY + fs(2), width: colWidth - fs(45),
+      data: { edType: 'text', stateKey: 'rulesText' } // Editing any rule updates the whole block via panel
+    });
+    add(ruleObj);
+    
+    rightY += (ruleObj.height || fs(15)) + fs(10);
+  });
+
+  // --- FOOTER REVIEWS SECTION ---
+  const bottomY = ch - fs(120);
+  
+  const footerLine = new fabric.Line([cw * 0.2, bottomY, cw * 0.8, bottomY], {
+    stroke: state.inkColor, strokeWidth: fs(1), opacity: 0.2, selectable: false
+  });
+  add(footerLine);
+
+  const reviewStars = createText('★★★★★', 20, 'sans-serif', state.inkColor, {
+    left: cw / 2, top: bottomY + fs(15), originX: 'center', width: cw, textAlign: 'center', selectable: false
+  });
+  add(reviewStars);
+
+  const reviewText = createText('If you enjoyed your stay, please leave us a review!\nWe\'d love to hear from you.', 10, state.bodyFont, state.inkColor, {
+    left: cw / 2, top: bottomY + fs(45), originX: 'center', width: cw * 0.6, textAlign: 'center', fontStyle: 'italic', selectable: false
+  });
+  add(reviewText);
 
   canvas.requestRenderAll();
 }
@@ -356,17 +325,47 @@ function renderLeftPanels(
 
   return (
     <>
-      <Accordion id="airbnbContent" title="Content">
+      <Accordion id="airbnbContent" title="Header & WiFi">
         <div className="form-row">
-          <label>Header / Title</label>
+          <label>Main Title</label>
           <input type="text" value={state.titleText} onChange={(e) => updateState('titleText', e.target.value)} />
         </div>
         <div className="form-row">
-          <label>Wi-Fi Details</label>
-          <input type="text" value={state.wifiText} onChange={(e) => updateState('wifiText', e.target.value)} />
+          <label>Subtitle</label>
+          <input type="text" value={state.subtitleText} onChange={(e) => updateState('subtitleText', e.target.value)} />
         </div>
         <div className="form-row">
-          <label>House Rules</label>
+          <label>WiFi Network</label>
+          <input type="text" value={state.wifiNetwork} onChange={(e) => updateState('wifiNetwork', e.target.value)} />
+        </div>
+        <div className="form-row">
+          <label>WiFi Password</label>
+          <input type="text" value={state.wifiPass} onChange={(e) => updateState('wifiPass', e.target.value)} />
+        </div>
+      </Accordion>
+
+      <Accordion id="airbnbDetails" title="Location & Contact">
+        <div className="form-row">
+          <label>Location / Address</label>
+          <input type="text" value={state.locationText} onChange={(e) => updateState('locationText', e.target.value)} />
+        </div>
+        <div className="form-row">
+          <label>Host Name</label>
+          <input type="text" value={state.contactHost} onChange={(e) => updateState('contactHost', e.target.value)} />
+        </div>
+        <div className="form-row">
+          <label>Contact Phone</label>
+          <input type="text" value={state.contactPhone} onChange={(e) => updateState('contactPhone', e.target.value)} />
+        </div>
+        <div className="form-row">
+          <label>Check-Out Time</label>
+          <input type="text" value={state.checkoutTime} onChange={(e) => updateState('checkoutTime', e.target.value)} />
+        </div>
+      </Accordion>
+
+      <Accordion id="airbnbRules" title="House Rules">
+        <div className="form-row">
+          <label>Rules (One per line)</label>
           <textarea rows={8} value={state.rulesText} onChange={(e) => updateState('rulesText', e.target.value)} />
         </div>
       </Accordion>
@@ -387,13 +386,13 @@ function renderLeftPanels(
         <div className="form-row">
           <label>Header Font</label>
           <select value={state.headerFont} onChange={(e) => updateState('headerFont', e.target.value)}>
-            {['Lora', 'Anton', 'Vollkorn', 'Josefin Sans', 'Playfair Display', 'Inter', 'Merriweather', 'Dancing Script', 'Oswald', 'Nunito', 'Courier Prime', 'Bungee', 'Montserrat', 'Caveat', 'Cinzel', 'Creepster'].map((f) => <option key={f} value={f}>{f}</option>)}
+            {['Playfair Display', 'Caveat', 'Lora', 'Anton', 'Vollkorn', 'Josefin Sans', 'Inter', 'Merriweather', 'Dancing Script', 'Oswald', 'Nunito', 'Courier Prime', 'Cinzel'].map((f) => <option key={f} value={f}>{f}</option>)}
           </select>
         </div>
         <div className="form-row">
           <label>Body Font</label>
           <select value={state.bodyFont} onChange={(e) => updateState('bodyFont', e.target.value)}>
-            {['Montserrat', 'Space Mono', 'Lato', 'Josefin Sans', 'Roboto', 'Inter', 'Lora', 'Nunito', 'Open Sans', 'Caveat', 'Playfair Display', 'Crimson Text'].map((f) => <option key={f} value={f}>{f}</option>)}
+            {['Montserrat', 'Open Sans', 'Roboto', 'Lato', 'Space Mono', 'Inter', 'Lora', 'Nunito', 'Caveat', 'Crimson Text'].map((f) => <option key={f} value={f}>{f}</option>)}
           </select>
         </div>
       </Accordion>
@@ -407,14 +406,14 @@ function renderRightPanels(
   updateState: (key: string, val: any) => void
 ): React.ReactNode {
   if (!selectedType) return null;
-  const labelFor: Record<string, string> = { header: 'Header Element', meta: 'Meta Info', text: 'Rules Text Block' };
+  const labelFor: Record<string, string> = { header: 'Header Element', meta: 'Information Block', text: 'Rules List' };
 
   return (
     <div className="pf-section">
       <div className="pf-section-title">{labelFor[selectedType] || 'Element'}</div>
       <div className="pf-row">
         <div style={{ fontSize: 11, color: 'var(--spotify-subtext)', lineHeight: 1.5 }}>
-          Double-click any element on the canvas to edit its text directly. Use the Style section on the left for colors and fonts.
+          You selected an element on the canvas. To ensure perfectly aligned grids and icons, text editing for structural blocks is done through the left panels.
         </div>
       </div>
     </div>
@@ -427,14 +426,13 @@ export default function AirbnbPosterPage({ navigate }: { navigate: (path: string
 
   const signatureOf = (state: AirbnbDesignState) =>
     JSON.stringify({
-      headerFont: state.headerFont,
-      bodyFont: state.bodyFont,
-      orientation: state.orientation,
-      canvasSize: state.canvasSize,
-      inkColor: state.inkColor,
-      accentColor: state.accentColor,
-      bgColor: state.bgColor,
-      layoutStyle: state.layoutStyle
+      headerFont: state.headerFont, bodyFont: state.bodyFont,
+      orientation: state.orientation, canvasSize: state.canvasSize,
+      inkColor: state.inkColor, accentColor: state.accentColor, bgColor: state.bgColor,
+      titleText: state.titleText, subtitleText: state.subtitleText,
+      wifiNetwork: state.wifiNetwork, wifiPass: state.wifiPass,
+      locationText: state.locationText, contactHost: state.contactHost, contactPhone: state.contactPhone,
+      checkoutTime: state.checkoutTime, rulesText: state.rulesText
     });
 
   const setupCanvas = (canvas: fabric.Canvas, dims: { width: number; height: number }, state: any) => {
@@ -449,19 +447,6 @@ export default function AirbnbPosterPage({ navigate }: { navigate: (path: string
       lastSignatureRef.current = sig;
       return;
     }
-
-    const findByKey = (key: string) => builtObjectsRef.current.find((o: any) => o.data && o.data.stateKey === key);
-    const patchText = (key: string, val: string) => {
-      const obj: any = findByKey(key);
-      if (!obj) return;
-      if (obj.isEditing) return;
-      if (obj.text !== val) obj.set({ text: val });
-    };
-
-    patchText('titleText', state.titleText);
-    patchText('wifiText', state.wifiText);
-    patchText('rulesText', state.rulesText);
-    canvas.requestRenderAll();
   };
 
   const onLayoutChange = (canvas: fabric.Canvas, dims: { width: number; height: number }, state: any) => {
