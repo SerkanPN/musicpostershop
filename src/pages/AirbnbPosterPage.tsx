@@ -41,13 +41,13 @@ interface Mood {
 
 const MOODS: Record<string, Mood> = {
   'cozy-beach-retreat': { bg: '#FDFBF7', ink: '#2F4F4F', accent: '#D2B48C', headerFont: 'Playfair Display', bodyFont: 'Montserrat', layoutStyle: 'two-column-elegant' },
-  'urban-industrial-loft': { bg: '#F4F4F4', ink: '#1A1A1A', accent: '#8B4513', headerFont: 'Anton', bodyFont: 'Space Mono', layoutStyle: 'brutalist-block' },
+  'urban-industrial-loft': { bg: '#111111', ink: '#F4F4F4', accent: '#FF4500', headerFont: 'Anton', bodyFont: 'Space Mono', layoutStyle: 'brutalist-block' },
   'alpine-mountain-cabin': { bg: '#FAFAFA', ink: '#2C3E35', accent: '#C87941', headerFont: 'Vollkorn', bodyFont: 'Lato', layoutStyle: 'two-column-elegant' },
   'desert-oasis-guide': { bg: '#FDF5E6', ink: '#5C4033', accent: '#8FBC8F', headerFont: 'Lora', bodyFont: 'Open Sans', layoutStyle: 'two-column-elegant' },
   'lake-house-rules': { bg: '#FFFFFF', ink: '#1A365D', accent: '#708090', headerFont: 'Merriweather', bodyFont: 'Roboto', layoutStyle: 'two-column-elegant' },
-  'city-center-apartment': { bg: '#FFFFFF', ink: '#000000', accent: '#A9A9A9', headerFont: 'Inter', bodyFont: 'Inter', layoutStyle: 'modern-minimal' },
+  'city-center-apartment': { bg: '#FFFFFF', ink: '#000000', accent: '#0047AB', headerFont: 'Inter', bodyFont: 'Inter', layoutStyle: 'modern-minimal' },
   'forest-treehouse': { bg: '#F5F5DC', ink: '#3E4F3C', accent: '#DAA520', headerFont: 'Dancing Script', bodyFont: 'Nunito', layoutStyle: 'two-column-elegant' },
-  'luxury-villa-guide': { bg: '#0A0A0A', ink: '#F5F5F5', accent: '#D4AF37', headerFont: 'Cinzel', bodyFont: 'Montserrat', layoutStyle: 'two-column-elegant' },
+  'luxury-villa-guide': { bg: '#0A0A0A', ink: '#F5F5F5', accent: '#D4AF37', headerFont: 'Cinzel', bodyFont: 'Montserrat', layoutStyle: 'modern-minimal' },
   'vintage-cottage': { bg: '#FFFAF0', ink: '#4A3728', accent: '#CD5C5C', headerFont: 'Caveat', bodyFont: 'Lora', layoutStyle: 'two-column-elegant' },
   'tropical-resort': { bg: '#FFFFF0', ink: '#006400', accent: '#FF7F50', headerFont: 'Oswald', bodyFont: 'Montserrat', layoutStyle: 'brutalist-block' },
   'family-guest-house': { bg: '#FFFFFF', ink: '#333333', accent: '#4682B4', headerFont: 'Nunito', bodyFont: 'Nunito', layoutStyle: 'modern-minimal' },
@@ -56,7 +56,7 @@ const MOODS: Record<string, Mood> = {
   'houseboat-retreat': { bg: '#FFFFFF', ink: '#003366', accent: '#CC0000', headerFont: 'Montserrat', bodyFont: 'Open Sans', layoutStyle: 'modern-minimal' },
   'glamping-tent-guide': { bg: '#FFF8DC', ink: '#4B5320', accent: '#D2691E', headerFont: 'Caveat', bodyFont: 'Caveat', layoutStyle: 'two-column-elegant' },
   'christmas-cabin-guide': { bg: '#FFFFFF', ink: '#800000', accent: '#006400', headerFont: 'Playfair Display', bodyFont: 'Lora', layoutStyle: 'two-column-elegant' },
-  'halloween-haunted-house': { bg: '#1A1A1A', ink: '#D3D3D3', accent: '#8B0000', headerFont: 'Creepster', bodyFont: 'Crimson Text', layoutStyle: 'two-column-elegant' }
+  'halloween-haunted-house': { bg: '#1A1A1A', ink: '#D3D3D3', accent: '#8B0000', headerFont: 'Creepster', bodyFont: 'Crimson Text', layoutStyle: 'brutalist-block' }
 };
 
 interface PresetContent {
@@ -79,16 +79,15 @@ const PRESET_CONTENT: Record<string, PresetContent> = {
     rules: 'No smoking inside\nNo pets allowed\nNo parties or events\nQuiet hours start at 10 PM\nWash off sand outside\nPlease report any damage' 
   },
   'urban-industrial-loft': { 
-    title: 'Welcome Home', subtitle: 'ENJOY YOUR STAY IN THE CITY', 
+    title: 'URBAN LOFT', subtitle: 'ENJOY YOUR STAY IN THE CITY', 
     network: 'Loft_Network', pass: 'concrete123',
-    location: '456 Urban Ave, Apt 4B, NY', host: 'Alex', phone: '+1 (555) 987-6543', checkout: '10:00 AM',
-    rules: 'No loud music after 10 PM\nLock the deadbolt when leaving\nTrash chute is down the hall\nDo not prop building doors\nNo smoking' 
+    location: '456 Urban Ave, Apt 4B', host: 'Alex', phone: '+1 (555) 987-6543', checkout: '10:00 AM',
+    rules: 'No loud music after 10 PM\nLock deadbolt when leaving\nTrash chute is down the hall\nDo not prop building doors\nNo smoking' 
   },
-  // Default fallback content for others to save space, assuming they follow a similar rich structure
   'default': { 
     title: 'Welcome', subtitle: 'WE ARE SO GLAD YOU ARE HERE', 
     network: 'Guest_WiFi', pass: 'enjoyyourstay',
-    location: '101 Holiday Lane, Resort Town', host: 'Your Host', phone: '+1 (123) 456-7890', checkout: '11:00 AM',
+    location: '101 Holiday Lane', host: 'Your Host', phone: '+1 (123) 456-7890', checkout: '11:00 AM',
     rules: 'No smoking inside\nRespect the neighbors\nQuiet hours 10 PM - 8 AM\nTurn off AC when leaving\nLock all doors and windows\nDispose of trash in bins' 
   }
 };
@@ -130,6 +129,7 @@ function drawPoster(canvas: fabric.Canvas, dims: { width: number; height: number
   const locked = canvas.selection === false;
   const cw = dims.width;
   const ch = dims.height;
+  const isLand = state.orientation === 'landscape';
   const fit = cw / 600;
   const fs = (px: number) => px * fit;
 
@@ -143,167 +143,258 @@ function drawPoster(canvas: fabric.Canvas, dims: { width: number; height: number
     });
   };
 
-  // OUTER BORDER
-  const margin = fs(25);
-  const border = new fabric.Rect({
-    left: margin, top: margin, width: cw - (margin * 2), height: ch - (margin * 2),
-    fill: 'transparent', stroke: state.inkColor, strokeWidth: fs(1.5),
-    selectable: false, evented: false
-  });
-  add(border);
-  
-  // INNER THIN BORDER (Double border effect)
-  const innerMargin = fs(30);
-  const innerBorder = new fabric.Rect({
-    left: innerMargin, top: innerMargin, width: cw - (innerMargin * 2), height: ch - (innerMargin * 2),
-    fill: 'transparent', stroke: state.inkColor, strokeWidth: fs(0.5), opacity: 0.5,
-    selectable: false, evented: false
-  });
-  add(innerBorder);
+  const style = state.layoutStyle;
 
-  // HEADER SECTION
-  let currentY = fs(60);
-  
-  const title = createText(state.titleText, 65, state.headerFont, state.inkColor, {
-    left: cw / 2, top: currentY, originX: 'center', textAlign: 'center', width: cw * 0.8,
-    data: { edType: 'header', stateKey: 'titleText' }
-  });
-  add(title);
-  currentY += (title.height || fs(70)) + fs(5);
+  // ============================================================================
+  // 1. TWO-COLUMN ELEGANT (Classic Wedding / Fine Art Resort Style)
+  // ============================================================================
+  if (style === 'two-column-elegant') {
+    const margin = fs(25);
+    add(new fabric.Rect({ left: margin, top: margin, width: cw - margin*2, height: ch - margin*2, fill: 'transparent', stroke: state.inkColor, strokeWidth: fs(1.5), selectable: false }));
+    add(new fabric.Rect({ left: margin + fs(5), top: margin + fs(5), width: cw - (margin*2) - fs(10), height: ch - (margin*2) - fs(10), fill: 'transparent', stroke: state.inkColor, strokeWidth: fs(0.5), opacity: 0.5, selectable: false }));
 
-  const subtitle = createText(state.subtitleText.toUpperCase(), 12, state.bodyFont, state.inkColor, {
-    left: cw / 2, top: currentY, originX: 'center', textAlign: 'center', width: cw * 0.8, charSpacing: 150, fontWeight: 'bold',
-    data: { edType: 'header', stateKey: 'subtitleText' }
-  });
-  add(subtitle);
-  currentY += (subtitle.height || fs(15)) + fs(20);
+    if (isLand) {
+      // LANDSCAPE: 3 Sections (Left: Header, Mid: Info, Right: Rules)
+      const leftColX = cw * 0.08;
+      const midColX = cw * 0.42;
+      const rightColX = cw * 0.70;
+      const colW = cw * 0.22;
 
-  // DIVIDER LINE
-  const dividerLine = new fabric.Line([cw * 0.3, currentY, cw * 0.7, currentY], {
-    stroke: state.inkColor, strokeWidth: fs(1), opacity: 0.3, selectable: false
-  });
-  add(dividerLine);
-  currentY += fs(30);
+      // Header (Left)
+      const title = createText(state.titleText, 55, state.headerFont, state.inkColor, { left: leftColX, top: ch * 0.35, width: cw * 0.3, textAlign: 'left', data: { edType: 'header', stateKey: 'titleText' } });
+      add(title);
+      const sub = createText(state.subtitleText.toUpperCase(), 10, state.bodyFont, state.inkColor, { left: leftColX, top: title.top! + (title.height||0) + fs(10), width: cw * 0.3, charSpacing: 100, data: { edType: 'header', stateKey: 'subtitleText' } });
+      add(sub);
 
-  // TWO COLUMN LAYOUT VARIABLES
-  const colLeftX = fs(70);
-  const colRightX = cw / 2 + fs(20);
-  const colWidth = (cw / 2) - fs(90);
+      add(new fabric.Line([midColX - fs(20), ch * 0.15, midColX - fs(20), ch * 0.85], { stroke: state.inkColor, strokeWidth: fs(0.5), opacity: 0.3, selectable: false }));
 
-  // HELPER FUNCTION: DRAW INFO BLOCK WITH ICON
-  const drawInfoBlock = (x: number, y: number, iconStr: string, titleStr: string, line1: string, line2: string, keys: string[]) => {
-    let blockY = y;
-    
-    // Icon (Using Unicode characters as reliable icons across devices in canvas)
-    const icon = createText(iconStr, 24, 'sans-serif', state.inkColor, {
-      left: x, top: blockY, originX: 'center', width: fs(30), textAlign: 'center', selectable: false, evented: false
-    });
-    add(icon);
+      // Info Blocks (Mid)
+      let cy = ch * 0.15;
+      const drawBlock = (icon: string, tit: string, l1: string, l2: string, x: number) => {
+        add(createText(icon, 18, 'sans-serif', state.inkColor, { left: x, top: cy, width: fs(25), textAlign: 'center', selectable: false }));
+        add(createText(tit, 12, state.bodyFont, state.inkColor, { left: x + fs(30), top: cy + fs(2), width: colW - fs(30), fontWeight: 'bold', charSpacing: 50, selectable: false }));
+        add(new fabric.Line([x + fs(30), cy + fs(20), x + colW, cy + fs(20)], { stroke: state.accentColor, strokeWidth: fs(1), opacity: 0.5, selectable: false }));
+        cy += fs(30);
+        if(l1) { const t1 = createText(l1, 10, state.bodyFont, state.inkColor, { left: x + fs(30), top: cy, width: colW - fs(30) }); add(t1); cy += (t1.height||0) + fs(5); }
+        if(l2) { const t2 = createText(l2, 10, state.bodyFont, state.inkColor, { left: x + fs(30), top: cy, width: colW - fs(30) }); add(t2); cy += (t2.height||0) + fs(5); }
+        cy += fs(15);
+      };
+      
+      drawBlock('📶', 'WIFI', `Net: ${state.wifiNetwork}`, `Pass: ${state.wifiPass}`, midColX);
+      drawBlock('📍', 'LOCATION', state.locationText, '', midColX);
+      drawBlock('📱', 'CONTACT', `Host: ${state.contactHost}`, `Ph: ${state.contactPhone}`, midColX);
+      drawBlock('🔑', 'CHECK OUT', `Time: ${state.checkoutTime}`, '', midColX);
 
-    const blockTitle = createText(titleStr.toUpperCase(), 14, state.bodyFont, state.inkColor, {
-      left: x + fs(25), top: blockY + fs(5), width: colWidth - fs(25), fontWeight: 'bold', charSpacing: 100, selectable: false
-    });
-    add(blockTitle);
-    
-    const line = new fabric.Line([x + fs(25), blockY + fs(25), x + colWidth, blockY + fs(25)], {
-      stroke: state.accentColor, strokeWidth: fs(1.5), opacity: 0.6, selectable: false
-    });
-    add(line);
-    blockY += fs(35);
+      // Rules (Right)
+      let ry = ch * 0.15;
+      add(createText('📋', 18, 'sans-serif', state.inkColor, { left: rightColX, top: ry, width: fs(25), textAlign: 'center', selectable: false }));
+      add(createText('HOUSE RULES', 12, state.bodyFont, state.inkColor, { left: rightColX + fs(30), top: ry + fs(2), width: colW - fs(30), fontWeight: 'bold', charSpacing: 50, selectable: false }));
+      add(new fabric.Line([rightColX + fs(30), ry + fs(20), rightColX + colW, ry + fs(20)], { stroke: state.accentColor, strokeWidth: fs(1), opacity: 0.5, selectable: false }));
+      ry += fs(30);
 
-    if (line1) {
-      const l1 = createText(line1, 11, state.bodyFont, state.inkColor, {
-        left: x + fs(25), top: blockY, width: colWidth - fs(25),
-        data: { edType: 'meta', stateKey: keys[0] }
+      state.rulesText.split('\n').filter(r => r.trim()).forEach(rule => {
+        add(createText('•', 12, 'sans-serif', state.accentColor, { left: rightColX + fs(25), top: ry, width: fs(15), textAlign: 'center', selectable: false }));
+        const rObj = createText(rule, 10, state.bodyFont, state.inkColor, { left: rightColX + fs(40), top: ry, width: colW - fs(40), data: { edType: 'text', stateKey: 'rulesText' } });
+        add(rObj);
+        ry += (rObj.height || fs(15)) + fs(8);
       });
-      add(l1);
-      blockY += (l1.height || fs(15)) + fs(5);
-    }
-    
-    if (line2) {
-      const l2 = createText(line2, 11, state.bodyFont, state.inkColor, {
-        left: x + fs(25), top: blockY, width: colWidth - fs(25),
-        data: { edType: 'meta', stateKey: keys[1] }
+
+    } else {
+      // PORTRAIT: Header Top, 2 Columns Below
+      let cy = ch * 0.12;
+      const title = createText(state.titleText, 55, state.headerFont, state.inkColor, { left: cw/2, top: cy, originX: 'center', textAlign: 'center', width: cw*0.8, data: { edType: 'header', stateKey: 'titleText' } });
+      add(title);
+      cy += (title.height||0) + fs(10);
+
+      const sub = createText(state.subtitleText.toUpperCase(), 11, state.bodyFont, state.inkColor, { left: cw/2, top: cy, originX: 'center', textAlign: 'center', width: cw*0.8, charSpacing: 100, fontWeight: 'bold', data: { edType: 'header', stateKey: 'subtitleText' } });
+      add(sub);
+      cy += (sub.height||0) + fs(30);
+
+      add(new fabric.Line([cw * 0.2, cy, cw * 0.8, cy], { stroke: state.inkColor, strokeWidth: fs(0.5), opacity: 0.3, selectable: false }));
+      cy += fs(30);
+
+      const colW = cw * 0.35;
+      const leftX = cw * 0.12;
+      const rightX = cw * 0.53;
+
+      let leftY = cy;
+      const drawBlock = (icon: string, tit: string, l1: string, l2: string, x: number, currentY: number) => {
+        let blockY = currentY;
+        add(createText(icon, 18, 'sans-serif', state.inkColor, { left: x, top: blockY, width: fs(25), textAlign: 'center', selectable: false }));
+        add(createText(tit, 12, state.bodyFont, state.inkColor, { left: x + fs(30), top: blockY + fs(2), width: colW - fs(30), fontWeight: 'bold', charSpacing: 50, selectable: false }));
+        add(new fabric.Line([x + fs(30), blockY + fs(20), x + colW, blockY + fs(20)], { stroke: state.accentColor, strokeWidth: fs(1.5), opacity: 0.5, selectable: false }));
+        blockY += fs(30);
+        if(l1) { const t1 = createText(l1, 10, state.bodyFont, state.inkColor, { left: x + fs(30), top: blockY, width: colW - fs(30) }); add(t1); blockY += (t1.height||0) + fs(5); }
+        if(l2) { const t2 = createText(l2, 10, state.bodyFont, state.inkColor, { left: x + fs(30), top: blockY, width: colW - fs(30) }); add(t2); blockY += (t2.height||0) + fs(5); }
+        return blockY + fs(15);
+      };
+
+      leftY = drawBlock('📶', 'WIFI', `Network: ${state.wifiNetwork}`, `Password: ${state.wifiPass}`, leftX, leftY);
+      leftY = drawBlock('📍', 'LOCATION', state.locationText, '', leftX, leftY);
+      leftY = drawBlock('📱', 'CONTACT', `Host: ${state.contactHost}`, `Ph: ${state.contactPhone}`, leftX, leftY);
+      leftY = drawBlock('🔑', 'CHECK OUT', `Time: ${state.checkoutTime}`, '', leftX, leftY);
+
+      let rightY = cy;
+      add(createText('📋', 18, 'sans-serif', state.inkColor, { left: rightX, top: rightY, width: fs(25), textAlign: 'center', selectable: false }));
+      add(createText('HOUSE RULES', 12, state.bodyFont, state.inkColor, { left: rightX + fs(30), top: rightY + fs(2), width: colW - fs(30), fontWeight: 'bold', charSpacing: 50, selectable: false }));
+      add(new fabric.Line([rightX + fs(30), rightY + fs(20), rightX + colW, rightY + fs(20)], { stroke: state.accentColor, strokeWidth: fs(1.5), opacity: 0.5, selectable: false }));
+      rightY += fs(30);
+
+      state.rulesText.split('\n').filter(r => r.trim()).forEach(rule => {
+        add(createText('☑', 12, 'sans-serif', state.accentColor, { left: rightX + fs(25), top: rightY, width: fs(20), textAlign: 'center', selectable: false }));
+        const rObj = createText(rule, 11, state.bodyFont, state.inkColor, { left: rightX + fs(45), top: rightY, width: colW - fs(45), data: { edType: 'text', stateKey: 'rulesText' } });
+        add(rObj);
+        rightY += (rObj.height || fs(15)) + fs(10);
       });
-      add(l2);
-      blockY += (l2.height || fs(15)) + fs(5);
+      
+      const bottomY = ch - fs(70);
+      add(new fabric.Line([cw * 0.3, bottomY, cw * 0.7, bottomY], { stroke: state.inkColor, strokeWidth: fs(0.5), opacity: 0.3, selectable: false }));
+      add(createText('★★★★★', 16, 'sans-serif', state.inkColor, { left: cw/2, top: bottomY + fs(10), originX: 'center', width: cw, textAlign: 'center', selectable: false }));
+      add(createText('If you enjoyed your stay, please leave us a review!\nWe\'d love to hear from you.', 9, state.bodyFont, state.inkColor, { left: cw/2, top: bottomY + fs(35), originX: 'center', width: cw*0.6, textAlign: 'center', fontStyle: 'italic', selectable: false }));
     }
-    
-    return blockY + fs(20);
-  };
+  }
 
-  // --- LEFT COLUMN ---
-  let leftY = currentY;
-  
-  // WiFi Block
-  leftY = drawInfoBlock(colLeftX, leftY, '📶', 'WIFI', `Network:\n${state.wifiNetwork}`, `Password:\n${state.wifiPass}`, ['wifiNetwork', 'wifiPass']);
-  
-  // Location Block
-  leftY = drawInfoBlock(colLeftX, leftY, '📍', 'LOCATION', state.locationText, '', ['locationText', '']);
-  
-  // Contact Block
-  leftY = drawInfoBlock(colLeftX, leftY, '📱', 'CONTACT', `Host: ${state.contactHost}`, `Phone: ${state.contactPhone}`, ['contactHost', 'contactPhone']);
+  // ============================================================================
+  // 2. BRUTALIST BLOCK (Urban Loft / Tropical Block Style)
+  // ============================================================================
+  else if (style === 'brutalist-block') {
+    if (isLand) {
+      // LANDSCAPE: 3 Bold Vertical Panels
+      const panelW = cw / 3;
+      add(new fabric.Rect({ left: 0, top: 0, width: panelW, height: ch, fill: state.inkColor, selectable: false }));
+      add(new fabric.Line({ x1: panelW*2, y1: 0, x2: panelW*2, y2: ch, stroke: state.inkColor, strokeWidth: fs(4), selectable: false }));
 
-  // Check-Out Block (Moved to left to balance)
-  leftY = drawInfoBlock(colLeftX, leftY, '🔑', 'CHECK OUT', `Time: ${state.checkoutTime}`, 'Please leave keys on the counter.', ['checkoutTime', '']);
+      // Panel 1: Header (Inverted)
+      const title = createText(state.titleText.toUpperCase(), 60, state.headerFont, state.bgColor, { left: panelW/2, top: ch*0.2, originX: 'center', width: panelW*0.8, textAlign: 'center', data: { edType: 'header', stateKey: 'titleText' } });
+      add(title);
+      add(createText(state.subtitleText.toUpperCase(), 14, state.bodyFont, state.accentColor, { left: panelW/2, top: title.top! + (title.height||0) + fs(20), originX: 'center', width: panelW*0.8, textAlign: 'center', fontWeight: 'bold', data: { edType: 'header', stateKey: 'subtitleText' } }));
 
+      // Panel 2: Info
+      let p2y = ch*0.15;
+      const drawInfo = (label: string, val: string) => {
+        add(createText(label, 10, state.bodyFont, state.accentColor, { left: panelW + fs(30), top: p2y, width: panelW - fs(60), fontWeight: 'bold', charSpacing: 100, selectable: false }));
+        p2y += fs(15);
+        const v = createText(val, 14, state.bodyFont, state.inkColor, { left: panelW + fs(30), top: p2y, width: panelW - fs(60) });
+        add(v);
+        p2y += (v.height||0) + fs(25);
+        add(new fabric.Line([panelW + fs(30), p2y - fs(10), panelW*2 - fs(30), p2y - fs(10)], { stroke: state.inkColor, strokeWidth: fs(2), selectable: false }));
+      };
+      drawInfo('WIFI', `${state.wifiNetwork}\nPASS: ${state.wifiPass}`);
+      drawInfo('LOCATION', state.locationText);
+      drawInfo('CONTACT', `${state.contactHost} | ${state.contactPhone}`);
+      drawInfo('CHECK-OUT', state.checkoutTime);
 
-  // --- RIGHT COLUMN (RULES) ---
-  let rightY = currentY;
-  
-  const rulesIcon = createText('📋', 24, 'sans-serif', state.inkColor, {
-    left: colRightX, top: rightY, originX: 'center', width: fs(30), textAlign: 'center', selectable: false
-  });
-  add(rulesIcon);
+      // Panel 3: Rules
+      add(new fabric.Rect({ left: panelW*2 + fs(30), top: ch*0.15, width: panelW - fs(60), height: fs(40), fill: state.inkColor, selectable: false }));
+      add(createText('HOUSE RULES', 16, state.headerFont, state.bgColor, { left: panelW*2.5, top: ch*0.15 + fs(10), originX: 'center', width: panelW - fs(60), textAlign: 'center', charSpacing: 50, selectable: false }));
+      
+      let ry = ch*0.15 + fs(60);
+      state.rulesText.split('\n').filter(r => r.trim()).forEach(rule => {
+        add(createText('>', 14, state.headerFont, state.accentColor, { left: panelW*2 + fs(30), top: ry, width: fs(20), selectable: false }));
+        const rObj = createText(rule.toUpperCase(), 12, state.bodyFont, state.inkColor, { left: panelW*2 + fs(50), top: ry, width: panelW - fs(80), data: { edType: 'text', stateKey: 'rulesText' } });
+        add(rObj);
+        ry += (rObj.height || fs(15)) + fs(15);
+      });
 
-  const rulesTitle = createText('HOUSE RULES', 14, state.bodyFont, state.inkColor, {
-    left: colRightX + fs(25), top: rightY + fs(5), width: colWidth - fs(25), fontWeight: 'bold', charSpacing: 100, selectable: false
-  });
-  add(rulesTitle);
+    } else {
+      // PORTRAIT: Heavy stacked blocks
+      add(new fabric.Rect({ left: cw*0.05, top: ch*0.05, width: cw*0.9, height: fs(120), fill: state.inkColor, selectable: false }));
+      const title = createText(state.titleText.toUpperCase(), 50, state.headerFont, state.bgColor, { left: cw/2, top: ch*0.05 + fs(20), originX: 'center', width: cw*0.8, textAlign: 'center', data: { edType: 'header', stateKey: 'titleText' } });
+      add(title);
+      add(createText(state.subtitleText.toUpperCase(), 12, state.bodyFont, state.accentColor, { left: cw/2, top: ch*0.05 + fs(80), originX: 'center', width: cw*0.8, textAlign: 'center', charSpacing: 100, fontWeight: 'bold' }));
 
-  const rulesLine = new fabric.Line([colRightX + fs(25), rightY + fs(25), colRightX + colWidth, rightY + fs(25)], {
-    stroke: state.accentColor, strokeWidth: fs(1.5), opacity: 0.6, selectable: false
-  });
-  add(rulesLine);
-  rightY += fs(35);
+      // Info row
+      let cy = ch*0.05 + fs(140);
+      const iw = cw*0.42;
+      const drawBox = (x: number, y: number, label: string, val: string) => {
+        add(new fabric.Rect({ left: x, top: y, width: iw, height: fs(80), fill: 'transparent', stroke: state.inkColor, strokeWidth: fs(3), selectable: false }));
+        add(createText(label, 10, state.bodyFont, state.bgColor, { left: x, top: y, width: iw, height: fs(25), fill: state.inkColor, textAlign: 'center', fontWeight: 'bold' }));
+        add(new fabric.Rect({ left: x, top: y, width: iw, height: fs(25), fill: state.inkColor, selectable: false }));
+        add(createText(label, 10, state.bodyFont, state.bgColor, { left: x, top: y + fs(6), width: iw, textAlign: 'center', fontWeight: 'bold', charSpacing: 50, selectable: false }));
+        add(createText(val, 12, state.bodyFont, state.inkColor, { left: x + fs(10), top: y + fs(35), width: iw - fs(20), textAlign: 'center' }));
+      };
 
-  // Parse rules text and draw with checkboxes/bullets
-  const rulesArray = state.rulesText.split('\n').filter(r => r.trim().length > 0);
-  rulesArray.forEach((rule, idx) => {
-    // Bullet/Checkbox
-    const bullet = createText('☑', 14, 'sans-serif', state.accentColor, {
-      left: colRightX + fs(25), top: rightY, width: fs(20), selectable: false
-    });
-    add(bullet);
+      drawBox(cw*0.05, cy, 'WIFI', `${state.wifiNetwork}\nPW: ${state.wifiPass}`);
+      drawBox(cw*0.53, cy, 'CHECK-OUT', `TIME: ${state.checkoutTime}`);
+      cy += fs(100);
+      
+      drawBox(cw*0.05, cy, 'LOCATION', state.locationText);
+      drawBox(cw*0.53, cy, 'CONTACT', `${state.contactHost}\n${state.contactPhone}`);
+      cy += fs(100);
 
-    // Dynamic Rule Text
-    // Note: We combine them in state, but draw them separately for aesthetic alignment
-    const ruleObj = createText(rule, 11, state.bodyFont, state.inkColor, {
-      left: colRightX + fs(45), top: rightY + fs(2), width: colWidth - fs(45),
-      data: { edType: 'text', stateKey: 'rulesText' } // Editing any rule updates the whole block via panel
-    });
-    add(ruleObj);
-    
-    rightY += (ruleObj.height || fs(15)) + fs(10);
-  });
+      // Rules Block
+      add(new fabric.Rect({ left: cw*0.05, top: cy, width: cw*0.9, height: fs(35), fill: state.inkColor, selectable: false }));
+      add(createText('HOUSE RULES', 16, state.headerFont, state.bgColor, { left: cw/2, top: cy + fs(8), originX: 'center', width: cw*0.8, textAlign: 'center', charSpacing: 100, selectable: false }));
+      cy += fs(55);
 
-  // --- FOOTER REVIEWS SECTION ---
-  const bottomY = ch - fs(120);
-  
-  const footerLine = new fabric.Line([cw * 0.2, bottomY, cw * 0.8, bottomY], {
-    stroke: state.inkColor, strokeWidth: fs(1), opacity: 0.2, selectable: false
-  });
-  add(footerLine);
+      state.rulesText.split('\n').filter(r => r.trim()).forEach(rule => {
+        add(createText('■', 12, 'sans-serif', state.accentColor, { left: cw*0.08, top: cy, width: fs(20), selectable: false }));
+        const rObj = createText(rule.toUpperCase(), 12, state.bodyFont, state.inkColor, { left: cw*0.15, top: cy, width: cw*0.8, fontWeight: 'bold', data: { edType: 'text', stateKey: 'rulesText' } });
+        add(rObj);
+        cy += (rObj.height || fs(15)) + fs(15);
+      });
+    }
+  }
 
-  const reviewStars = createText('★★★★★', 20, 'sans-serif', state.inkColor, {
-    left: cw / 2, top: bottomY + fs(15), originX: 'center', width: cw, textAlign: 'center', selectable: false
-  });
-  add(reviewStars);
+  // ============================================================================
+  // 3. MODERN MINIMAL (City Center / Luxury Villa Style)
+  // ============================================================================
+  else {
+    if (isLand) {
+      // LANDSCAPE: Left Heavy Asymmetrical
+      const title = createText(state.titleText, 70, state.headerFont, state.inkColor, { left: cw*0.05, top: ch*0.55, width: cw*0.4, textAlign: 'left', lineHeight: 1.1, charSpacing: -20, data: { edType: 'header', stateKey: 'titleText' } });
+      add(title);
+      add(createText(state.subtitleText, 10, state.bodyFont, state.accentColor, { left: cw*0.05, top: title.top! - fs(20), width: cw*0.4, charSpacing: 200, fontWeight: 'bold' }));
 
-  const reviewText = createText('If you enjoyed your stay, please leave us a review!\nWe\'d love to hear from you.', 10, state.bodyFont, state.inkColor, {
-    left: cw / 2, top: bottomY + fs(45), originX: 'center', width: cw * 0.6, textAlign: 'center', fontStyle: 'italic', selectable: false
-  });
-  add(reviewText);
+      add(new fabric.Line([cw*0.5, ch*0.1, cw*0.5, ch*0.9], { stroke: state.inkColor, strokeWidth: fs(1), opacity: 0.2, selectable: false }));
+
+      let ry = ch*0.1;
+      const rx = cw*0.55;
+      const rw = cw*0.4;
+
+      add(createText('WIFI & INFO', 10, state.bodyFont, state.accentColor, { left: rx, top: ry, width: rw, fontWeight: 'bold', charSpacing: 100, selectable: false }));
+      ry += fs(25);
+      const infoT = createText(`Net: ${state.wifiNetwork}  |  Pass: ${state.wifiPass}\nCheck-out: ${state.checkoutTime}\nHost: ${state.contactHost} (${state.contactPhone})`, 12, state.bodyFont, state.inkColor, { left: rx, top: ry, width: rw, lineHeight: 1.6 });
+      add(infoT);
+      ry += (infoT.height||0) + fs(40);
+
+      add(createText('GUIDELINES', 10, state.bodyFont, state.accentColor, { left: rx, top: ry, width: rw, fontWeight: 'bold', charSpacing: 100, selectable: false }));
+      ry += fs(25);
+      const rObj = createText(state.rulesText, 14, state.bodyFont, state.inkColor, { left: rx, top: ry, width: rw, lineHeight: 1.8, data: { edType: 'text', stateKey: 'rulesText' } });
+      add(rObj);
+
+    } else {
+      // PORTRAIT: Minimal bottom-heavy
+      add(createText(state.subtitleText, 10, state.bodyFont, state.accentColor, { left: cw*0.08, top: ch*0.08, width: cw*0.84, charSpacing: 200, fontWeight: 'bold' }));
+      const title = createText(state.titleText, 60, state.headerFont, state.inkColor, { left: cw*0.08, top: ch*0.08 + fs(20), width: cw*0.84, textAlign: 'left', lineHeight: 1.1, charSpacing: -20, data: { edType: 'header', stateKey: 'titleText' } });
+      add(title);
+
+      let cy = ch*0.4;
+      const labelX = cw*0.08;
+      const valX = cw*0.35;
+      const valW = cw*0.57;
+
+      const drawRow = (lbl: string, val: string) => {
+        add(new fabric.Line([labelX, cy, cw*0.92, cy], { stroke: state.inkColor, strokeWidth: fs(0.5), opacity: 0.2, selectable: false }));
+        cy += fs(15);
+        add(createText(lbl, 10, state.bodyFont, state.accentColor, { left: labelX, top: cy, width: valX - labelX, fontWeight: 'bold', charSpacing: 100, selectable: false }));
+        const v = createText(val, 12, state.bodyFont, state.inkColor, { left: valX, top: cy, width: valW, lineHeight: 1.5 });
+        add(v);
+        cy += (v.height||0) + fs(25);
+      };
+
+      drawRow('WIFI', `Network: ${state.wifiNetwork}\nPassword: ${state.wifiPass}`);
+      drawRow('LOCATION', state.locationText);
+      drawRow('CONTACT', `${state.contactHost}\n${state.contactPhone}`);
+      drawRow('CHECK-OUT', state.checkoutTime);
+      
+      add(new fabric.Line([labelX, cy, cw*0.92, cy], { stroke: state.inkColor, strokeWidth: fs(0.5), opacity: 0.2, selectable: false }));
+      cy += fs(15);
+      add(createText('RULES', 10, state.bodyFont, state.accentColor, { left: labelX, top: cy, width: valX - labelX, fontWeight: 'bold', charSpacing: 100, selectable: false }));
+      const rObj = createText(state.rulesText, 12, state.bodyFont, state.inkColor, { left: valX, top: cy, width: valW, lineHeight: 1.8, data: { edType: 'text', stateKey: 'rulesText' } });
+      add(rObj);
+    }
+  }
 
   canvas.requestRenderAll();
 }
@@ -386,7 +477,7 @@ function renderLeftPanels(
         <div className="form-row">
           <label>Header Font</label>
           <select value={state.headerFont} onChange={(e) => updateState('headerFont', e.target.value)}>
-            {['Playfair Display', 'Caveat', 'Lora', 'Anton', 'Vollkorn', 'Josefin Sans', 'Inter', 'Merriweather', 'Dancing Script', 'Oswald', 'Nunito', 'Courier Prime', 'Cinzel'].map((f) => <option key={f} value={f}>{f}</option>)}
+            {['Playfair Display', 'Caveat', 'Lora', 'Anton', 'Vollkorn', 'Josefin Sans', 'Inter', 'Merriweather', 'Dancing Script', 'Oswald', 'Nunito', 'Courier Prime', 'Cinzel', 'Creepster'].map((f) => <option key={f} value={f}>{f}</option>)}
           </select>
         </div>
         <div className="form-row">
