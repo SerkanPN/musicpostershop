@@ -875,3 +875,38 @@ export function loveInvoiceRenderRightPanels(
     </div>
   );
 }
+
+// ---------------------------------------------------------------------
+// Usage example (not exported — just documentation of how this plugs in)
+// ---------------------------------------------------------------------
+//
+// import PosterEngine from './PosterEngine';
+// import {
+//   loveInvoiceDefaultState, loveInvoiceOnApplyPreset, loveInvoiceSetupCanvas,
+//   loveInvoiceUpdateCanvas, loveInvoiceOnLayoutChange,
+//   loveInvoiceRenderLeftPanels, loveInvoiceRenderRightPanels,
+// } from './LoveInvoiceTemplate';
+// import { POSTER_PRESETS } from './posterPresets';
+//
+// function groupByCategory(list: { id: string; label: string; category: string }[]) {
+//   const byCat: Record<string, any[]> = {};
+//   list.forEach((p) => { (byCat[p.category] ||= []).push(p); });
+//   return Object.entries(byCat).map(([label, items]) => ({ label, items }));
+// }
+//
+// export default function LoveInvoicePage({ navigate }: { navigate: (p: string) => void }) {
+//   return (
+//     <PosterEngine
+//       title="Love Invoice"
+//       defaultState={loveInvoiceDefaultState}
+//       presets={groupByCategory(POSTER_PRESETS.RECEIPT)}
+//       onApplyPreset={loveInvoiceOnApplyPreset}
+//       setupCanvas={loveInvoiceSetupCanvas}
+//       updateCanvas={loveInvoiceUpdateCanvas}
+//       onLayoutChange={loveInvoiceOnLayoutChange}
+//       renderLeftPanels={loveInvoiceRenderLeftPanels}
+//       renderRightPanels={loveInvoiceRenderRightPanels}
+//       navigate={navigate}
+//     />
+//   );
+// }
