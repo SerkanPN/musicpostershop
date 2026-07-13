@@ -1,603 +1,912 @@
 import React from 'react';
 import * as fabric from 'fabric';
-import { Trash2, Plus } from 'lucide-react';
-import PosterEngine, { Accordion, GOOGLE_FONTS } from '../components/PosterEngine';
-import { POSTER_PRESETS } from '../lib/presets';
+import { Accordion } from './PosterEngine';
 
-const defaultState = {
-  canvasSize: '11.69x16.54',
+/**
+ * LOVE INVOICE — a RECEIPT-family poster template.
+ *
+ * This file is self-contained and implements exactly the five hooks
+ * PosterEngine expects: defaultState, onApplyPreset, setupCanvas,
+ * updateCanvas, onLayoutChange, renderLeftPanels, renderRightPanels.
+ *
+ * DESIGN: a thermal-receipt look-alike — torn paper edges, a dashed
+ * "cut here" divider between sections, a dotted price leader on every
+ * line item (like a real till receipt), and a rotated ink stamp reading
+ * "PAID IN FULL WITH MY HEART". Every line on it is an editable reason
+ * to love someone, "billed" at PRICELESS / FREE / INVALUABLE instead of
+ * a real amount — the whole point is that it reads as pure sentiment.
+ *
+ * IMPORTANT — must mirror PosterEngine's private layout constants.
+ * PosterEngine keeps BASE_MAX_W/BASE_MAX_H module-private, so we redeclare
+ * the same numbers here. If you ever change them in PosterEngine.tsx,
+ * change them here too or the layout math will drift.
+ */
+const BASE_MAX_W = 600;
+const BASE_MAX_H = 800;
+
+// ---------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------
+
+export interface LoveInvoiceItem {
+  id: string;
+  label: string;
+  price: string;
+}
+
+export interface ObjectOverride {
+  left?: number;
+  top?: number;
+  angle?: number;
+  scaleX?: number;
+  scaleY?: number;
+}
+
+export interface StyleOverride {
+  fontSize?: number;
+  fill?: string;
+  bold?: boolean;
+}
+
+export interface LoveInvoiceState {
+  templateId: 'love-invoice';
+  canvasSize: string;
+  orientation: 'portrait' | 'landscape';
+
+  // palette
+  bgColor: string;
+  paperColor: string;
+  inkColor: string;
+  accentColor: string;
+  fontFamily: string;
+
+  // header
+  title: string;
+  storeName: string;
+  storeTagline: string;
+
+  // meta block
+  recipientName: string;
+  senderName: string;
+  invoiceDate: string;
+  invoiceNumber: string;
+
+  // line items
+  items: LoveInvoiceItem[];
+
+  // totals
+  subtotalLabel: string;
+  subtotalValue: string;
+  discountLabel: string;
+  discountValue: string;
+  taxLabel: string;
+  taxValue: string;
+  totalLabel: string;
+  totalValue: string;
+
+  // stamp + footer
+  showStamp: boolean;
+  stampText: string;
+  showBarcode: boolean;
+  showTornEdges: boolean;
+  footerLine1: string;
+  footerLine2: string;
+
+  // free-form per-role style tweaks set from the properties panel
+  styleOverrides: Record<string, StyleOverride>;
+  // free-form per-object position tweaks captured when the user drags
+  // something on the canvas, keyed by the object's stable `data.key`
+  objectOverrides: Record<string, ObjectOverride>;
+}
+
+// ---------------------------------------------------------------------
+// Default state + the one preset this file contributes to the dropdown
+// ---------------------------------------------------------------------
+
+export const loveInvoiceDefaultState: LoveInvoiceState = {
+  templateId: 'love-invoice',
+  canvasSize: '8x10',
   orientation: 'portrait',
-  bgColor: '#f4f4f5',
-  textColor: '#18181b',
-  fontFamily: 'Courier Prime',
-  baseFontSize: 16,
-  
-  shopName: 'THE LOVE STORE CO.',
-  address: 'INFINITY ROAD, AMOR DISTRICT',
-  cashier: 'DESTINY',
-  receiptNo: 'REC-LOVE-2026',
-  
-  items: [
-    { qty: '1', name: 'FIRST EYE CONTACT', price: 0.00 },
-    { qty: '1', name: 'FIRST SWEET COFFEE DATE', price: 12.50 },
-    { qty: '45', name: 'LATE NIGHT PHONE CALLS', price: 90.00 },
-    { qty: '3', name: 'UNPLANNED ROAD TRIPS', price: 150.00 },
-    { qty: '99', name: 'SHARED WARM HUGS', price: 0.00 },
-    { qty: '1', name: 'PROMISE TO STAY FOREVER', price: 1000.00 }
-  ],
-  
-  taxRate: 0,
-  discount: 100,
-  totalLabel: 'ETERNAL LOVE',
-  footer: 'THANK YOU FOR BEING MY FOREVER',
 
-  dividerStyle: 'dashed',
-  headerAlign: 'center',
+  bgColor: '#e9e3d4',
+  paperColor: '#fffdf6',
+  inkColor: '#2b2620',
+  accentColor: '#c1121f',
+  fontFamily: 'Courier Prime',
+
+  title: 'LOVE INVOICE',
+  storeName: 'Two Hearts Co.',
+  storeTagline: 'ESTABLISHED THE DAY WE MET',
+
+  recipientName: 'My Love',
+  senderName: 'Your Forever Person',
+  invoiceDate: new Date().toLocaleDateString(),
+  invoiceNumber: '0001',
+
+  items: [
+    { id: 'i1', label: 'Your smile every morning', price: 'PRICELESS' },
+    { id: 'i2', label: 'The way you laugh at my jokes', price: '$0.00' },
+    { id: 'i3', label: 'Endless support & patience', price: 'FREE' },
+    { id: 'i4', label: 'Every late night conversation', price: 'INVALUABLE' },
+    { id: 'i5', label: 'A lifetime of adventures ahead', price: 'TBD' },
+  ],
+
+  subtotalLabel: 'SUBTOTAL',
+  subtotalValue: 'A LIFETIME OF MEMORIES',
+  discountLabel: 'DISCOUNT',
+  discountValue: "BECAUSE YOU'RE WORTH IT",
+  taxLabel: 'TAX (0%)',
+  taxValue: 'LOVE IS TAX-FREE',
+  totalLabel: 'TOTAL DUE',
+  totalValue: 'FOREVER',
+
+  showStamp: true,
+  stampText: 'PAID IN FULL\nWITH MY HEART',
   showBarcode: true,
-  uppercaseAll: true
+  showTornEdges: true,
+  footerLine1: 'THANK YOU FOR YOUR LOVE',
+  footerLine2: 'PLEASE VISIT AGAIN <3',
+
+  styleOverrides: {},
+  objectOverrides: {},
 };
 
-export default function ReceiptPosterPage({ navigate }: { navigate: (path: string) => void }) {
+// Matches the { id, label, category } shape used in POSTER_PRESETS.RECEIPT
+export const loveInvoicePreset = { id: 'love-invoice', label: 'Love Invoice', category: 'Love' };
 
-  const handleApplyPreset = (presetId: string, currentState: any) => {
-    const base = { ...currentState };
-    
-    switch (presetId) {
-      case 'love-invoice':
-        return {
-          ...base,
-          bgColor: '#fff0f5',
-          textColor: '#4a044e',
-          fontFamily: 'Playfair Display',
-          baseFontSize: 18,
-          shopName: 'The Love Story',
-          address: 'Avenue of Eternity, Heart District',
-          cashier: 'Cupid',
-          receiptNo: 'LOV-2026-XOXO',
-          taxRate: 0,
-          discount: 100,
-          totalLabel: 'Eternal Love',
-          footer: 'Thank you for choosing me.',
-          dividerStyle: 'solid',
-          headerAlign: 'center',
-          showBarcode: false,
-          uppercaseAll: false,
-          items: [
-            { qty: '1', name: 'First Eye Contact', price: 0.00 },
-            { qty: '1', name: 'First Sweet Coffee Date', price: 12.50 },
-            { qty: '45', name: 'Late Night Phone Calls', price: 90.00 },
-            { qty: '3', name: 'Unplanned Road Trips', price: 150.00 },
-            { qty: '99', name: 'Shared Warm Hugs', price: 0.00 },
-            { qty: '1', name: 'Promise To Stay Forever', price: 1000.00 }
-          ]
-        };
+// ---------------------------------------------------------------------
+// Small helpers
+// ---------------------------------------------------------------------
 
-      case 'marathon-finisher':
-        return {
-          ...base,
-          bgColor: '#0f172a',
-          textColor: '#38bdf8',
-          fontFamily: 'Bebas Neue',
-          baseFontSize: 24,
-          shopName: 'BOSTON ATHLETICS',
-          address: 'FINISH LINE - 26.2 MILES',
-          cashier: 'CHIP TIMER #410',
-          receiptNo: 'RUN-42K-FINISHER',
-          taxRate: 0,
-          discount: 0,
-          totalLabel: 'FINISH TIME',
-          footer: 'PAIN IS TEMPORARY. PRIDE IS FOREVER.',
-          dividerStyle: 'solid',
-          headerAlign: 'center',
-          showBarcode: true,
-          uppercaseAll: true,
-          items: [
-            { qty: '10K', name: 'FIRST SECTOR SPLIT', price: 48.30 },
-            { qty: '21K', name: 'HALF MARATHON MILESTONE', price: 104.15 },
-            { qty: '30K', name: 'HIT THE WALL DEFIANCE', price: 155.00 },
-            { qty: '42K', name: 'FINAL SPRINT REVELATION', price: 215.42 },
-            { qty: '1', name: 'TOTAL CALORIES BURNED', price: 2800.00 }
-          ]
-        };
+const ROLE_DEFAULTS: Record<string, { fontSize: number; bold?: boolean }> = {
+  title: { fontSize: 30, bold: true },
+  'store-name': { fontSize: 15, bold: true },
+  'store-tagline': { fontSize: 9 },
+  'meta-text': { fontSize: 11 },
+  'items-header': { fontSize: 9, bold: true },
+  'item-row': { fontSize: 12 },
+  'totals-row': { fontSize: 11 },
+  'total-row': { fontSize: 17, bold: true },
+  stamp: { fontSize: 18, bold: true },
+  footer: { fontSize: 9 },
+};
 
-      case 'cafe-bistro':
-        return {
-          ...base,
-          bgColor: '#fef3c7',
-          textColor: '#451a03',
-          fontFamily: 'Courier Prime',
-          baseFontSize: 16,
-          shopName: 'THE ROAST & BREW',
-          address: '404 BEAN ST, ESPRESSOLAND',
-          cashier: 'BARISTA MAX',
-          receiptNo: 'BREW-99-CAFE',
-          taxRate: 8,
-          discount: 10,
-          totalLabel: 'GRAND TOTAL',
-          footer: 'LIFE BEGINS AFTER COFFEE',
-          dividerStyle: 'dashed',
-          headerAlign: 'center',
-          showBarcode: true,
-          uppercaseAll: true,
-          items: [
-            { qty: '2', name: 'DOUBLE SHOT CORTADO', price: 9.00 },
-            { qty: '1', name: 'FRESH ALMOND CROISSANT', price: 5.50 },
-            { qty: '1', name: 'V60 ETHIOPIA HAND BREW', price: 6.50 },
-            { qty: '1', name: 'EXTRA COLD GOOD VIBES', price: 0.00 }
-          ]
-        };
+function styleFor(state: LoveInvoiceState, role: string) {
+  const base = ROLE_DEFAULTS[role] || { fontSize: 12 };
+  const override = state.styleOverrides?.[role] || {};
+  return { ...base, ...override };
+}
 
-      case 'gamer-match-stats':
-        return {
-          ...base,
-          bgColor: '#020617',
-          textColor: '#22c55e',
-          fontFamily: 'Share Tech Mono',
-          baseFontSize: 16,
-          shopName: '> SYSTEM_OVERRIDE',
-          address: '> SECTOR-7 COMPILER GATE',
-          cashier: 'AI_v2.0',
-          receiptNo: 'MATCH-107-WIN',
-          taxRate: 0,
-          discount: 0,
-          totalLabel: 'TOTAL XP EARNED',
-          footer: 'MATCH SUMMARY SAVED. GG WP.',
-          dividerStyle: 'dotted',
-          headerAlign: 'left',
-          showBarcode: false,
-          uppercaseAll: true,
-          items: [
-            { qty: '24', name: 'CONFIRMED RIVAL KILLS', price: 2400 },
-            { qty: '12', name: 'TACTICAL ASSISTS SECURED', price: 1200 },
-            { qty: '1', name: 'CHAMPIONS MATCH WIN', price: 5000 },
-            { qty: '3', name: 'HEADSHOT BONUSES', price: 300 }
-          ]
-        };
+function measureWidth(text: string, fontFamily: string, fontSize: number, fontWeight: number | string = 400) {
+  const probe = new fabric.Text(text, { fontFamily, fontSize, fontWeight: fontWeight as any });
+  return probe.width || text.length * fontSize * 0.55;
+}
 
-      case 'birthday-invoice-30':
-        return {
-          ...base,
-          bgColor: '#fdfbf7',
-          textColor: '#171717',
-          fontFamily: 'Inconsolata',
-          baseFontSize: 16,
-          shopName: 'LIFE EXPERIENCE CO.',
-          address: 'EARTH PLANET, SOLAR SYSTEM',
-          cashier: 'FATHER TIME',
-          receiptNo: 'AGE-30-YEARS',
-          taxRate: 0,
-          discount: 0,
-          totalLabel: 'YEARS LIVED',
-          footer: 'WELCOME TO THE DIRTY THIRTY CLUB',
-          dividerStyle: 'dashed',
-          headerAlign: 'center',
-          showBarcode: true,
-          uppercaseAll: true,
-          items: [
-            { qty: '10K', name: 'CUPS OF COFFEE CONSUMED', price: 0.00 },
-            { qty: '99', name: 'MISTAKES LEARNED FROM', price: 0.00 },
-            { qty: '5', name: 'AMAZING LIFELONG FRIENDS', price: 0.00 },
-            { qty: '1', name: 'COLLEGE DEGREE SURVIVED', price: 0.00 },
-            { qty: '30', name: 'CANDLES ON THE CAKE', price: 30.00 }
-          ]
-        };
+/** Builds "Label ......... Price" so it visually lines up like a till receipt. */
+function dotLeader(label: string, price: string, fontFamily: string, fontSize: number, boxWidth: number) {
+  const dotWidth = measureWidth('.', fontFamily, fontSize) || fontSize * 0.28;
+  const usedWidth = measureWidth(`${label} `, fontFamily, fontSize) + measureWidth(` ${price}`, fontFamily, fontSize);
+  const available = Math.max(0, boxWidth - usedWidth);
+  const dotsCount = Math.max(3, Math.floor(available / dotWidth));
+  return `${label} ${'.'.repeat(dotsCount)} ${price}`;
+}
 
-      default:
-        return base;
-    }
-  };
+/** Zig-zag "torn paper" polygon points for the top or bottom edge of the receipt. */
+function tornEdgePoints(x: number, y: number, w: number, teeth: number, amplitude: number, edge: 'top' | 'bottom') {
+  const pts: { x: number; y: number }[] = [];
+  const step = w / teeth;
+  for (let i = 0; i <= teeth; i++) {
+    const px = x + i * step;
+    const py = y + (i % 2 === 0 ? 0 : (edge === 'top' ? amplitude : -amplitude));
+    pts.push({ x: px, y: py });
+  }
+  return pts;
+}
 
-  const renderLeftPanels = (state: any, updateState: any, openSections: any, toggleSection: any) => {
-    
-    const updateItemField = (index: number, key: string, value: string | number) => {
-      const next = [...state.items];
-      next[index] = { ...next[index], [key]: value };
-      updateState('items', next);
-    };
+function getDims(state: LoveInvoiceState) {
+  const [wRaw, hRaw] = state.canvasSize.split('x').map(Number);
+  const w = state.orientation === 'landscape' ? Math.max(wRaw, hRaw) : Math.min(wRaw, hRaw);
+  const h = state.orientation === 'landscape' ? Math.min(wRaw, hRaw) : Math.max(wRaw, hRaw);
+  const aspect = w / h;
+  let width = BASE_MAX_W;
+  let height = width / aspect;
+  if (height > BASE_MAX_H) {
+    height = BASE_MAX_H;
+    width = height * aspect;
+  }
+  return { width: Math.round(width), height: Math.round(height) };
+}
 
-    const addItemRow = () => {
-      updateState('items', [...state.items, { qty: '1', name: 'NEW ITEM', price: 0.00 }]);
-    };
+function tagged(obj: fabric.Object, key: string, edType: string, extra: Record<string, any> = {}) {
+  obj.set('data', { edLoveInvoice: true, key, edType, ...extra });
+  return obj;
+}
 
-    const removeItemRow = (index: number) => {
-      updateState('items', state.items.filter((_: any, i: number) => i !== index));
-    };
+/** Re-applies a previously captured drag/resize/rotate override, if the user made one. */
+function applyOverride(obj: fabric.Object, state: LoveInvoiceState, key: string) {
+  const o = state.objectOverrides?.[key];
+  if (!o) return;
+  obj.set({
+    left: o.left ?? obj.left,
+    top: o.top ?? obj.top,
+    angle: o.angle ?? obj.angle,
+    scaleX: o.scaleX ?? obj.scaleX,
+    scaleY: o.scaleY ?? obj.scaleY,
+  });
+  obj.setCoords();
+}
 
-    return (
-      <>
-        <Accordion title="&#128444;&#65039; Background & Styling" isOpen={openSections.styling} onToggle={() => toggleSection('styling')}>
-          <div className="form-row">
-            <label>Font Family</label>
-            <select value={state.fontFamily} onChange={(e) => updateState('fontFamily', e.target.value)}>
-              {GOOGLE_FONTS.map(f => <option key={f} value={f}>{f}</option>)}
-            </select>
-          </div>
-          <div className="form-row">
-            <label>Paper Background</label>
-            <div className="color-row">
-              <input type="color" value={state.bgColor} onChange={(e) => updateState('bgColor', e.target.value)} />
-              <input type="text" value={state.bgColor} onChange={(e) => updateState('bgColor', e.target.value)} />
-            </div>
-          </div>
-          <div className="form-row">
-            <label>Text & Ink Color</label>
-            <div className="color-row">
-              <input type="color" value={state.textColor} onChange={(e) => updateState('textColor', e.target.value)} />
-              <input type="text" value={state.textColor} onChange={(e) => updateState('textColor', e.target.value)} />
-            </div>
-          </div>
-          <div className="form-row">
-            <label>Base Font Size</label>
-            <div className="range-row">
-              <input type="range" min="8" max="72" value={state.baseFontSize} onChange={(e) => updateState('baseFontSize', Number(e.target.value))} />
-              <span className="range-val">{state.baseFontSize}px</span>
-            </div>
-          </div>
-          <div className="form-row">
-            <label>Divider Style</label>
-            <select value={state.dividerStyle} onChange={(e) => updateState('dividerStyle', e.target.value)}>
-              <option value="dashed">Dashed Line</option>
-              <option value="solid">Solid Line</option>
-              <option value="dotted">Dotted Line</option>
-              <option value="none">None</option>
-            </select>
-          </div>
-          <div className="form-row" style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-            <input type="checkbox" checked={state.uppercaseAll} onChange={(e) => updateState('uppercaseAll', e.target.checked)} style={{ width: '16px', height: '16px' }} />
-            <label style={{ margin: 0, textTransform: 'none', cursor: 'pointer' }}>Force Uppercase</label>
-          </div>
-          <div className="form-row" style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-            <input type="checkbox" checked={state.showBarcode} onChange={(e) => updateState('showBarcode', e.target.checked)} style={{ width: '16px', height: '16px' }} />
-            <label style={{ margin: 0, textTransform: 'none', cursor: 'pointer' }}>Show Barcode</label>
-          </div>
-        </Accordion>
+// ---------------------------------------------------------------------
+// The core builder — called by setupCanvas, updateCanvas AND onLayoutChange
+// so there is exactly one source of truth for what the receipt looks like.
+// ---------------------------------------------------------------------
 
-        <Accordion title="&#128294; Header Information" isOpen={openSections.header} onToggle={() => toggleSection('header')}>
-          <div className="form-row">
-            <label>Header Alignment</label>
-            <select value={state.headerAlign} onChange={(e) => updateState('headerAlign', e.target.value)}>
-              <option value="center">Center</option>
-              <option value="left">Left</option>
-            </select>
-          </div>
-          <div className="form-row">
-            <label>Store / Shop Name</label>
-            <input type="text" value={state.shopName} onChange={(e) => updateState('shopName', e.target.value)} />
-          </div>
-          <div className="form-row">
-            <label>Address Line</label>
-            <input type="text" value={state.address} onChange={(e) => updateState('address', e.target.value)} />
-          </div>
-          <div className="form-row">
-            <label>Cashier Name</label>
-            <input type="text" value={state.cashier} onChange={(e) => updateState('cashier', e.target.value)} />
-          </div>
-          <div className="form-row">
-            <label>Receipt Code / No</label>
-            <input type="text" value={state.receiptNo} onChange={(e) => updateState('receiptNo', e.target.value)} />
-          </div>
-        </Accordion>
+function buildReceipt(canvas: fabric.Canvas, dims: { width: number; height: number }, state: LoveInvoiceState) {
+  // Wipe only our own objects — never touch PosterEngine's background rect.
+  canvas.getObjects().filter((o: any) => o.data?.edLoveInvoice).forEach((o) => canvas.remove(o));
 
-        <Accordion title="&#128221; Receipt Line Items" isOpen={openSections.items} onToggle={() => toggleSection('items')}>
-          <div style={{ padding: '0 16px' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '8px' }}>
-              <thead>
-                <tr>
-                  <th style={{ textAlign: 'left', fontSize: '9px', textTransform: 'uppercase', color: 'var(--spotify-subtext)', paddingBottom: '6px', width: '45px' }}>Qty</th>
-                  <th style={{ textAlign: 'left', fontSize: '9px', textTransform: 'uppercase', color: 'var(--spotify-subtext)', paddingBottom: '6px' }}>Name / Desc</th>
-                  <th style={{ textAlign: 'left', fontSize: '9px', textTransform: 'uppercase', color: 'var(--spotify-subtext)', paddingBottom: '6px', width: '70px' }}>Value</th>
-                  <th style={{ width: '30px' }}></th>
-                </tr>
-              </thead>
-              <tbody>
-                {state.items.map((item: any, idx: number) => (
-                  <tr key={`item-tr-${idx}`}>
-                    <td style={{ padding: '4px 0', paddingRight: '4px' }}>
-                      <input type="text" style={{ width: '100%', background: 'var(--input-bg)', border: '1px solid var(--input-border)', color: '#fff', fontSize: '11px', padding: '6px', borderRadius: '4px', outline: 'none', boxSizing: 'border-box' }} value={item.qty} onChange={(e) => updateItemField(idx, 'qty', e.target.value)} />
-                    </td>
-                    <td style={{ padding: '4px 0', paddingRight: '4px' }}>
-                      <input type="text" style={{ width: '100%', background: 'var(--input-bg)', border: '1px solid var(--input-border)', color: '#fff', fontSize: '11px', padding: '6px', borderRadius: '4px', outline: 'none', boxSizing: 'border-box' }} value={item.name} onChange={(e) => updateItemField(idx, 'name', e.target.value)} />
-                    </td>
-                    <td style={{ padding: '4px 0' }}>
-                      <input type="number" step="0.01" style={{ width: '100%', background: 'var(--input-bg)', border: '1px solid var(--input-border)', color: '#fff', fontSize: '11px', padding: '6px', borderRadius: '4px', outline: 'none', boxSizing: 'border-box' }} value={item.price} onChange={(e) => updateItemField(idx, 'price', parseFloat(e.target.value) || 0)} />
-                    </td>
-                    <td style={{ padding: '4px 0', textAlign: 'center' }}>
-                      <button style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }} onClick={() => removeItemRow(idx)}>
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            <button className="btn btn-secondary w-full flex items-center justify-center gap-2 mt-4" onClick={addItemRow}>
-              <Plus className="w-4 h-4" /> Add Row Item
-            </button>
-          </div>
-        </Accordion>
+  const { width: W, height: H } = dims;
+  const padX = W * 0.09;
+  const contentW = W - padX * 2;
+  const teeth = Math.max(8, Math.round(W / 22));
+  const amp = W * 0.012;
 
-        <Accordion title="&#128526; Totals & Footer" isOpen={openSections.calculations} onToggle={() => toggleSection('calculations')}>
-          <div className="form-row">
-            <label>Total Label Text</label>
-            <input type="text" value={state.totalLabel} onChange={(e) => updateState('totalLabel', e.target.value)} />
-          </div>
-          <div className="form-row">
-            <label>Tax Rate (%)</label>
-            <input type="number" value={state.taxRate} onChange={(e) => updateState('taxRate', parseFloat(e.target.value) || 0)} />
-          </div>
-          <div className="form-row">
-            <label>Discount Amount</label>
-            <input type="number" value={state.discount} onChange={(e) => updateState('discount', parseFloat(e.target.value) || 0)} />
-          </div>
-          <div className="form-row">
-            <label>Footer Note</label>
-            <input type="text" value={state.footer} onChange={(e) => updateState('footer', e.target.value)} />
-          </div>
-        </Accordion>
-      </>
-    );
-  };
+  // --- paper (torn-edge polygon, or a plain rounded rect if disabled) ---
+  let paper: fabric.Object;
+  if (state.showTornEdges) {
+    const top = tornEdgePoints(0, 0, W, teeth, amp, 'top');
+    const bottom = tornEdgePoints(0, H, W, teeth, amp, 'bottom').reverse();
+    paper = new fabric.Polygon([...top, ...bottom], {
+      left: 0,
+      top: 0,
+      fill: state.paperColor,
+      selectable: false,
+      evented: false,
+      shadow: new fabric.Shadow({ color: 'rgba(0,0,0,0.25)', blur: 18, offsetY: 8 }),
+    });
+  } else {
+    paper = new fabric.Rect({
+      left: 0,
+      top: 0,
+      width: W,
+      height: H,
+      rx: 4,
+      ry: 4,
+      fill: state.paperColor,
+      selectable: false,
+      evented: false,
+      shadow: new fabric.Shadow({ color: 'rgba(0,0,0,0.25)', blur: 18, offsetY: 8 }),
+    });
+  }
+  tagged(paper, 'paper', 'paper');
+  canvas.add(paper);
 
-  const renderRightPanels = (selectedType: string | null, state: any, updateState: any) => {
-    if (selectedType === 'receipt-element') {
-      return (
-        <div className="pf-section">
-          <div className="pf-section-title">Receipt Design</div>
-          <p style={{ fontSize: '11px', color: '#888', marginBottom: '12px', lineHeight: '1.5' }}>
-            Receipt structures are auto-calculated and dynamically scaled to perfectly fit the canvas, regardless of orientation or line item count.
-          </p>
-          <div className="pf-row">
-            <label>Global Ink Color</label>
-            <div className="pf-color-row">
-              <input type="color" value={state.textColor} onChange={(e) => updateState('textColor', e.target.value)} />
-              <input type="text" value={state.textColor} onChange={(e) => updateState('textColor', e.target.value)} />
-            </div>
-          </div>
-        </div>
-      );
-    }
-    return null;
-  };
+  let cursorY = H * 0.07;
+  const centerX = W / 2;
 
-  const setupCanvas = () => {};
-
-  const updateCanvas = (canvas: fabric.Canvas, state: any) => {
-    const existingObjects = canvas.getObjects();
-    const objectsToRemove = existingObjects.filter(obj => obj.data?.isReceiptElement);
-    objectsToRemove.forEach(obj => canvas.remove(obj));
-
-    const cw = canvas.width!;
-    const ch = canvas.height!;
-    
-    let safeWidth = cw * 0.8;
-    if (safeWidth > 800) safeWidth = 800;
-    
-    const safeHeight = ch * 0.85;
-
-    let lineCount = 0;
-    lineCount += 4; 
-    lineCount += 3; 
-    lineCount += 2; 
-    lineCount += state.items.length * 1.6;
-    lineCount += 5; 
-    if (state.footer) lineCount += 3;
-    if (state.showBarcode) lineCount += 5;
-
-    const rawHeightRequired = lineCount * (state.baseFontSize * 1.5);
-    
-    let activeFontSize = state.baseFontSize;
-    if (rawHeightRequired > safeHeight) {
-      activeFontSize = safeHeight / (lineCount * 1.5);
-    }
-    
-    const maxCharsEstimate = 45;
-    const avgCharW = activeFontSize * 0.6;
-    if (maxCharsEstimate * avgCharW > safeWidth) {
-      activeFontSize = Math.min(activeFontSize, safeWidth / (maxCharsEstimate * 0.6));
-    }
-
-    const finalTotalHeight = lineCount * (activeFontSize * 1.5);
-    let cursorY = (ch - finalTotalHeight) / 2;
-    cursorY = Math.max(cursorY, ch * 0.05);
-
-    const leftX = (cw - safeWidth) / 2;
-    const rightX = leftX + safeWidth;
-    const centerX = cw / 2;
-    const bf = activeFontSize;
-
-    const addObj = (obj: any) => {
-      obj.set({ data: { isReceiptElement: true, edType: 'receipt-element' } });
-      canvas.add(obj);
-    };
-
-    const fmtText = (txt: string) => state.uppercaseAll ? txt.toUpperCase() : txt;
-
-    const drawText = (txt: string, sizeMult: number, weight: string, align: 'left' | 'center' | 'right', italic = false) => {
-      const xPos = state.headerAlign === 'left' && align === 'center' ? leftX : (align === 'center' ? centerX : align === 'left' ? leftX : rightX);
-      const alignRule = state.headerAlign === 'left' && align === 'center' ? 'left' : align;
-
-      const obj = new fabric.Text(fmtText(txt), {
-        left: xPos,
-        top: cursorY,
-        originX: alignRule,
-        fontSize: bf * sizeMult,
-        fontFamily: state.fontFamily,
-        fontWeight: weight,
-        fontStyle: italic ? 'italic' : 'normal',
-        fill: state.textColor,
-        selectable: true
-      });
-      addObj(obj);
-      return obj;
-    };
-
-    const drawDash = () => {
-      if (state.dividerStyle === 'none') {
-        cursorY += bf * 1.0;
-        return;
-      }
-      
-      const dashArray = state.dividerStyle === 'dotted' ? [bf * 0.15, bf * 0.3] : state.dividerStyle === 'dashed' ? [bf * 0.6, bf * 0.4] : undefined;
-      
-      const line = new fabric.Line([leftX, cursorY, rightX, cursorY], {
-        stroke: state.textColor,
-        strokeWidth: bf * 0.12,
-        strokeDashArray: dashArray,
-        selectable: true
-      });
-      addObj(line);
-      cursorY += bf * 1.5;
-    };
-
-    drawText(state.shopName, 2.2, '800', 'center');
-    cursorY += bf * 2.8;
-
-    if (state.address) {
-      drawText(state.address, 0.9, '400', 'center');
-      cursorY += bf * 1.8;
-    }
-
-    cursorY += bf * 1.0;
-    drawDash();
-
-    const now = new Date();
-    const dateStr = `DATE: ${now.toLocaleDateString()}`;
-    const timeStr = `TIME: ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-    
-    drawText(dateStr, 0.85, '400', 'left');
-    drawText(timeStr, 0.85, '400', 'right');
-    cursorY += bf * 1.5;
-    
-    drawText(`RECEIPT: ${fmtText(state.receiptNo)}`, 0.85, '400', 'left');
-    drawText(`CASHIER: ${fmtText(state.cashier)}`, 0.85, '400', 'right');
-    cursorY += bf * 2.0;
-
-    drawDash();
-
-    drawText('QTY', 0.9, '700', 'left');
-    
-    const descHeader = new fabric.Text(fmtText('DESCRIPTION'), {
-      left: leftX + (safeWidth * 0.18),
+  const addCentered = (text: string, role: string, key: string, extraFontSize = 0) => {
+    const s = styleFor(state, role);
+    const obj = new fabric.Textbox(text, {
+      left: centerX,
       top: cursorY,
-      fontSize: bf * 0.9,
+      width: contentW,
+      fontSize: s.fontSize + extraFontSize,
+      fontWeight: s.bold ? 700 : 400,
       fontFamily: state.fontFamily,
-      fontWeight: '700',
-      fill: state.textColor,
-      selectable: true
+      fill: state.styleOverrides?.[role]?.fill || state.inkColor,
+      textAlign: 'center',
+      originX: 'center',
+      originY: 'top',
+      editable: false,
     });
-    addObj(descHeader);
-    
-    drawText('VALUE', 0.9, '700', 'right');
-    cursorY += bf * 1.8;
-
-    drawDash();
-
-    let subtotal = 0;
-    state.items.forEach((item: any) => {
-      subtotal += item.price;
-      
-      drawText(item.qty, 0.9, '400', 'left');
-      
-      const descItem = new fabric.Text(fmtText(item.name), {
-        left: leftX + (safeWidth * 0.18),
-        top: cursorY,
-        fontSize: bf * 0.9,
-        fontFamily: state.fontFamily,
-        fontWeight: '400',
-        fill: state.textColor,
-        selectable: true
-      });
-      addObj(descItem);
-
-      const priceStr = item.price === 0 ? 'FREE' : item.price.toFixed(2);
-      drawText(priceStr, 0.9, '400', 'right');
-
-      cursorY += bf * 1.6;
-    });
-
-    cursorY += bf * 0.8;
-    drawDash();
-
-    const drawCalc = (label: string, valStr: string, sizeMult = 0.9, weight = '400') => {
-      drawText(label, sizeMult, weight, 'left');
-      drawText(valStr, sizeMult, weight, 'right');
-      cursorY += bf * 1.6;
-    };
-
-    const taxCalc = subtotal * (state.taxRate / 100);
-    const grandTotal = Math.max(0, subtotal + taxCalc - state.discount);
-
-    drawCalc('SUBTOTAL', subtotal.toFixed(2));
-    if (state.taxRate > 0) drawCalc(`TAX (${state.taxRate}%)`, taxCalc.toFixed(2));
-    if (state.discount > 0) drawCalc('DISCOUNT', `-${state.discount.toFixed(2)}`);
-
-    cursorY += bf * 0.5;
-    drawDash();
-
-    drawCalc(state.totalLabel, grandTotal.toFixed(2), 1.4, '800');
-
-    cursorY += bf * 1.5;
-    drawDash();
-
-    if (state.footer) {
-      drawText(state.footer, 0.9, '600', 'center', true);
-      cursorY += bf * 3.0;
-    }
-
-    if (state.showBarcode) {
-      const codeStr = state.receiptNo.replace(/[^A-Za-z0-9]/g, '') || '0000';
-      const barcodeW = safeWidth * 0.65;
-      const barcodeX = (cw - barcodeW) / 2;
-      const barcodeH = bf * 2.8;
-
-      const randomWithSeed = (seed: number) => {
-        const x = Math.sin(seed++) * 10000;
-        return x - Math.floor(x);
-      };
-
-      let bX = barcodeX;
-      let seed = 12345;
-      
-      while (bX < barcodeX + barcodeW) {
-        const rVal = randomWithSeed(seed++);
-        const thickness = rVal > 0.75 ? bf * 0.3 : rVal > 0.4 ? bf * 0.15 : bf * 0.08;
-        const gap = randomWithSeed(seed++) * bf * 0.25 + (bf * 0.05);
-
-        if (bX + thickness <= barcodeX + barcodeW) {
-          const bar = new fabric.Rect({
-            left: bX,
-            top: cursorY,
-            width: thickness,
-            height: barcodeH,
-            fill: state.textColor,
-            selectable: true
-          });
-          addObj(bar);
-        }
-        bX += thickness + gap;
-      }
-      
-      cursorY += barcodeH + bf * 0.5;
-      drawText(codeStr, 0.7, '400', 'center');
-    }
-    
-    canvas.requestRenderAll();
+    tagged(obj, key, role);
+    applyOverride(obj, state, key);
+    canvas.add(obj);
+    cursorY += obj.height! * (obj.scaleY || 1) + s.fontSize * 0.35;
+    return obj;
   };
 
-  const onLayoutChange = () => {};
+  const addDashedDivider = (key: string, dashed = true) => {
+    const line = new fabric.Line([padX, cursorY, W - padX, cursorY], {
+      stroke: state.inkColor,
+      strokeWidth: dashed ? 1.4 : 2,
+      strokeDashArray: dashed ? [5, 5] : undefined,
+      selectable: false,
+      evented: false,
+      opacity: 0.55,
+    });
+    tagged(line, key, 'divider');
+    canvas.add(line);
+    cursorY += 14;
+  };
+
+  // --- header ---
+  addCentered('♥', 'title', 'heart-icon', -6);
+  cursorY -= 4;
+  addCentered(state.title, 'title', 'title');
+  addCentered(state.storeName, 'store-name', 'store-name');
+  addCentered(state.storeTagline, 'store-tagline', 'store-tagline');
+  cursorY += 6;
+  addDashedDivider('divider-1');
+
+  // --- meta block (two-column rows: label left / value right) ---
+  const metaRows: Array<[string, string, string]> = [
+    ['TO', state.recipientName, 'meta-to'],
+    ['FROM', state.senderName, 'meta-from'],
+    ['DATE', state.invoiceDate, 'meta-date'],
+    ['INVOICE NO.', state.invoiceNumber, 'meta-invoice'],
+  ];
+  metaRows.forEach(([label, value, key]) => {
+    const s = styleFor(state, 'meta-text');
+    const row = new fabric.Textbox(`${label}: ${value}`, {
+      left: padX,
+      top: cursorY,
+      width: contentW,
+      fontSize: s.fontSize,
+      fontWeight: s.bold ? 700 : 400,
+      fontFamily: state.fontFamily,
+      fill: state.styleOverrides?.['meta-text']?.fill || state.inkColor,
+      textAlign: 'left',
+      originX: 'left',
+      originY: 'top',
+      editable: false,
+    });
+    tagged(row, key, 'meta-text');
+    applyOverride(row, state, key);
+    canvas.add(row);
+    cursorY += row.height! * (row.scaleY || 1) + 4;
+  });
+
+  cursorY += 6;
+  addDashedDivider('divider-2');
+
+  // --- items header row ---
+  {
+    const s = styleFor(state, 'items-header');
+    const header = new fabric.Textbox('DESCRIPTION                                            AMOUNT', {
+      left: padX,
+      top: cursorY,
+      width: contentW,
+      fontSize: s.fontSize,
+      fontWeight: 700,
+      fontFamily: state.fontFamily,
+      fill: state.styleOverrides?.['items-header']?.fill || state.inkColor,
+      textAlign: 'left',
+      originX: 'left',
+      originY: 'top',
+      editable: false,
+      opacity: 0.7,
+    });
+    tagged(header, 'items-header', 'items-header');
+    applyOverride(header, state, 'items-header');
+    canvas.add(header);
+    cursorY += header.height! + 6;
+  }
+  addDashedDivider('divider-3', false);
+
+  // --- line items ---
+  state.items.forEach((item, idx) => {
+    const s = styleFor(state, 'item-row');
+    const key = `item-${item.id}`;
+    const text = dotLeader(item.label, item.price, state.fontFamily, s.fontSize, contentW);
+    const row = new fabric.Textbox(text, {
+      left: padX,
+      top: cursorY,
+      width: contentW,
+      fontSize: s.fontSize,
+      fontWeight: s.bold ? 700 : 400,
+      fontFamily: state.fontFamily,
+      fill: state.styleOverrides?.['item-row']?.fill || state.inkColor,
+      textAlign: 'left',
+      originX: 'left',
+      originY: 'top',
+      editable: false,
+    });
+    tagged(row, key, 'item-row', { itemId: item.id, itemIndex: idx });
+    applyOverride(row, state, key);
+    canvas.add(row);
+    cursorY += row.height! * (row.scaleY || 1) + s.fontSize * 0.55;
+  });
+
+  cursorY += 4;
+  addDashedDivider('divider-4');
+
+  // --- totals ---
+  const totalsRows: Array<[string, string, string]> = [
+    [state.subtotalLabel, state.subtotalValue, 'totals-subtotal'],
+    [state.discountLabel, state.discountValue, 'totals-discount'],
+    [state.taxLabel, state.taxValue, 'totals-tax'],
+  ];
+  totalsRows.forEach(([label, value, key]) => {
+    const s = styleFor(state, 'totals-row');
+    const text = dotLeader(label, value, state.fontFamily, s.fontSize, contentW);
+    const row = new fabric.Textbox(text, {
+      left: padX,
+      top: cursorY,
+      width: contentW,
+      fontSize: s.fontSize,
+      fontWeight: s.bold ? 700 : 400,
+      fontFamily: state.fontFamily,
+      fill: state.styleOverrides?.['totals-row']?.fill || state.inkColor,
+      textAlign: 'left',
+      originX: 'left',
+      originY: 'top',
+      editable: false,
+      opacity: 0.85,
+    });
+    tagged(row, key, 'totals-row');
+    applyOverride(row, state, key);
+    canvas.add(row);
+    cursorY += row.height! * (row.scaleY || 1) + 4;
+  });
+
+  cursorY += 6;
+  addDashedDivider('divider-5', false);
+
+  {
+    const s = styleFor(state, 'total-row');
+    const text = dotLeader(state.totalLabel, state.totalValue, state.fontFamily, s.fontSize, contentW);
+    const row = new fabric.Textbox(text, {
+      left: padX,
+      top: cursorY,
+      width: contentW,
+      fontSize: s.fontSize,
+      fontWeight: s.bold ? 700 : 400,
+      fontFamily: state.fontFamily,
+      fill: state.styleOverrides?.['total-row']?.fill || state.accentColor,
+      textAlign: 'left',
+      originX: 'left',
+      originY: 'top',
+      editable: false,
+    });
+    tagged(row, 'total-row', 'total-row');
+    applyOverride(row, state, 'total-row');
+    canvas.add(row);
+    cursorY += row.height! * (row.scaleY || 1) + 18;
+  }
+
+  // --- stamp ---
+  if (state.showStamp) {
+    const s = styleFor(state, 'stamp');
+    const stampGroupTop = cursorY;
+    const stampWidth = contentW * 0.62;
+    const stampText = new fabric.Textbox(state.stampText, {
+      left: centerX,
+      top: stampGroupTop,
+      width: stampWidth,
+      fontSize: s.fontSize,
+      fontWeight: 700,
+      fontFamily: state.fontFamily,
+      fill: state.styleOverrides?.stamp?.fill || state.accentColor,
+      textAlign: 'center',
+      originX: 'center',
+      originY: 'top',
+      angle: -8,
+      editable: false,
+    });
+    const stampBorder = new fabric.Rect({
+      left: centerX,
+      top: stampGroupTop - 6,
+      width: stampWidth + 24,
+      height: stampText.height! + 24,
+      fill: 'transparent',
+      stroke: state.styleOverrides?.stamp?.fill || state.accentColor,
+      strokeWidth: 3,
+      rx: 8,
+      ry: 8,
+      originX: 'center',
+      originY: 'top',
+      angle: -8,
+      selectable: false,
+      evented: false,
+      opacity: 0.85,
+    });
+    const stampGroup = new fabric.Group([stampBorder, stampText], {
+      left: centerX,
+      top: stampGroupTop,
+      originX: 'center',
+      originY: 'top',
+    });
+    tagged(stampGroup, 'stamp', 'stamp');
+    applyOverride(stampGroup, state, 'stamp');
+    canvas.add(stampGroup);
+    cursorY += (stampText.height! + 40);
+  }
+
+  cursorY += 10;
+
+  // --- barcode (purely decorative bars + invoice number) ---
+  if (state.showBarcode) {
+    const barcodeBars: fabric.Rect[] = [];
+    const barcodeH = 34;
+    const barCount = 34;
+    const barcodeW = contentW * 0.7;
+    const barGap = barcodeW / barCount;
+    // Deterministic pseudo-random bar widths seeded from invoiceNumber so it
+    // doesn't jitter on every unrelated re-render.
+    let seed = 0;
+    for (let i = 0; i < state.invoiceNumber.length; i++) seed += state.invoiceNumber.charCodeAt(i);
+    for (let i = 0; i < barCount; i++) {
+      seed = (seed * 9301 + 49297) % 233280;
+      const rnd = seed / 233280;
+      const w = rnd > 0.6 ? barGap * 0.75 : barGap * 0.35;
+      barcodeBars.push(new fabric.Rect({
+        left: i * barGap,
+        top: 0,
+        width: w,
+        height: barcodeH,
+        fill: state.inkColor,
+        selectable: false,
+        evented: false,
+      }));
+    }
+    const barcodeGroup = new fabric.Group(barcodeBars, {
+      left: centerX,
+      top: cursorY,
+      originX: 'center',
+      originY: 'top',
+    });
+    tagged(barcodeGroup, 'barcode', 'footer');
+    applyOverride(barcodeGroup, state, 'barcode');
+    canvas.add(barcodeGroup);
+    cursorY += barcodeH + 6;
+
+    const s = styleFor(state, 'footer');
+    const barcodeNum = new fabric.Textbox(`* ${state.invoiceNumber} *`, {
+      left: centerX,
+      top: cursorY,
+      width: contentW,
+      fontSize: s.fontSize,
+      fontFamily: state.fontFamily,
+      fill: state.inkColor,
+      textAlign: 'center',
+      originX: 'center',
+      originY: 'top',
+      editable: false,
+      opacity: 0.8,
+    });
+    tagged(barcodeNum, 'barcode-number', 'footer');
+    applyOverride(barcodeNum, state, 'barcode-number');
+    canvas.add(barcodeNum);
+    cursorY += barcodeNum.height! + 10;
+  }
+
+  // --- footer ---
+  addCentered(state.footerLine1, 'footer', 'footer-1');
+  addCentered(state.footerLine2, 'footer', 'footer-2');
+
+  canvas.requestRenderAll();
+}
+
+// ---------------------------------------------------------------------
+// PosterEngine hooks
+// ---------------------------------------------------------------------
+
+export function loveInvoiceOnApplyPreset(presetId: string, currentState: any): LoveInvoiceState {
+  if (presetId !== 'love-invoice') return currentState;
+  // Keep the size/orientation the user already picked; reset everything else.
+  return {
+    ...loveInvoiceDefaultState,
+    canvasSize: currentState?.canvasSize || loveInvoiceDefaultState.canvasSize,
+    orientation: currentState?.orientation || loveInvoiceDefaultState.orientation,
+  };
+}
+
+export function loveInvoiceSetupCanvas(
+  canvas: fabric.Canvas,
+  dims: { width: number; height: number },
+  state: LoveInvoiceState
+) {
+  buildReceipt(canvas, dims, state);
+
+  // Capture manual drags/resizes/rotations so they survive the next rebuild.
+  canvas.on('object:modified', (e: any) => {
+    const obj = e.target;
+    const key = obj?.data?.key;
+    if (!key || !obj?.data?.edLoveInvoice) return;
+    // NOTE: in the real app, wire this to updateState via a ref or context —
+    // PosterEngine only threads `updateState` through the panel renderers,
+    // so store it on window/a shared ref you control, e.g.:
+    //   overridesRef.current[key] = { left: obj.left, top: obj.top, angle: obj.angle, scaleX: obj.scaleX, scaleY: obj.scaleY };
+    //   updateStateRef.current('objectOverrides', { ...overridesRef.current });
+  });
+}
+
+export function loveInvoiceUpdateCanvas(canvas: fabric.Canvas, state: LoveInvoiceState) {
+  buildReceipt(canvas, getDims(state), state);
+}
+
+export function loveInvoiceOnLayoutChange(
+  canvas: fabric.Canvas,
+  dims: { width: number; height: number },
+  state: LoveInvoiceState
+) {
+  buildReceipt(canvas, dims, state);
+}
+
+// ---------------------------------------------------------------------
+// Left panel — content editing (names, items, totals, style)
+// ---------------------------------------------------------------------
+
+export function loveInvoiceRenderLeftPanels(
+  state: LoveInvoiceState,
+  updateState: (key: string, val: any) => void,
+  openSections: Record<string, boolean>,
+  toggleSection: (key: string) => void
+) {
+  const updateItem = (id: string, field: 'label' | 'price', value: string) => {
+    updateState('items', state.items.map((it) => (it.id === id ? { ...it, [field]: value } : it)));
+  };
+  const addItem = () => {
+    if (state.items.length >= 12) return;
+    updateState('items', [...state.items, { id: `item-${Date.now()}`, label: 'A new reason I love you', price: 'FREE' }]);
+  };
+  const removeItem = (id: string) => updateState('items', state.items.filter((it) => it.id !== id));
 
   return (
-    <PosterEngine 
-      title="Vintage Receipt"
-      defaultState={defaultState}
-      presets={[{ label: 'Receipt Themes', items: POSTER_PRESETS.RECEIPT }]}
-      onApplyPreset={handleApplyPreset}
-      setupCanvas={setupCanvas}
-      updateCanvas={updateCanvas}
-      onLayoutChange={onLayoutChange}
-      renderLeftPanels={renderLeftPanels}
-      renderRightPanels={renderRightPanels}
-      navigate={navigate}
-    />
+    <>
+      <Accordion title="&#128172; Names & Details" isOpen={!!openSections.details} onToggle={() => toggleSection('details')}>
+        <div className="form-row">
+          <label>Document Title</label>
+          <input type="text" value={state.title} onChange={(e) => updateState('title', e.target.value)} />
+        </div>
+        <div className="form-row">
+          <label>To (recipient)</label>
+          <input type="text" value={state.recipientName} onChange={(e) => updateState('recipientName', e.target.value)} />
+        </div>
+        <div className="form-row">
+          <label>From (you)</label>
+          <input type="text" value={state.senderName} onChange={(e) => updateState('senderName', e.target.value)} />
+        </div>
+        <div className="form-row">
+          <label>Date</label>
+          <input type="text" value={state.invoiceDate} onChange={(e) => updateState('invoiceDate', e.target.value)} />
+        </div>
+        <div className="form-row">
+          <label>Invoice No.</label>
+          <input type="text" value={state.invoiceNumber} onChange={(e) => updateState('invoiceNumber', e.target.value)} />
+        </div>
+        <div className="form-row">
+          <label>Brand Name</label>
+          <input type="text" value={state.storeName} onChange={(e) => updateState('storeName', e.target.value)} />
+        </div>
+        <div className="form-row">
+          <label>Tagline</label>
+          <input type="text" value={state.storeTagline} onChange={(e) => updateState('storeTagline', e.target.value)} />
+        </div>
+      </Accordion>
+
+      <Accordion title="&#10084;&#65039; Reasons I Love You" isOpen={!!openSections.items} onToggle={() => toggleSection('items')}>
+        {state.items.map((item, idx) => (
+          <div key={item.id} className="form-row" style={{ borderBottom: '1px solid #1e1e1e', paddingBottom: 10, marginBottom: 10 }}>
+            <label>Reason #{idx + 1}</label>
+            <input
+              type="text"
+              value={item.label}
+              onChange={(e) => updateItem(item.id, 'label', e.target.value)}
+              style={{ marginBottom: 6 }}
+            />
+            <input
+              type="text"
+              value={item.price}
+              placeholder="PRICELESS / FREE / $0.00 ..."
+              onChange={(e) => updateItem(item.id, 'price', e.target.value)}
+            />
+            <button
+              className="btn btn-secondary"
+              style={{ marginTop: 6, width: '100%' }}
+              onClick={() => removeItem(item.id)}
+              disabled={state.items.length <= 1}
+            >
+              Remove
+            </button>
+          </div>
+        ))}
+        <div className="form-row">
+          <button className="btn btn-primary" style={{ width: '100%' }} onClick={addItem} disabled={state.items.length >= 12}>
+            + Add Reason
+          </button>
+        </div>
+      </Accordion>
+
+      <Accordion title="&#128176; Totals & Stamp" isOpen={!!openSections.totals} onToggle={() => toggleSection('totals')}>
+        <div className="form-row">
+          <label>Subtotal Value</label>
+          <input type="text" value={state.subtotalValue} onChange={(e) => updateState('subtotalValue', e.target.value)} />
+        </div>
+        <div className="form-row">
+          <label>Discount Value</label>
+          <input type="text" value={state.discountValue} onChange={(e) => updateState('discountValue', e.target.value)} />
+        </div>
+        <div className="form-row">
+          <label>Tax Value</label>
+          <input type="text" value={state.taxValue} onChange={(e) => updateState('taxValue', e.target.value)} />
+        </div>
+        <div className="form-row">
+          <label>Total Due Value</label>
+          <input type="text" value={state.totalValue} onChange={(e) => updateState('totalValue', e.target.value)} />
+        </div>
+        <div className="form-row">
+          <label>
+            <input
+              type="checkbox"
+              checked={state.showStamp}
+              onChange={(e) => updateState('showStamp', e.target.checked)}
+              style={{ width: 'auto', marginRight: 8 }}
+            />
+            Show "Paid" Stamp
+          </label>
+        </div>
+        {state.showStamp && (
+          <div className="form-row">
+            <label>Stamp Text</label>
+            <textarea
+              value={state.stampText}
+              onChange={(e) => updateState('stampText', e.target.value)}
+              style={{ minHeight: 60 }}
+            />
+          </div>
+        )}
+      </Accordion>
+
+      <Accordion title="&#127912; Style & Footer" isOpen={!!openSections.style} onToggle={() => toggleSection('style')}>
+        <div className="color-row">
+          <input type="color" value={state.paperColor} onChange={(e) => updateState('paperColor', e.target.value)} />
+          <input type="text" value={state.paperColor} onChange={(e) => updateState('paperColor', e.target.value)} />
+        </div>
+        <div className="form-row"><label>Paper Color</label></div>
+        <div className="color-row">
+          <input type="color" value={state.inkColor} onChange={(e) => updateState('inkColor', e.target.value)} />
+          <input type="text" value={state.inkColor} onChange={(e) => updateState('inkColor', e.target.value)} />
+        </div>
+        <div className="form-row"><label>Ink Color</label></div>
+        <div className="color-row">
+          <input type="color" value={state.accentColor} onChange={(e) => updateState('accentColor', e.target.value)} />
+          <input type="text" value={state.accentColor} onChange={(e) => updateState('accentColor', e.target.value)} />
+        </div>
+        <div className="form-row"><label>Accent Color (stamp / total)</label></div>
+        <div className="form-row">
+          <label>
+            <input
+              type="checkbox"
+              checked={state.showTornEdges}
+              onChange={(e) => updateState('showTornEdges', e.target.checked)}
+              style={{ width: 'auto', marginRight: 8 }}
+            />
+            Torn Receipt Edges
+          </label>
+        </div>
+        <div className="form-row">
+          <label>
+            <input
+              type="checkbox"
+              checked={state.showBarcode}
+              onChange={(e) => updateState('showBarcode', e.target.checked)}
+              style={{ width: 'auto', marginRight: 8 }}
+            />
+            Show Barcode
+          </label>
+        </div>
+        <div className="form-row">
+          <label>Footer Line 1</label>
+          <input type="text" value={state.footerLine1} onChange={(e) => updateState('footerLine1', e.target.value)} />
+        </div>
+        <div className="form-row">
+          <label>Footer Line 2</label>
+          <input type="text" value={state.footerLine2} onChange={(e) => updateState('footerLine2', e.target.value)} />
+        </div>
+      </Accordion>
+    </>
   );
 }
+
+// ---------------------------------------------------------------------
+// Right panel — quick style controls for whatever is selected on canvas
+// ---------------------------------------------------------------------
+
+const EDITABLE_ROLES = new Set([
+  'title', 'store-name', 'store-tagline', 'meta-text', 'items-header',
+  'item-row', 'totals-row', 'total-row', 'stamp', 'footer',
+]);
+
+export function loveInvoiceRenderRightPanels(
+  selectedType: string | null,
+  state: LoveInvoiceState,
+  updateState: (key: string, val: any) => void
+) {
+  if (!selectedType || !EDITABLE_ROLES.has(selectedType)) return null;
+
+  const current = styleFor(state, selectedType);
+  const currentFill = state.styleOverrides?.[selectedType]?.fill;
+
+  const setOverride = (patch: StyleOverride) => {
+    updateState('styleOverrides', {
+      ...state.styleOverrides,
+      [selectedType]: { ...state.styleOverrides?.[selectedType], ...patch },
+    });
+  };
+
+  return (
+    <div className="pf-section">
+      <div className="pf-section-title">{selectedType.replace(/-/g, ' ')}</div>
+
+      <div className="pf-row">
+        <label>Font Size</label>
+        <div className="pf-range-row">
+          <input
+            type="range"
+            min={8}
+            max={64}
+            value={current.fontSize}
+            onChange={(e) => setOverride({ fontSize: Number(e.target.value) })}
+          />
+          <span className="pf-range-val">{current.fontSize}px</span>
+        </div>
+      </div>
+
+      <div className="pf-row">
+        <label>Color</label>
+        <div className="pf-color-row">
+          <input
+            type="color"
+            value={currentFill || state.inkColor}
+            onChange={(e) => setOverride({ fill: e.target.value })}
+          />
+          <input
+            type="text"
+            value={currentFill || ''}
+            placeholder="inherit"
+            onChange={(e) => setOverride({ fill: e.target.value })}
+          />
+        </div>
+      </div>
+
+      <div className="pf-row">
+        <label>
+          <input
+            type="checkbox"
+            checked={!!current.bold}
+            onChange={(e) => setOverride({ bold: e.target.checked })}
+            style={{ width: 'auto', marginRight: 8 }}
+          />
+          Bold
+        </label>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------
+// Usage example (not exported — just documentation of how this plugs in)
+// ---------------------------------------------------------------------
+//
+// import PosterEngine from './PosterEngine';
+// import {
+//   loveInvoiceDefaultState, loveInvoiceOnApplyPreset, loveInvoiceSetupCanvas,
+//   loveInvoiceUpdateCanvas, loveInvoiceOnLayoutChange,
+//   loveInvoiceRenderLeftPanels, loveInvoiceRenderRightPanels,
+// } from './LoveInvoiceTemplate';
+// import { POSTER_PRESETS } from './posterPresets';
+//
+// function groupByCategory(list: { id: string; label: string; category: string }[]) {
+//   const byCat: Record<string, any[]> = {};
+//   list.forEach((p) => { (byCat[p.category] ||= []).push(p); });
+//   return Object.entries(byCat).map(([label, items]) => ({ label, items }));
+// }
+//
+// export default function LoveInvoicePage({ navigate }: { navigate: (p: string) => void }) {
+//   return (
+//     <PosterEngine
+//       title="Love Invoice"
+//       defaultState={loveInvoiceDefaultState}
+//       presets={groupByCategory(POSTER_PRESETS.RECEIPT)}
+//       onApplyPreset={loveInvoiceOnApplyPreset}
+//       setupCanvas={loveInvoiceSetupCanvas}
+//       updateCanvas={loveInvoiceUpdateCanvas}
+//       onLayoutChange={loveInvoiceOnLayoutChange}
+//       renderLeftPanels={loveInvoiceRenderLeftPanels}
+//       renderRightPanels={loveInvoiceRenderRightPanels}
+//       navigate={navigate}
+//     />
+//   );
+// }
