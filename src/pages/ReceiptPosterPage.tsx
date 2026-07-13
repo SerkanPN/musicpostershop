@@ -11,14 +11,37 @@ const GOOGLE_FONTS = [
 ];
 
 const PRINT_SIZES = [
+  { value: '5.83x8.27', label: 'A5 (5.83" x 8.27")' },
   { value: '8.27x11.69', label: 'A4 (8.27" x 11.69")' },
   { value: '11.69x16.54', label: 'A3 (11.69" x 16.54")' },
   { value: '16.54x23.39', label: 'A2 (16.54" x 23.39")' },
+  { value: '23.39x33.11', label: 'A1 (23.39" x 33.11")' },
+  { value: '5x7', label: '5" x 7"' },
+  { value: '6x8', label: '6" x 8"' },
+  { value: '8x10', label: '8" x 10"' },
+  { value: '9x11', label: '9" x 11"' },
   { value: '11x14', label: '11" x 14"' },
+  { value: '11x17', label: '11" x 17"' },
+  { value: '11.7x16.5', label: '11.7" x 16.5"' },
+  { value: '12x16', label: '12" x 16"' },
   { value: '12x18', label: '12" x 18"' },
+  { value: '16x20', label: '16" x 20"' },
   { value: '16x24', label: '16" x 24"' },
+  { value: '16.5x23.4', label: '16.5" x 23.4"' },
   { value: '18x24', label: '18" x 24"' },
-  { value: '24x36', label: '24" x 36"' }
+  { value: '20x30', label: '20" x 30"' },
+  { value: '22x34', label: '22" x 34"' },
+  { value: '23.4x33.1', label: '23.4" x 33.1"' },
+  { value: '24x32', label: '24" x 32"' },
+  { value: '24x36', label: '24" x 36"' },
+  { value: '26x36', label: '26" x 36"' },
+  { value: '28x40', label: '28" x 40"' },
+  { value: '30x40', label: '30" x 40"' },
+  { value: '40x50', label: '40" x 50"' },
+  { value: '50x60', label: '50" x 60"' },
+  { value: '60x80', label: '60" x 80"' },
+  { value: '68x80', label: '68" x 80"' },
+  { value: '88x104', label: '88" x 104"' },
 ];
 
 const PRESETS = [
