@@ -27,7 +27,26 @@ export const POSTER_PRESETS = {
     { id: 'retirement-farewell-audio', label: 'Retirement Farewell', category: 'Milestones' },
     { id: 'military-deployment-audio', label: 'Military Deployment', category: 'Milestones' },
     { id: 'inside-joke-audio', label: 'Inside Joke', category: 'Milestones' },
-    { id: 'time-capsule-audio', label: 'Time Capsule', category: 'Milestones' }
+    { id: 'time-capsule-audio', label: 'Time Capsule', category: 'Milestones' },
+    { id: 'engagement-announcement-audio', label: 'Engagement Announcement', category: 'Love' },
+    { id: 'best-man-speech-audio', label: 'Best Man Speech', category: 'Love' },
+    { id: 'gender-reveal-audio', label: 'Gender Reveal', category: 'Family' },
+    { id: 'lullaby-audio', label: 'Bedtime Lullaby', category: 'Family' },
+    { id: 'sports-commentary-audio', label: 'Sports Commentary', category: 'Sports' },
+    { id: 'coach-speech-audio', label: 'Coach\'s Speech', category: 'Sports' },
+    { id: 'podcast-launch-audio', label: 'Podcast Launch', category: 'Business' },
+    { id: 'business-pitch-audio', label: 'Winning Pitch', category: 'Business' },
+    { id: 'sermon-blessing-audio', label: 'Sermon Blessing', category: 'Faith' },
+    { id: 'new-year-countdown-audio', label: 'New Year Countdown', category: 'Milestones' },
+    { id: 'bar-mitzvah-speech-audio', label: 'Bar Mitzvah Speech', category: 'Faith' },
+    { id: 'quinceanera-audio', label: 'Quinceañera Wishes', category: 'Faith' },
+    { id: 'christmas-morning-audio', label: 'Christmas Morning', category: 'Holiday' },
+    { id: 'eid-mubarak-audio', label: 'Eid Mubarak Message', category: 'Holiday' },
+    { id: 'new-job-celebration-audio', label: 'New Job Celebration', category: 'Career' },
+    { id: 'welcome-home-military-audio', label: 'Welcome Home Soldier', category: 'Milestones' },
+    { id: 'cancer-free-audio', label: 'Cancer-Free Celebration', category: 'Health' },
+    { id: 'ivf-journey-audio', label: 'IVF Journey to Baby', category: 'Family' },
+    { id: 'new-chapter-audio', label: 'New Chapter Message', category: 'Milestones' }
   ],
 
   RECEIPT: [
@@ -45,7 +64,23 @@ export const POSTER_PRESETS = {
     { id: 'birthday-invoice-18', label: '18th Birthday Invoice', category: 'Milestones' },
     { id: 'birthday-invoice-30', label: '30th Birthday Invoice', category: 'Milestones' },
     { id: 'roommate-rules-receipt', label: 'Roommate Rules', category: 'Home' },
-    { id: 'graduation-costs', label: 'Graduation Costs', category: 'Milestones' }
+    { id: 'graduation-costs', label: 'Graduation Costs', category: 'Milestones' },
+    { id: 'wedding-day-invoice', label: 'Wedding Day Invoice', category: 'Love' },
+    { id: 'pet-adoption-receipt', label: 'Pet Adoption Receipt', category: 'Pets' },
+    { id: 'new-baby-invoice', label: 'New Baby Invoice', category: 'Family' },
+    { id: 'coffee-addiction-receipt', label: 'Coffee Addiction Receipt', category: 'Culture' },
+    { id: 'gamer-subscription-receipt', label: 'Gaming Life Receipt', category: 'Hobbies' },
+    { id: 'first-car-invoice', label: 'First Car Invoice', category: 'Milestones' },
+    { id: 'degree-cost-invoice', label: 'Degree Cost Invoice', category: 'Education' },
+    { id: 'home-renovation-invoice', label: 'Home Renovation Invoice', category: 'Home' },
+    { id: 'retirement-invoice', label: 'Retirement Invoice', category: 'Milestones' },
+    { id: 'bar-mitzvah-invoice', label: 'Bar Mitzvah Invoice', category: 'Faith' },
+    { id: 'quinceanera-invoice', label: 'Quinceañera Invoice', category: 'Faith' },
+    { id: 'christmas-wishlist-receipt', label: 'Christmas Wishlist', category: 'Holiday' },
+    { id: 'new-job-invoice', label: 'New Job Invoice', category: 'Career' },
+    { id: 'first-apartment-invoice', label: 'First Apartment Invoice', category: 'Career' },
+    { id: 'ivf-journey-invoice', label: 'IVF Journey Invoice', category: 'Family' },
+    { id: 'cancer-recovery-invoice', label: 'Recovery Milestones', category: 'Health' }
   ],
 
   TYPOGRAPHY: [
@@ -64,7 +99,22 @@ export const POSTER_PRESETS = {
     { id: 'home-office-rules', label: 'Home Office Rules', category: 'Home' },
     { id: 'cinema-monologue', label: 'Cinema Monologue', category: 'Culture' },
     { id: 'literature-extract', label: 'Literature Extract', category: 'Culture' },
-    { id: 'stand-up-comedy-text', label: 'Stand-Up Joke', category: 'Culture' }
+    { id: 'stand-up-comedy-text', label: 'Stand-Up Joke', category: 'Culture' },
+    { id: 'love-manifesto', label: 'Love Manifesto', category: 'Love' },
+    { id: 'wedding-vows-typography', label: 'Wedding Vows', category: 'Love' },
+    { id: 'family-house-rules', label: 'Family House Rules', category: 'Family' },
+    { id: 'travel-manifesto', label: 'Travel Manifesto', category: 'Travel' },
+    { id: 'memorial-tribute-quote', label: 'Memorial Tribute', category: 'Tribute' },
+    { id: 'classroom-rules', label: 'Classroom Rules', category: 'Education' },
+    { id: 'new-year-resolutions', label: 'New Year Resolutions', category: 'Milestones' },
+    { id: 'faith-scripture-quote', label: 'Faith & Scripture', category: 'Faith' },
+    { id: 'confirmation-blessing', label: 'Confirmation Blessing', category: 'Faith' },
+    { id: 'quinceanera-manifesto', label: 'Quinceañera Manifesto', category: 'Faith' },
+    { id: 'christmas-house-rules', label: 'Christmas House Rules', category: 'Holiday' },
+    { id: 'career-manifesto', label: 'Career Manifesto', category: 'Career' },
+    { id: 'empty-nest-quote', label: 'Empty Nest Reflection', category: 'Family' },
+    { id: 'cancer-survivor-quote', label: 'Survivor\'s Creed', category: 'Health' },
+    { id: 'welcome-home-military-quote', label: 'Welcome Home Tribute', category: 'Milestones' }
   ],
 
   COORDINATES: [
@@ -78,7 +128,16 @@ export const POSTER_PRESETS = {
     { id: 'favorite-vacation', label: 'Favorite Vacation Spot', category: 'Travel' },
     { id: 'mountain-summit-map', label: 'Summit Reached', category: 'Sports' },
     { id: 'moving-abroad', label: 'Moving Abroad', category: 'Milestones' },
-    { id: 'hometown-pride', label: 'Hometown Pride', category: 'Milestones' }
+    { id: 'hometown-pride', label: 'Hometown Pride', category: 'Milestones' },
+    { id: 'birthplace-coordinates', label: 'Birthplace Coordinates', category: 'Family' },
+    { id: 'pet-adoption-location', label: 'Pet Adoption Spot', category: 'Pets' },
+    { id: 'memorial-location-map', label: 'Memorial Location', category: 'Tribute' },
+    { id: 'store-opening-map', label: 'Store Grand Opening', category: 'Business' },
+    { id: 'graduation-campus-map', label: 'Graduation Campus', category: 'Education' },
+    { id: 'church-wedding-location', label: 'Church Wedding Location', category: 'Faith' },
+    { id: 'first-apartment-map', label: 'First Apartment', category: 'Career' },
+    { id: 'new-job-city-map', label: 'New Job City', category: 'Career' },
+    { id: 'hospital-recovery-map', label: 'Where We Beat It', category: 'Health' }
   ],
 
   STARMAP: [
@@ -92,7 +151,16 @@ export const POSTER_PRESETS = {
     { id: 'new-years-eve-sky', label: 'New Years Eve Sky', category: 'Milestones' },
     { id: 'graduation-night-stars', label: 'Graduation Night', category: 'Milestones' },
     { id: 'adopted-day-sky', label: 'Adoption Day Sky', category: 'Family' },
-    { id: 'memorial-night-sky', label: 'Memorial Night Sky', category: 'Tribute' }
+    { id: 'memorial-night-sky', label: 'Memorial Night Sky', category: 'Tribute' },
+    { id: 'engagement-night-stars', label: 'The Night We Got Engaged', category: 'Love' },
+    { id: 'retirement-night-sky', label: 'Retirement Night Sky', category: 'Milestones' },
+    { id: 'friendship-night-stars', label: 'Friendship Under The Stars', category: 'Culture' },
+    { id: 'pet-birthday-sky', label: 'Pet Birthday Sky', category: 'Pets' },
+    { id: 'christening-night-sky', label: 'Christening Night Sky', category: 'Faith' },
+    { id: 'quinceanera-sky', label: 'Quinceañera Night Sky', category: 'Faith' },
+    { id: 'christmas-eve-sky', label: 'Christmas Eve Sky', category: 'Holiday' },
+    { id: 'remission-day-sky', label: 'Remission Day Sky', category: 'Health' },
+    { id: 'welcome-home-sky', label: 'Welcome Home Sky', category: 'Milestones' }
   ],
 
   CASSETTE: [
@@ -106,7 +174,17 @@ export const POSTER_PRESETS = {
     { id: 'summer-vibes', label: 'Summer Vibes', category: 'Culture' },
     { id: 'stand-up-special-tape', label: 'Stand-Up Special', category: 'Culture' },
     { id: 'hip-hop-90s', label: '90s Hip Hop', category: 'Music' },
-    { id: 'jazz-classics', label: 'Jazz Classics', category: 'Music' }
+    { id: 'jazz-classics', label: 'Jazz Classics', category: 'Music' },
+    { id: 'lullaby-mixtape', label: 'Lullaby Mixtape', category: 'Family' },
+    { id: 'graduation-mixtape', label: 'Graduation Mixtape', category: 'Milestones' },
+    { id: 'game-day-hype-tape', label: 'Game Day Hype', category: 'Sports' },
+    { id: 'memorial-mixtape', label: 'In Memory Mixtape', category: 'Tribute' },
+    { id: 'podcast-mixtape', label: 'Podcast Highlights', category: 'Business' },
+    { id: 'christmas-classics-tape', label: 'Christmas Classics', category: 'Holiday' },
+    { id: 'diwali-celebration-tape', label: 'Diwali Celebration', category: 'Holiday' },
+    { id: 'new-job-hype-tape', label: 'New Job Hype', category: 'Career' },
+    { id: 'recovery-anthem-tape', label: 'Recovery Anthems', category: 'Health' },
+    { id: 'bar-mitzvah-mixtape', label: 'Bar Mitzvah Mixtape', category: 'Faith' }
   ],
 
   TYPEWRITER: [
@@ -120,7 +198,20 @@ export const POSTER_PRESETS = {
     { id: 'secret-capsule-letter', label: 'Time Capsule Letter', category: 'Milestones' },
     { id: 'letters-to-child', label: 'Letters To My Child', category: 'Family' },
     { id: 'mothers-day-letter', label: 'Mother\'s Day Letter', category: 'Family' },
-    { id: 'fathers-day-letter', label: 'Father\'s Day Letter', category: 'Family' }
+    { id: 'fathers-day-letter', label: 'Father\'s Day Letter', category: 'Family' },
+    { id: 'eulogy-letter', label: 'Eulogy Letter', category: 'Tribute' },
+    { id: 'pet-tribute-letter', label: 'Pet Tribute Letter', category: 'Pets' },
+    { id: 'resignation-letter-frame', label: 'Resignation Letter', category: 'Corporate' },
+    { id: 'retirement-letter', label: 'Retirement Letter', category: 'Milestones' },
+    { id: 'sobriety-letter', label: 'Sobriety Letter', category: 'Health' },
+    { id: 'coach-letter', label: 'Coach\'s Letter', category: 'Sports' },
+    { id: 'confirmation-letter', label: 'Confirmation Letter', category: 'Faith' },
+    { id: 'quinceanera-letter', label: 'Quinceañera Letter', category: 'Faith' },
+    { id: 'christmas-letter', label: 'Christmas Letter', category: 'Holiday' },
+    { id: 'new-job-letter', label: 'New Job Letter', category: 'Career' },
+    { id: 'welcome-home-letter', label: 'Welcome Home Letter', category: 'Milestones' },
+    { id: 'cancer-free-letter', label: 'Cancer-Free Letter', category: 'Health' },
+    { id: 'new-chapter-letter', label: 'New Chapter Letter', category: 'Milestones' }
   ],
 
   POLAROID: [
@@ -134,7 +225,18 @@ export const POSTER_PRESETS = {
     { id: 'honeymoon-snaps', label: 'Honeymoon Snaps', category: 'Travel' },
     { id: 'pet-memories', label: 'Pet Memories', category: 'Pets' },
     { id: 'graduation-day', label: 'Graduation Day', category: 'Milestones' },
-    { id: 'best-friends-forever', label: 'Best Friends Forever', category: 'Culture' }
+    { id: 'best-friends-forever', label: 'Best Friends Forever', category: 'Culture' },
+    { id: 'team-photo-memories', label: 'Team Photo Memories', category: 'Sports' },
+    { id: 'memorial-photo-collage', label: 'Memorial Photo Collage', category: 'Tribute' },
+    { id: 'coworker-memories', label: 'Coworker Memories', category: 'Corporate' },
+    { id: 'school-year-snaps', label: 'School Year Snaps', category: 'Education' },
+    { id: 'moving-day-snaps', label: 'Moving Day Snaps', category: 'Home' },
+    { id: 'quinceanera-snaps', label: 'Quinceañera Snaps', category: 'Faith' },
+    { id: 'bar-mitzvah-snaps', label: 'Bar Mitzvah Snaps', category: 'Faith' },
+    { id: 'christmas-morning-snaps', label: 'Christmas Morning Snaps', category: 'Holiday' },
+    { id: 'new-job-day-snaps', label: 'New Job Day', category: 'Career' },
+    { id: 'welcome-home-snaps', label: 'Welcome Home Snaps', category: 'Milestones' },
+    { id: 'recovery-journey-snaps', label: 'Recovery Journey Snaps', category: 'Health' }
   ],
 
   PATENT: [
@@ -148,7 +250,15 @@ export const POSTER_PRESETS = {
     { id: 'mechanical-keyboard', label: 'Mechanical Keyboard', category: 'Hobbies' },
     { id: 'vintage-camera', label: 'Vintage Camera', category: 'Hobbies' },
     { id: 'bicycle-frame', label: 'Bicycle Frame', category: 'Hobbies' },
-    { id: 'sneaker-design', label: 'Sneaker Design', category: 'Sports' }
+    { id: 'sneaker-design', label: 'Sneaker Design', category: 'Sports' },
+    { id: 'wedding-ring-blueprint', label: 'Wedding Ring', category: 'Love' },
+    { id: 'coffee-maker-blueprint', label: 'Coffee Maker', category: 'Home' },
+    { id: 'pet-collar-blueprint', label: 'Pet Collar', category: 'Pets' },
+    { id: 'skateboard-blueprint', label: 'Skateboard', category: 'Sports' },
+    { id: 'perfume-bottle-blueprint', label: 'Perfume Bottle', category: 'Hobbies' },
+    { id: 'christmas-ornament-blueprint', label: 'Christmas Ornament', category: 'Holiday' },
+    { id: 'briefcase-blueprint', label: 'Briefcase', category: 'Career' },
+    { id: 'stethoscope-blueprint', label: 'Stethoscope', category: 'Health' }
   ],
 
   PANTONE: [
@@ -162,7 +272,17 @@ export const POSTER_PRESETS = {
     { id: 'spring-blossom', label: 'Spring Blossom', category: 'Culture' },
     { id: 'winter-wonderland', label: 'Winter Wonderland', category: 'Culture' },
     { id: 'pet-fur-tones', label: 'Pet Fur Tones', category: 'Pets' },
-    { id: 'first-home-colors', label: 'First Home Colors', category: 'Home' }
+    { id: 'first-home-colors', label: 'First Home Colors', category: 'Home' },
+    { id: 'team-color-palette', label: 'Team Color Palette', category: 'Sports' },
+    { id: 'birthday-color-palette', label: 'Birthday Color Palette', category: 'Milestones' },
+    { id: 'memorial-color-palette', label: 'Memorial Color Palette', category: 'Tribute' },
+    { id: 'brand-color-palette', label: 'Brand Color Palette', category: 'Business' },
+    { id: 'fitness-journey-palette', label: 'Fitness Journey Palette', category: 'Health' },
+    { id: 'quinceanera-palette', label: 'Quinceañera Palette', category: 'Faith' },
+    { id: 'christmas-color-palette', label: 'Christmas Color Palette', category: 'Holiday' },
+    { id: 'diwali-color-palette', label: 'Diwali Color Palette', category: 'Holiday' },
+    { id: 'new-job-palette', label: 'New Job Palette', category: 'Career' },
+    { id: 'recovery-journey-palette', label: 'Recovery Journey Palette', category: 'Health' }
   ],
 
   NEWSPAPER: [
@@ -176,7 +296,17 @@ export const POSTER_PRESETS = {
     { id: 'graduation-headline', label: 'Graduation Headline', category: 'Milestones' },
     { id: 'retirement-news', label: 'Retirement News', category: 'Milestones' },
     { id: 'championship-headline', label: 'Championship Victory', category: 'Sports' },
-    { id: 'startup-headline', label: 'Startup Launch', category: 'Business' }
+    { id: 'startup-headline', label: 'Startup Launch', category: 'Business' },
+    { id: 'pet-adoption-headline', label: 'Pet Adoption Headline', category: 'Pets' },
+    { id: 'recovery-headline', label: 'Recovery Headline', category: 'Health' },
+    { id: 'world-record-headline', label: 'World Record Headline', category: 'Travel' },
+    { id: 'legacy-tribute-headline', label: 'Legacy Tribute', category: 'Tribute' },
+    { id: 'quinceanera-headline', label: 'Quinceañera Headline', category: 'Faith' },
+    { id: 'bar-mitzvah-headline', label: 'Bar Mitzvah Headline', category: 'Faith' },
+    { id: 'christmas-headline', label: 'Christmas Special Edition', category: 'Holiday' },
+    { id: 'new-job-headline', label: 'New Job Headline', category: 'Career' },
+    { id: 'welcome-home-headline', label: 'Welcome Home Headline', category: 'Milestones' },
+    { id: 'remission-headline', label: 'Remission Headline', category: 'Health' }
   ],
 
   HEART: [
@@ -190,7 +320,14 @@ export const POSTER_PRESETS = {
     { id: 'teacher-thank-you-heart', label: 'Teacher Thank You', category: 'Education' },
     { id: 'best-friends-forever-heart', label: 'Best Friends Forever', category: 'Culture' },
     { id: 'pet-tribute-heart', label: 'Pet Tribute', category: 'Pets' },
-    { id: 'song-lyrics-heart', label: 'Song Lyrics', category: 'Music' }
+    { id: 'song-lyrics-heart', label: 'Song Lyrics', category: 'Music' },
+    { id: 'graduation-heart', label: 'Graduation Message', category: 'Milestones' },
+    { id: 'team-spirit-heart', label: 'Team Spirit', category: 'Sports' },
+    { id: 'memorial-heart-tribute', label: 'Memorial Tribute', category: 'Tribute' },
+    { id: 'confirmation-heart', label: 'Confirmation Blessing', category: 'Faith' },
+    { id: 'christmas-heart', label: 'Christmas Love', category: 'Holiday' },
+    { id: 'welcome-home-heart', label: 'Welcome Home Tribute', category: 'Milestones' },
+    { id: 'survivor-heart', label: 'Survivor\'s Heart', category: 'Health' }
   ],
 
   AIRBNB: [
@@ -204,7 +341,13 @@ export const POSTER_PRESETS = {
     { id: 'luxury-villa-guide', label: 'Luxury Villa Guide', category: 'Home' },
     { id: 'vintage-cottage', label: 'Vintage Cottage', category: 'Home' },
     { id: 'tropical-resort', label: 'Tropical Resort', category: 'Home' },
-    { id: 'family-guest-house', label: 'Family Guest House', category: 'Home' }
+    { id: 'family-guest-house', label: 'Family Guest House', category: 'Home' },
+    { id: 'farmhouse-getaway', label: 'Farmhouse Getaway', category: 'Home' },
+    { id: 'ski-chalet-guide', label: 'Ski Chalet Guide', category: 'Home' },
+    { id: 'houseboat-retreat', label: 'Houseboat Retreat', category: 'Home' },
+    { id: 'glamping-tent-guide', label: 'Glamping Tent Guide', category: 'Home' },
+    { id: 'christmas-cabin-guide', label: 'Christmas Cabin Guide', category: 'Holiday' },
+    { id: 'halloween-haunted-house', label: 'Halloween Haunted Stay', category: 'Holiday' }
   ],
 
   TODDLER: [
@@ -218,6 +361,13 @@ export const POSTER_PRESETS = {
     { id: 'little-princess', label: 'Little Princess', category: 'Family' },
     { id: 'construction-vehicles', label: 'Construction Vehicles', category: 'Family' },
     { id: 'fairy-tale-castle', label: 'Fairy Tale Castle', category: 'Family' },
-    { id: 'magic-garden', label: 'Magic Garden', category: 'Family' }
+    { id: 'magic-garden', label: 'Magic Garden', category: 'Family' },
+    { id: 'butterfly-garden', label: 'Butterfly Garden', category: 'Family' },
+    { id: 'pirate-adventure', label: 'Pirate Adventure', category: 'Family' },
+    { id: 'superhero-kid', label: 'Superhero Kid', category: 'Family' },
+    { id: 'mermaid-under-sea', label: 'Mermaid Under The Sea', category: 'Family' },
+    { id: 'christmas-little-elf', label: 'Christmas Little Elf', category: 'Holiday' },
+    { id: 'halloween-costume-kid', label: 'Halloween Costume Kid', category: 'Holiday' },
+    { id: 'diwali-little-star', label: 'Diwali Little Star', category: 'Holiday' }
   ]
 };
