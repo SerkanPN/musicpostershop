@@ -653,7 +653,7 @@ export default function PosterEngine({
         .poster-engine-page #props-selected-name { color: var(--accent); font-size: 10px; font-weight: 600; letter-spacing: 0; text-transform: none; }
         .poster-engine-page #props-body { flex: 1; overflow-y: auto; padding: 12px 14px; }
         .poster-engine-page #props-empty-state { padding: 32px 16px; text-align: center; color: #444; font-size: 11px; line-height: 1.7; }
-        .poster-engine-page #props-empty-state svg { margin-bottom: 12px; }
+        .poster-engine-page #props-empty-state svg { width: 28px; height: 28px; margin: 0 auto 12px auto; }
 
         .poster-engine-page .pf-section { margin-bottom: 4px; }
         .poster-engine-page .pf-section-title { font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #555; margin: 12px 0 6px; }
@@ -672,9 +672,10 @@ export default function PosterEngine({
         .poster-engine-page .gt-section-title { font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--spotify-subtext); margin-bottom: 8px; }
         .poster-engine-page .gt-align-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-bottom: 8px; }
         .poster-engine-page .gt-align-btn { height: 28px; display: flex; align-items: center; justify-content: center; background: var(--input-bg); border: 1px solid var(--input-border); color: var(--spotify-subtext); border-radius: 6px; cursor: pointer; transition: all 0.15s; }
+        .poster-engine-page .gt-align-btn svg { width: 14px; height: 14px; }
         .poster-engine-page .gt-align-btn:hover { background: #1a1a1a; border-color: var(--accent); color: var(--spotify-text); }
         .poster-engine-page .gt-group-row { display: flex; gap: 6px; margin-bottom: 12px; }
-        .poster-engine-page .gt-group-btn { flex: 1; height: 28px; font-size: 10px; font-weight: 700; text-transform: uppercase; background: var(--input-bg); border: 1px solid var(--input-border); color: var(--spotify-text); border-radius: 6px; cursor: pointer; }
+        .poster-engine-page .gt-group-btn { flex: 1; height: 28px; font-size: 10px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; background: var(--input-bg); border: 1px solid var(--input-border); color: var(--spotify-text); border-radius: 6px; cursor: pointer; transition: all 0.15s; }
         .poster-engine-page .gt-group-btn:hover { background: var(--accent); color: #000; border-color: var(--accent); }
         .poster-engine-page .gt-zoom-row { display: flex; align-items: center; gap: 8px; }
         .poster-engine-page .gt-zoom-row input[type=range] { flex: 1; accent-color: var(--accent); cursor: pointer; }
