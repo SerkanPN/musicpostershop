@@ -1,71 +1,121 @@
-﻿import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
-import HomePage from './pages/HomePage';
-import SoundwaveEditor from './pages/editors/SoundwaveEditor';
-import ReceiptEditor from './pages/editors/ReceiptEditor';
-import DictionaryEditor from './pages/editors/DictionaryEditor';
-import CoordinatesEditor from './pages/editors/CoordinatesEditor';
-import StarmapEditor from './pages/editors/StarmapEditor';
-import CassetteEditor from './pages/editors/CassetteEditor';
-import TypewriterEditor from './pages/editors/TypewriterEditor';
-import PolaroidEditor from './pages/editors/PolaroidEditor';
-import PatentEditor from './pages/editors/PatentEditor';
-import PantoneEditor from './pages/editors/PantoneEditor';
-import NewspaperEditor from './pages/editors/NewspaperEditor';
-import HeartEditor from './pages/editors/HeartEditor';
-import AirbnbEditor from './pages/editors/AirbnbEditor';
-import ToddlerEditor from './pages/editors/ToddlerEditor';
-import VinylEditor from './pages/editors/VinylEditor';
-import LyricsPrintEditor from './pages/editors/LyricsPrintEditor';
-import WeddingVowsEditor from './pages/editors/WeddingVowsEditor';
+﻿import React, { useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Layout } from './components/Layout';
+import { useStore } from './store/useStore';
+
+// Sayfalar
+import ClaimOrder from './pages/ClaimOrder';
+import AdminPortal from './pages/AdminPortal';
+import TrendPostersSelection from './pages/TrendPostersSelection';
+
+// 14 Trend Poster Editörleri (Orijinal Derin Sistem)
+import SoundwavePosterPage from './pages/SoundwavePosterPage';
+import ReceiptPosterPage from './pages/ReceiptPosterPage';
+import TypographyPosterPage from './pages/TypographyPosterPage';
+import CoordinatesPosterPage from './pages/CoordinatesPosterPage';
+import StarMapPosterPage from './pages/StarMapPosterPage';
+import CassettePosterPage from './pages/CassettePosterPage';
+import TypewriterPosterPage from './pages/TypewriterPosterPage';
+import PolaroidPosterPage from './pages/PolaroidPosterPage';
+import PatentPosterPage from './pages/PatentPosterPage';
+import PantonePosterPage from './pages/PantonePosterPage';
+import NewspaperPosterPage from './pages/NewspaperPosterPage';
+import HeartPosterPage from './pages/HeartPosterPage';
+import AirbnbPosterPage from './pages/AirbnbPosterPage';
+import ToddlerPosterPage from './pages/ToddlerPosterPage';
 
 export default function App() {
+  const { checkUser } = useStore();
+
+  useEffect(() => {
+    try {
+      checkUser();
+    } catch (error) {
+      console.error(error);
+    }
+  }, [checkUser]);
+
+  const handleNavigate = (path: string) => {
+    window.location.href = path;
+  };
+
   return (
-    <Routes>
-      <Route path="/" element={<HomePage />} />
-      <Route path="/trend-posters" element={<HomePage />} />
-      
-      {/* Lyricsposter.com Direct Standalone & Specific Editors */}
-      <Route path="/custom-vinyl-lyrics-print" element={<VinylEditor />} />
-      <Route path="/editor/vinyl" element={<VinylEditor />} />
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          {/* Ana Sayfa Vitrini: Tüm 14 Trend Poster ve 180+ Preset Seçimi */}
+          <Route index element={<TrendPostersSelection />} />
+          <Route path="trend-posters" element={<TrendPostersSelection />} />
 
-      <Route path="/custom-song-lyrics-print" element={<LyricsPrintEditor />} />
-      <Route path="/lyrics-poster-maker" element={<LyricsPrintEditor />} />
-      <Route path="/editor/lyrics" element={<LyricsPrintEditor />} />
+          {/* 14 Canlı Trend Poster Editörü (Doğrudan & Parametreli Erişim) */}
+          <Route path="trend-posters/soundwave" element={<SoundwavePosterPage navigate={handleNavigate} />} />
+          <Route path="soundwave" element={<SoundwavePosterPage navigate={handleNavigate} />} />
+          <Route path="soundwave-lyrics-art" element={<SoundwavePosterPage navigate={handleNavigate} />} />
 
-      <Route path="/custom-wedding-vows-print" element={<WeddingVowsEditor />} />
-      <Route path="/editor/vows" element={<WeddingVowsEditor />} />
+          <Route path="trend-posters/receipt" element={<ReceiptPosterPage navigate={handleNavigate} />} />
+          <Route path="receipt" element={<ReceiptPosterPage navigate={handleNavigate} />} />
+          <Route path="music-posters" element={<ReceiptPosterPage navigate={handleNavigate} />} />
 
-      {/* 14 Category Bespoke Editors */}
-      <Route path="/editor/soundwave" element={<SoundwaveEditor />} />
-      <Route path="/soundwave-lyrics-art" element={<SoundwaveEditor />} />
-      <Route path="/soundwave" element={<SoundwaveEditor />} />
+          <Route path="trend-posters/typography" element={<TypographyPosterPage navigate={handleNavigate} />} />
+          <Route path="typography" element={<TypographyPosterPage navigate={handleNavigate} />} />
 
-      <Route path="/editor/receipt" element={<ReceiptEditor />} />
-      <Route path="/music-posters" element={<ReceiptEditor />} />
-      <Route path="/receipt" element={<ReceiptEditor />} />
+          <Route path="trend-posters/coordinates" element={<CoordinatesPosterPage navigate={handleNavigate} />} />
+          <Route path="coordinates" element={<CoordinatesPosterPage navigate={handleNavigate} />} />
+          <Route path="custom-map-print" element={<CoordinatesPosterPage navigate={handleNavigate} />} />
 
-      <Route path="/editor/dictionary" element={<DictionaryEditor />} />
-      <Route path="/editor/typography" element={<DictionaryEditor />} />
+          <Route path="trend-posters/starmap" element={<StarMapPosterPage navigate={handleNavigate} />} />
+          <Route path="starmap" element={<StarMapPosterPage navigate={handleNavigate} />} />
 
-      <Route path="/editor/coordinates" element={<CoordinatesEditor />} />
-      <Route path="/custom-map-print" element={<CoordinatesEditor />} />
+          <Route path="trend-posters/cassette" element={<CassettePosterPage navigate={handleNavigate} />} />
+          <Route path="cassette" element={<CassettePosterPage navigate={handleNavigate} />} />
 
-      <Route path="/editor/starmap" element={<StarmapEditor />} />
-      <Route path="/starmap" element={<StarmapEditor />} />
+          <Route path="trend-posters/typewriter" element={<TypewriterPosterPage navigate={handleNavigate} />} />
+          <Route path="typewriter" element={<TypewriterPosterPage navigate={handleNavigate} />} />
 
-      <Route path="/editor/cassette" element={<CassetteEditor />} />
-      <Route path="/editor/typewriter" element={<TypewriterEditor />} />
-      <Route path="/editor/polaroid" element={<PolaroidEditor />} />
-      <Route path="/editor/patent" element={<PatentEditor />} />
-      <Route path="/editor/pantone" element={<PantoneEditor />} />
-      <Route path="/editor/newspaper" element={<NewspaperEditor />} />
-      <Route path="/editor/heart" element={<HeartEditor />} />
-      <Route path="/editor/airbnb" element={<AirbnbEditor />} />
-      <Route path="/editor/toddler" element={<ToddlerEditor />} />
+          <Route path="trend-posters/polaroid" element={<PolaroidPosterPage navigate={handleNavigate} />} />
+          <Route path="polaroid" element={<PolaroidPosterPage navigate={handleNavigate} />} />
 
-      {/* Fallback */}
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+          <Route path="trend-posters/patent" element={<PatentPosterPage navigate={handleNavigate} />} />
+          <Route path="patent" element={<PatentPosterPage navigate={handleNavigate} />} />
+
+          <Route path="trend-posters/pantone" element={<PantonePosterPage navigate={handleNavigate} />} />
+          <Route path="pantone" element={<PantonePosterPage navigate={handleNavigate} />} />
+
+          <Route path="trend-posters/newspaper" element={<NewspaperPosterPage navigate={handleNavigate} />} />
+          <Route path="newspaper" element={<NewspaperPosterPage navigate={handleNavigate} />} />
+
+          <Route path="trend-posters/heart" element={<HeartPosterPage navigate={handleNavigate} />} />
+          <Route path="heart" element={<HeartPosterPage navigate={handleNavigate} />} />
+
+          <Route path="trend-posters/airbnb" element={<AirbnbPosterPage navigate={handleNavigate} />} />
+          <Route path="airbnb" element={<AirbnbPosterPage navigate={handleNavigate} />} />
+
+          <Route path="trend-posters/toddler" element={<ToddlerPosterPage navigate={handleNavigate} />} />
+          <Route path="toddler" element={<ToddlerPosterPage navigate={handleNavigate} />} />
+
+          {/* Müşteri Sipariş İnceleme Editörleri (Token ile) */}
+          <Route path="design/soundwave/:token" element={<SoundwavePosterPage navigate={handleNavigate} />} />
+          <Route path="design/receipt/:token" element={<ReceiptPosterPage navigate={handleNavigate} />} />
+          <Route path="design/typography/:token" element={<TypographyPosterPage navigate={handleNavigate} />} />
+          <Route path="design/coordinates/:token" element={<CoordinatesPosterPage navigate={handleNavigate} />} />
+          <Route path="design/starmap/:token" element={<StarMapPosterPage navigate={handleNavigate} />} />
+          <Route path="design/cassette/:token" element={<CassettePosterPage navigate={handleNavigate} />} />
+          <Route path="design/typewriter/:token" element={<TypewriterPosterPage navigate={handleNavigate} />} />
+          <Route path="design/polaroid/:token" element={<PolaroidPosterPage navigate={handleNavigate} />} />
+          <Route path="design/patent/:token" element={<PatentPosterPage navigate={handleNavigate} />} />
+          <Route path="design/pantone/:token" element={<PantonePosterPage navigate={handleNavigate} />} />
+          <Route path="design/newspaper/:token" element={<NewspaperPosterPage navigate={handleNavigate} />} />
+          <Route path="design/heart/:token" element={<HeartPosterPage navigate={handleNavigate} />} />
+          <Route path="design/airbnb/:token" element={<AirbnbPosterPage navigate={handleNavigate} />} />
+          <Route path="design/toddler/:token" element={<ToddlerPosterPage navigate={handleNavigate} />} />
+
+          {/* Sipariş Claim & Admin Portalları */}
+          <Route path="claim" element={<ClaimOrder />} />
+          <Route path="admin-portal" element={<AdminPortal />} />
+
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   );
 }
