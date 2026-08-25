@@ -1,244 +1,643 @@
-import React, { useEffect, useRef, useState } from 'react';
+﻿import React, { useEffect, useRef, useState } from 'react';
 import * as fabric from 'fabric';
+import jsPDF from 'jspdf';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import ModernStudioLayout, { PresetItem } from '../../components/ModernStudioLayout';
+import { POSTER_PRESETS } from '../../lib/presets';
+import { 
+  Sparkles, Plus, Trash2, Sliders, Palette, Type, 
+  Barcode, Receipt, FileText, Check
+} from 'lucide-react';
 
-const DEFAULT_PRESETS: Record<string, any> = {
-  marathon: { storeName: "BERLIN MARATHON", receiptNum: "REF: 42195", date: "SEP 24, 2023", items: [{ name: "DISTANCE", price: "42.195 KM" }, { name: "NET TIME", price: "03:45:12" }, { name: "PACE", price: "05:20/KM" }, { name: "OVERALL RANK", price: "14582" }], totalLabel: "STATUS", totalValue: "FINISHER", barcodeText: "NEVER GIVE UP" },
-  cafe: { storeName: "THE BREW ROASTERS", receiptNum: "ORDER #042", date: "TODAY", items: [{ name: "ESPRESSO", price: "$3.50" }, { name: "CORTADO", price: "$4.00" }, { name: "POUR OVER", price: "$6.00" }, { name: "CROISSANT", price: "$4.50" }], totalLabel: "TOTAL", totalValue: "$18.00", barcodeText: "CRAFT COFFEE & GOOD VIBES" },
-  anniversary: { storeName: "5 YEARS TOGETHER", receiptNum: "REF: FOREVER", date: "MAY 14, 2024", items: [{ name: "LAUGHS SHARED", price: "COUNTLESS" }, { name: "COFFEES DRUNK", price: "1,452" }, { name: "MOVIE NIGHTS", price: "340" }, { name: "ARGUMENTS WON", price: "0" }], totalLabel: "TOTAL LOVE", totalValue: "100%", barcodeText: "HAPPY ANNIVERSARY" },
-  first_date: { storeName: "WHERE IT BEGAN", receiptNum: "TABLE 4", date: "AUG 24, 2019", items: [{ name: "NERVOUS SMILES", price: "LOTS" }, { name: "AWKWARD SILENCE", price: "2 MINS" }, { name: "LATTE MACCHIATO", price: "2" }, { name: "FIRST KISS", price: "PRICELESS" }], totalLabel: "STATUS", totalValue: "MATCHED", barcodeText: "BEST DAY EVER" },
-  long_distance: { storeName: "DISTANCE MEANS NOTHING", receiptNum: "LHR -> JFK", date: "2023-2024", items: [{ name: "KILOMETERS", price: "5,540" }, { name: "FLIGHTS TAKEN", price: "12" }, { name: "FACETIME HOURS", price: "840" }, { name: "TEARS SHED", price: "TOO MANY" }], totalLabel: "CONNECTION", totalValue: "STRONG", barcodeText: "SEE YOU SOON" },
-  graduation: { storeName: "CLASS OF 2024", receiptNum: "ALUMNI", date: "JUN 15, 2024", items: [{ name: "ALL NIGHTERS", price: "54" }, { name: "ENERGY DRINKS", price: "320" }, { name: "LATE ASSIGNMENTS", price: "3" }, { name: "FINAL GPA", price: "3.8" }], totalLabel: "STATUS", totalValue: "GRADUATED", barcodeText: "HIRE ME PLEASE" },
-  new_home: { storeName: "HOME SWEET HOME", receiptNum: "APT 4B", date: "OCT 1, 2024", items: [{ name: "KEYS RECEIVED", price: "2" }, { name: "BOXES MOVED", price: "45" }, { name: "PAINT CANS", price: "6" }, { name: "PIZZA ORDERS", price: "3" }], totalLabel: "MORTGAGE", totalValue: "PAID", barcodeText: "NEW BEGINNINGS" },
-  gym: { storeName: "BEAST MODE", receiptNum: "PHASE 1", date: "2023-2024", items: [{ name: "STARTING WEIGHT", price: "95 KG" }, { name: "CURRENT WEIGHT", price: "75 KG" }, { name: "CHICKEN & RICE", price: "ALWAYS" }, { name: "SWEAT SHED", price: "GALLONS" }], totalLabel: "TRANSFORMATION", totalValue: "COMPLETE", barcodeText: "NEVER SKIP LEG DAY" },
-  champions: { storeName: "CHAMPIONS 2024", receiptNum: "FINALS", date: "MAY 2024", items: [{ name: "GAMES PLAYED", price: "38" }, { name: "WINS", price: "30" }, { name: "GOALS SCORED", price: "84" }, { name: "CLEAN SHEETS", price: "15" }], totalLabel: "TROPHY", totalValue: "SECURED", barcodeText: "WE ARE THE CHAMPIONS" },
-  dog_rules: { storeName: "HOUSE RULES", receiptNum: "CHARLIE", date: "EST. 2020", items: [{ name: "BARK AT MAILMAN", price: "DAILY" }, { name: "DROPPED FOOD", price: "MINE" }, { name: "BELLY RUBS", price: "REQUIRED" }, { name: "PERSONAL SPACE", price: "NONE" }], totalLabel: "GOOD BOY", totalValue: "100%", barcodeText: "WOOF WOOF" },
-  gaming: { storeName: "GG WP", receiptNum: "RANKED", date: "SEASON 14", items: [{ name: "KILLS", price: "24" }, { name: "DEATHS", price: "2" }, { name: "ASSISTS", price: "15" }, { name: "MATCH LENGTH", price: "45:12" }], totalLabel: "RANK", totalValue: "DIAMOND", barcodeText: "EZ GAME" },
-  travel: { storeName: "WORLD TRAVELER", receiptNum: "PASSPORT", date: "2020-2024", items: [{ name: "COUNTRIES VISITED", price: "15" }, { name: "FLIGHTS", price: "34" }, { name: "HOSTELS", price: "12" }, { name: "NEW FRIENDS", price: "COUNTLESS" }], totalLabel: "ADVENTURE", totalValue: "CONTINUES", barcodeText: "WANDERLUST" },
-  car: { storeName: "BUILT NOT BOUGHT", receiptNum: "GARAGE", date: "PROJECT 1", items: [{ name: "HORSEPOWER", price: "450 HP" }, { name: "TURBO KIT", price: "INSTALLED" }, { name: "EXHAUST", price: "CUSTOM" }, { name: "MONEY SPENT", price: "TOO MUCH" }], totalLabel: "STATUS", totalValue: "TUNED", barcodeText: "RACE CAR" },
-  tracklist: { storeName: "NOW SPINNING", receiptNum: "VINYL", date: "1973", items: [{ name: "SPEAK TO ME", price: "1:13" }, { name: "BREATHE", price: "2:43" }, { name: "TIME", price: "7:01" }, { name: "MONEY", price: "6:22" }], totalLabel: "ALBUM", totalValue: "CLASSIC", barcodeText: "DARK SIDE OF THE MOON" },
-  roommate: { storeName: "SURVIVAL GUIDE", receiptNum: "APT 4B", date: "RULEBOOK", items: [{ name: "TRASH DUTY", price: "ROTATE" }, { name: "DISHES", price: "24HR MAX" }, { name: "WIFI PW", price: "NEVERTELL" }, { name: "RENT DUE", price: "1ST OF MO" }], totalLabel: "STATUS", totalValue: "ROOMMATES", barcodeText: "RESPECT THE SPACE" }
+interface ReceiptItem {
+  name: string;
+  price: string;
+}
+
+const RECEIPT_PRESET_DATA: Record<string, any> = {
+  'love-invoice': {
+    storeName: 'STORE OF UNCONDITIONAL LOVE',
+    orderNum: 'ORDER #14022026',
+    dateText: 'MAY 14, 2026 • TABLE FOR TWO',
+    items: [
+      { name: 'FIRST NERVOUS SMILES', price: 'PRICELESS' },
+      { name: 'LATE NIGHT PHONE CALLS', price: '1,420 HRS' },
+      { name: 'INSIDE JOKES SHARED', price: 'COUNTLESS' },
+      { name: 'SPONTANEOUS ROAD TRIPS', price: '18 TRIPS' },
+      { name: 'ARGUMENTS WON BY YOU', price: 'ALL OF THEM' },
+      { name: 'BUTTERFLIES IN STOMACH', price: '100%' },
+      { name: 'A LIFETIME OF HAPPINESS', price: 'INCLUDED' },
+    ],
+    subtotal: '100% DEVOTION',
+    tax: '0.00 (NO TAX ON LOVE)',
+    total: 'FOREVER & ALWAYS',
+    barcodeText: 'I LOVE YOU MORE THAN YESTERDAY',
+    footerText: 'THANK YOU FOR BEING MY FAVORITE PERSON',
+    bgColor: '#fbfbfb',
+    paperColor: '#ffffff',
+    textColor: '#18181b',
+    fontStyle: 'Space Mono, monospace'
+  },
+  'marathon-finisher': {
+    storeName: 'BERLIN MARATHON FINISHER',
+    orderNum: 'BIB #42195 • OFFICIAL SPLITS',
+    dateText: 'SEP 24, 2026 • 09:15 AM',
+    items: [
+      { name: 'TOTAL DISTANCE', price: '42.195 KM' },
+      { name: 'OFFICIAL CHIP TIME', price: '03:42:15' },
+      { name: 'AVERAGE PACE', price: '05:16 /KM' },
+      { name: 'HALF MARATHON SPLIT', price: '01:48:10' },
+      { name: 'CALORIES BURNED', price: '3,150 KCAL' },
+      { name: 'OVERALL PLACEMENT', price: 'TOP 12%' },
+      { name: 'HEART RATE PEAK', price: '182 BPM' },
+    ],
+    subtotal: '42.195 KM CONQUERED',
+    tax: 'SWEAT & DEDICATION',
+    total: 'MEDAL SECURED',
+    barcodeText: 'NEVER STOP RUNNING • PB CRUSHED',
+    footerText: 'PAIN IS TEMPORARY • GLORY IS FOREVER',
+    bgColor: '#111827',
+    paperColor: '#f9fafb',
+    textColor: '#111827',
+    fontStyle: 'Space Mono, monospace'
+  },
+  'cafe-bistro': {
+    storeName: 'THE ARTISAN COFFEE ROASTERS',
+    orderNum: 'TICKET #042 • MORNING RUSH',
+    dateText: 'TODAY • 08:30 AM',
+    items: [
+      { name: 'DOUBLE ESPRESSO (ETHIOPIA)', price: '$4.50' },
+      { name: 'OAT MILK CORTADO', price: '$5.00' },
+      { name: 'AVOCADO TOAST ON SOURDOUGH', price: '$12.50' },
+      { name: 'PISTACHIO CROISSANT', price: '$4.75' },
+      { name: 'COLD BREW REFILL', price: '$4.00' },
+    ],
+    subtotal: '$30.75',
+    tax: 'TAX (8.5%): $2.61',
+    total: '$33.36 (PAID)',
+    barcodeText: 'CRAFT COFFEE & GOOD VIBES',
+    footerText: 'LIFE BEGINS AFTER COFFEE',
+    bgColor: '#faf6f0',
+    paperColor: '#fffefc',
+    textColor: '#3e2723',
+    fontStyle: 'Space Mono, monospace'
+  },
+  'gym': {
+    storeName: 'BEAST MODE FITNESS LOG',
+    orderNum: 'PHASE 4: HYPERTROPHY',
+    dateText: 'SEASON 2026 • SQUAT RACK 3',
+    items: [
+      { name: 'STARTING WEIGHT', price: '94.0 KG' },
+      { name: 'CURRENT LEAN WEIGHT', price: '76.5 KG' },
+      { name: 'BENCH PRESS 1RM', price: '140 KG' },
+      { name: 'DEADLIFT RECORD', price: '220 KG' },
+      { name: 'WORKOUTS COMPLETED', price: '248 DAYS' },
+      { name: 'PROTEIN SHAKES DRUNK', price: '500+ L' },
+    ],
+    subtotal: '100% DISCIPLINE',
+    tax: 'ZERO EXCUSES',
+    total: 'TRANSFORMATION COMPLETE',
+    barcodeText: 'NEVER SKIP LEG DAY',
+    footerText: 'CONSISTENCY OVER INTENSITY',
+    bgColor: '#09090b',
+    paperColor: '#f4f4f5',
+    textColor: '#18181b',
+    fontStyle: 'Space Mono, monospace'
+  }
 };
+
+const RECEIPT_THEMES = [
+  { name: 'Classic Thermal', bg: '#18181b', paper: '#ffffff', text: '#18181b' },
+  { name: 'Matte Minimalist', bg: '#fafafa', paper: '#f4f4f5', text: '#09090b' },
+  { name: 'Vintage Newsprint', bg: '#292524', paper: '#f5f0eb', text: '#292524' },
+  { name: 'Dark Cyberpunk', bg: '#050505', paper: '#18181b', text: '#f43f5e' },
+  { name: 'Warm Parchment', bg: '#451a03', paper: '#fffdfa', text: '#451a03' }
+];
 
 export default function ReceiptEditor() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const presetKey = searchParams.get('preset') || 'marathon';
-  const initialData = DEFAULT_PRESETS[presetKey] || DEFAULT_PRESETS.marathon;
+  const presetParam = searchParams.get('preset') || 'love-invoice';
 
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [activePreset, setActivePreset] = useState<string>(presetParam);
+  const initial = RECEIPT_PRESET_DATA[presetParam] || RECEIPT_PRESET_DATA['love-invoice'];
+
+  const [storeName, setStoreName] = useState(initial.storeName);
+  const [orderNum, setOrderNum] = useState(initial.orderNum);
+  const [dateText, setDateText] = useState(initial.dateText);
+  const [items, setItems] = useState<ReceiptItem[]>(initial.items);
+  const [subtotal, setSubtotal] = useState(initial.subtotal);
+  const [tax, setTax] = useState(initial.tax);
+  const [total, setTotal] = useState(initial.total);
+  const [barcodeText, setBarcodeText] = useState(initial.barcodeText);
+  const [footerText, setFooterText] = useState(initial.footerText);
+
+  const [bgColor, setBgColor] = useState(initial.bgColor);
+  const [paperColor, setPaperColor] = useState(initial.paperColor);
+  const [textColor, setTextColor] = useState(initial.textColor);
+
+  const [zoom, setZoom] = useState(1);
+  const [printSize, setPrintSize] = useState('18x24');
+  const [isExporting, setIsExporting] = useState(false);
+
+  const canvasRef = useRef<HTMLDivElement>(null);
   const fabricRef = useRef<fabric.Canvas | null>(null);
 
-  const [storeName, setStoreName] = useState(initialData.storeName);
-  const [receiptNum, setReceiptNum] = useState(initialData.receiptNum);
-  const [date, setDate] = useState(initialData.date);
-  const [items, setItems] = useState(initialData.items);
-  const [totalLabel, setTotalLabel] = useState(initialData.totalLabel);
-  const [totalValue, setTotalValue] = useState(initialData.totalValue);
-  const [barcodeText, setBarcodeText] = useState(initialData.barcodeText);
-  const [bgColor, setBgColor] = useState('#f8f9fa');
-  const [textColor, setTextColor] = useState('#1a1a1a');
-
-  // Load custom fonts
+  // Load Google Monospace Fonts
   useEffect(() => {
     const link = document.createElement('link');
-    link.href = 'https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&family=Libre+Barcode+39+Text&display=swap';
+    link.href = 'https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Share+Tech+Mono&family=Inter:wght@400;600&display=swap';
     link.rel = 'stylesheet';
     document.head.appendChild(link);
   }, []);
 
+  // Handle Preset Switching
+  const handlePresetSelect = (id: string) => {
+    setActivePreset(id);
+    const data = RECEIPT_PRESET_DATA[id];
+    if (data) {
+      setStoreName(data.storeName);
+      setOrderNum(data.orderNum);
+      setDateText(data.dateText);
+      setItems(data.items);
+      setSubtotal(data.subtotal);
+      setTax(data.tax);
+      setTotal(data.total);
+      setBarcodeText(data.barcodeText);
+      setFooterText(data.footerText);
+      setBgColor(data.bgColor);
+      setPaperColor(data.paperColor);
+      setTextColor(data.textColor);
+    } else {
+      const general = (POSTER_PRESETS.RECEIPT as any[]).find(p => p.id === id);
+      if (general) {
+        setStoreName(general.label.toUpperCase());
+        setOrderNum(`REF: ${id.replace('-', '').toUpperCase()}`);
+      }
+    }
+  };
+
+  // Add / Remove item
+  const handleAddItem = () => {
+    setItems([...items, { name: 'NEW MILESTONE / ITEM', price: '$10.00' }]);
+  };
+
+  const handleRemoveItem = (index: number) => {
+    setItems(items.filter((_, i) => i !== index));
+  };
+
+  const handleItemChange = (index: number, field: 'name' | 'price', val: string) => {
+    const next = [...items];
+    next[index][field] = val;
+    setItems(next);
+  };
+
+  // Render Canvas with Ultra-Realistic Thermal Paper Receipt Graphics
   const renderCanvas = () => {
-    if (!fabricRef.current) return;
+    if (!canvasRef.current) return;
+
+    if (!fabricRef.current) {
+      const c = document.createElement('canvas');
+      canvasRef.current.innerHTML = '';
+      canvasRef.current.appendChild(c);
+      fabricRef.current = new fabric.Canvas(c, {
+        width: 600,
+        height: 800,
+        backgroundColor: bgColor,
+        selection: false
+      });
+    }
+
     const canvas = fabricRef.current;
     canvas.clear();
 
-    const w = 400;
-    const h = 600;
-    
-    // Background
+    const w = 600;
+    const h = 800;
+
+    // 1. Mat Background
     const bg = new fabric.Rect({
       left: 0, top: 0, width: w, height: h, fill: bgColor, selectable: false
     });
     canvas.add(bg);
 
-    const fontSettings = {
-      fontFamily: 'Space Mono, monospace',
-      fill: textColor,
-      selectable: true,
-      originX: 'center',
-    };
+    // 2. Receipt Paper Dimension & Jagged Edge Geometry
+    const pw = 420;
+    const ph = 700;
+    const px = (w - pw) / 2;
+    const py = (h - ph) / 2;
 
-    let yOffset = 60;
-
-    // Store Name
-    const storeText = new fabric.Textbox(storeName, {
-      ...fontSettings,
-      left: w / 2, top: yOffset,
-      fontSize: 24, fontWeight: 700,
-      width: w - 80, textAlign: 'center'
+    // Paper Drop Shadow
+    const shadow = new fabric.Rect({
+      left: px + 6, top: py + 8, width: pw, height: ph, fill: '#000000',
+      opacity: 0.18, rx: 2, ry: 2, selectable: false
     });
-    canvas.add(storeText);
-    yOffset += storeText.height + 20;
+    canvas.add(shadow);
 
-    // Header info
-    const infoText = new fabric.Textbox(`${receiptNum}\n${date}`, {
-      ...fontSettings,
-      left: w / 2, top: yOffset,
-      fontSize: 12,
-      width: w - 80, textAlign: 'center'
+    // Main Paper Body
+    const paper = new fabric.Rect({
+      left: px, top: py, width: pw, height: ph, fill: paperColor,
+      stroke: '#e4e4e7', strokeWidth: 0.5, selectable: false
     });
-    canvas.add(infoText);
-    yOffset += infoText.height + 20;
+    canvas.add(paper);
 
-    // Dashed line
-    const dashLine1 = new fabric.Line([40, yOffset, w - 40, yOffset], {
-      stroke: textColor, strokeWidth: 1, strokeDashArray: [4, 4], selectable: false
-    });
-    canvas.add(dashLine1);
-    yOffset += 20;
+    // Serrated Zigzag Cut Effect on Top and Bottom
+    const teethCount = 28;
+    const toothW = pw / teethCount;
+    const toothH = 4;
 
-    // Items
-    items.forEach((item: any) => {
-      const name = new fabric.Textbox(item.name, {
-        ...fontSettings, originX: 'left',
-        left: 40, top: yOffset, fontSize: 12, width: 200
+    for (let t = 0; t < teethCount; t++) {
+      const tx = px + (t * toothW);
+      // Top tooth
+      const topTooth = new fabric.Triangle({
+        left: tx, top: py - 2, width: toothW, height: toothH,
+        fill: bgColor, angle: 180, originX: 'left', originY: 'top', selectable: false
       });
-      const price = new fabric.Textbox(item.price, {
-        ...fontSettings, originX: 'right', textAlign: 'right',
-        left: w - 40, top: yOffset, fontSize: 12, width: 100
+      canvas.add(topTooth);
+
+      // Bottom tooth
+      const btmTooth = new fabric.Triangle({
+        left: tx, top: py + ph - 2, width: toothW, height: toothH,
+        fill: bgColor, originX: 'left', originY: 'top', selectable: false
       });
-      canvas.add(name, price);
-      yOffset += Math.max(name.height, price.height) + 10;
+      canvas.add(btmTooth);
+    }
+
+    let curY = py + 32;
+
+    // 3. Receipt Store Header
+    const storeEl = new fabric.Textbox(storeName.toUpperCase(), {
+      left: w / 2, top: curY, width: pw - 50, originX: 'center', textAlign: 'center',
+      fontSize: 15, fontWeight: 700, fill: textColor, fontFamily: 'Space Mono, monospace',
+      charSpacing: 80, selectable: false
+    });
+    canvas.add(storeEl);
+    curY += storeEl.height + 10;
+
+    // Order info & date
+    const metaEl = new fabric.Textbox(`${orderNum}\n${dateText}`, {
+      left: w / 2, top: curY, width: pw - 50, originX: 'center', textAlign: 'center',
+      fontSize: 9.5, fill: textColor, fontFamily: 'Space Mono, monospace',
+      opacity: 0.8, selectable: false
+    });
+    canvas.add(metaEl);
+    curY += metaEl.height + 16;
+
+    // Dotted separator line
+    const dotLine1 = new fabric.Line([px + 20, curY, px + pw - 20, curY], {
+      stroke: textColor, strokeWidth: 1, strokeDashArray: [4, 4], opacity: 0.6, selectable: false
+    });
+    canvas.add(dotLine1);
+    curY += 14;
+
+    // Column Headers
+    canvas.add(new fabric.Textbox('DESCRIPTION', {
+      left: px + 24, top: curY, fontSize: 9.5, fontWeight: 700, fill: textColor,
+      fontFamily: 'Space Mono, monospace', selectable: false
+    }));
+    canvas.add(new fabric.Textbox('QTY/VAL', {
+      left: px + pw - 100, top: curY, width: 76, textAlign: 'right', fontSize: 9.5,
+      fontWeight: 700, fill: textColor, fontFamily: 'Space Mono, monospace', selectable: false
+    }));
+    curY += 18;
+
+    const dotLine2 = new fabric.Line([px + 20, curY, px + pw - 20, curY], {
+      stroke: textColor, strokeWidth: 1, strokeDashArray: [4, 4], opacity: 0.6, selectable: false
+    });
+    canvas.add(dotLine2);
+    curY += 14;
+
+    // 4. Line Items
+    items.slice(0, 9).forEach((item) => {
+      const itemTitle = new fabric.Textbox(item.name.toUpperCase(), {
+        left: px + 24, top: curY, width: pw - 140, fontSize: 9.5, fill: textColor,
+        fontFamily: 'Space Mono, monospace', fontWeight: 600, selectable: false
+      });
+      canvas.add(itemTitle);
+
+      const itemPrice = new fabric.Textbox(item.price.toUpperCase(), {
+        left: px + pw - 120, top: curY, width: 96, textAlign: 'right', fontSize: 9.5,
+        fill: textColor, fontFamily: 'Space Mono, monospace', fontWeight: 600, selectable: false
+      });
+      canvas.add(itemPrice);
+
+      curY += Math.max(itemTitle.height, 18) + 6;
     });
 
-    // Dashed line
-    yOffset += 10;
-    const dashLine2 = new fabric.Line([40, yOffset, w - 40, yOffset], {
-      stroke: textColor, strokeWidth: 1, strokeDashArray: [4, 4], selectable: false
+    curY += 6;
+    // Dotted separator line before total
+    const dotLine3 = new fabric.Line([px + 20, curY, px + pw - 20, curY], {
+      stroke: textColor, strokeWidth: 1, strokeDashArray: [4, 4], opacity: 0.6, selectable: false
     });
-    canvas.add(dashLine2);
-    yOffset += 20;
+    canvas.add(dotLine3);
+    curY += 12;
 
-    // Total
-    const tLabel = new fabric.Textbox(totalLabel, {
-      ...fontSettings, originX: 'left',
-      left: 40, top: yOffset, fontSize: 16, fontWeight: 700, width: 150
-    });
-    const tValue = new fabric.Textbox(totalValue, {
-      ...fontSettings, originX: 'right', textAlign: 'right',
-      left: w - 40, top: yOffset, fontSize: 16, fontWeight: 700, width: 150
-    });
-    canvas.add(tLabel, tValue);
-    yOffset += Math.max(tLabel.height, tValue.height) + 30;
+    // Subtotal, Tax, Total
+    canvas.add(new fabric.Textbox('SUBTOTAL', {
+      left: px + 24, top: curY, fontSize: 9.5, fill: textColor, opacity: 0.8,
+      fontFamily: 'Space Mono, monospace', selectable: false
+    }));
+    canvas.add(new fabric.Textbox(subtotal.toUpperCase(), {
+      left: px + pw - 150, top: curY, width: 126, textAlign: 'right', fontSize: 9.5,
+      fill: textColor, opacity: 0.8, fontFamily: 'Space Mono, monospace', selectable: false
+    }));
+    curY += 16;
 
-    // Barcode
-    const barcode = new fabric.Textbox(barcodeText.toUpperCase(), {
-      fontFamily: 'Libre Barcode 39 Text, cursive',
-      fill: textColor, selectable: true,
-      left: w / 2, top: yOffset, originX: 'center',
-      fontSize: 48, width: w - 80, textAlign: 'center'
+    if (tax) {
+      canvas.add(new fabric.Textbox(tax.toUpperCase(), {
+        left: px + 24, top: curY, width: pw - 48, fontSize: 8.5, fill: textColor,
+        opacity: 0.65, fontFamily: 'Space Mono, monospace', selectable: false
+      }));
+      curY += 16;
+    }
+
+    // Bold Total
+    canvas.add(new fabric.Textbox('TOTAL', {
+      left: px + 24, top: curY, fontSize: 13, fontWeight: 700, fill: textColor,
+      fontFamily: 'Space Mono, monospace', selectable: false
+    }));
+    canvas.add(new fabric.Textbox(total.toUpperCase(), {
+      left: px + pw - 170, top: curY, width: 146, textAlign: 'right', fontSize: 13,
+      fontWeight: 700, fill: textColor, fontFamily: 'Space Mono, monospace', selectable: false
+    }));
+    curY += 24;
+
+    const solidLine = new fabric.Line([px + 20, curY, px + pw - 20, curY], {
+      stroke: textColor, strokeWidth: 1.5, opacity: 0.8, selectable: false
     });
-    canvas.add(barcode);
+    canvas.add(solidLine);
+    curY += 14;
+
+    // 5. Authentic Barcode Graphics
+    const barCount = 42;
+    const barStartX = px + (pw - 260) / 2;
+    for (let b = 0; b < barCount; b++) {
+      const bw = (b % 3 === 0 || b % 5 === 0) ? 3 : 1.5;
+      const bx = barStartX + (b * 6.2);
+      const barEl = new fabric.Rect({
+        left: bx, top: curY, width: bw, height: 36, fill: textColor,
+        opacity: 0.88, selectable: false
+      });
+      canvas.add(barEl);
+    }
+    curY += 40;
+
+    canvas.add(new fabric.Textbox(barcodeText.toUpperCase(), {
+      left: w / 2, top: curY, width: pw - 40, originX: 'center', textAlign: 'center',
+      fontSize: 8.5, fontWeight: 600, fill: textColor, fontFamily: 'Space Mono, monospace',
+      charSpacing: 180, selectable: false
+    }));
+    curY += 18;
+
+    canvas.add(new fabric.Textbox(footerText.toUpperCase(), {
+      left: w / 2, top: curY, width: pw - 40, originX: 'center', textAlign: 'center',
+      fontSize: 8, fontStyle: 'italic', fill: textColor, opacity: 0.7,
+      fontFamily: 'Space Mono, monospace', selectable: false
+    }));
 
     canvas.renderAll();
   };
 
   useEffect(() => {
-    if (!containerRef.current) return;
-    containerRef.current.innerHTML = '';
-    const canvasEl = document.createElement('canvas');
-    canvasEl.width = 400;
-    canvasEl.height = 600;
-    containerRef.current.appendChild(canvasEl);
-
-    fabricRef.current = new fabric.Canvas(canvasEl, {
-      width: 400, height: 600, backgroundColor: '#f0f0f0'
-    });
     renderCanvas();
-    setTimeout(renderCanvas, 500); // Wait for fonts to load
-    return () => { fabricRef.current?.dispose(); };
-  }, []);
+  }, [
+    storeName, orderNum, dateText, items, subtotal, tax, total,
+    barcodeText, footerText, bgColor, paperColor, textColor
+  ]);
 
-  useEffect(() => {
-    renderCanvas();
-  }, [storeName, receiptNum, date, items, totalLabel, totalValue, barcodeText, bgColor, textColor]);
-
-  const handleDownload = () => {
+  const handleDownloadPNG = () => {
     if (!fabricRef.current) return;
+    setIsExporting(true);
     const dataUrl = fabricRef.current.toDataURL({ format: 'png', multiplier: 3 });
-    const a = document.createElement('a');
-    a.href = dataUrl;
-    a.download = 'receipt-poster.png';
-    a.click();
+    const link = document.createElement('a');
+    link.download = `receipt-poster-${activePreset}.png`;
+    link.href = dataUrl;
+    link.click();
+    setIsExporting(false);
   };
 
-  return (
-    <div className="min-h-screen flex bg-[#0a0a0a] text-white">
-      {/* Editor Panel */}
-      <div className="w-80 bg-neutral-900 border-r border-neutral-800 p-6 overflow-y-auto">
-        <h2 className="text-xl font-bold mb-6">Receipt Editor</h2>
-        
-        <div className="space-y-4">
-          <div>
-            <label className="block text-xs font-bold text-neutral-500 uppercase mb-2">Store / Main Title</label>
-            <input type="text" value={storeName} onChange={e => setStoreName(e.target.value)} className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-sm focus:border-white outline-none" />
-          </div>
-          <div>
-            <label className="block text-xs font-bold text-neutral-500 uppercase mb-2">Receipt Ref</label>
-            <input type="text" value={receiptNum} onChange={e => setReceiptNum(e.target.value)} className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-sm focus:border-white outline-none" />
-          </div>
-          <div>
-            <label className="block text-xs font-bold text-neutral-500 uppercase mb-2">Date</label>
-            <input type="text" value={date} onChange={e => setDate(e.target.value)} className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-sm focus:border-white outline-none" />
-          </div>
+  const handleDownloadPDF = () => {
+    if (!fabricRef.current) return;
+    setIsExporting(true);
+    const dataUrl = fabricRef.current.toDataURL({ format: 'png', multiplier: 4 });
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'in',
+      format: [18, 24]
+    });
+    pdf.addImage(dataUrl, 'PNG', 0, 0, 18, 24);
+    pdf.save(`receipt-poster-300dpi-${activePreset}.pdf`);
+    setIsExporting(false);
+  };
 
-          <div className="pt-4 border-t border-neutral-800">
-            <label className="block text-xs font-bold text-neutral-500 uppercase mb-2">Items</label>
-            {items.map((item: any, i: number) => (
-              <div key={i} className="flex gap-2 mb-2">
-                <input type="text" value={item.name} onChange={e => {
-                  const newItems = [...items]; newItems[i].name = e.target.value; setItems(newItems);
-                }} className="flex-1 bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-sm focus:border-white outline-none" />
-                <input type="text" value={item.price} onChange={e => {
-                  const newItems = [...items]; newItems[i].price = e.target.value; setItems(newItems);
-                }} className="w-20 bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-sm focus:border-white outline-none" />
-              </div>
-            ))}
-          </div>
+  const receiptPresets: PresetItem[] = (POSTER_PRESETS.RECEIPT as any[]).map(p => ({
+    id: p.id,
+    title: p.label,
+    label: p.category
+  }));
 
-          <div className="pt-4 border-t border-neutral-800">
-            <div className="flex gap-2 mb-4">
-              <div className="flex-1">
-                <label className="block text-xs font-bold text-neutral-500 uppercase mb-2">Total Label</label>
-                <input type="text" value={totalLabel} onChange={e => setTotalLabel(e.target.value)} className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-sm focus:border-white outline-none" />
-              </div>
-              <div className="flex-1">
-                <label className="block text-xs font-bold text-neutral-500 uppercase mb-2">Total Value</label>
-                <input type="text" value={totalValue} onChange={e => setTotalValue(e.target.value)} className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-sm focus:border-white outline-none" />
-              </div>
-            </div>
-          </div>
+  const sidebar = (
+    <div className="space-y-6">
+      {/* SECTION 1: PRESET CHOOSER */}
+      <div className="p-4 rounded-xl bg-neutral-900/60 border border-neutral-800 space-y-3">
+        <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-2">
+          <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+          Choose Receipt Preset ({receiptPresets.length})
+        </label>
+        <select
+          value={activePreset}
+          onChange={e => handlePresetSelect(e.target.value)}
+          className="w-full bg-[#18191c] border border-neutral-700 rounded-lg px-3 py-2.5 text-xs text-white focus:border-amber-500 outline-none"
+        >
+          {receiptPresets.map(p => (
+            <option key={p.id} value={p.id}>
+              {p.title} ({p.label})
+            </option>
+          ))}
+        </select>
+      </div>
 
+      {/* SECTION 2: STORE HEADER & META */}
+      <div className="p-4 rounded-xl bg-neutral-900/60 border border-neutral-800 space-y-3">
+        <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-2">
+          <Receipt className="w-3.5 h-3.5 text-blue-400" />
+          Receipt Header & Details
+        </label>
+
+        <div>
+          <span className="text-[10px] text-neutral-500 uppercase font-semibold">Store / Event Title</span>
+          <input
+            type="text"
+            value={storeName}
+            onChange={e => setStoreName(e.target.value)}
+            className="w-full bg-[#18191c] border border-neutral-800 rounded-lg px-3 py-2 text-xs text-white font-semibold focus:border-amber-500 outline-none mt-1"
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="block text-xs font-bold text-neutral-500 uppercase mb-2">Barcode Message</label>
-            <input type="text" value={barcodeText} onChange={e => setBarcodeText(e.target.value)} className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-sm focus:border-white outline-none" />
+            <span className="text-[10px] text-neutral-500 uppercase font-semibold">Order / Bib #</span>
+            <input
+              type="text"
+              value={orderNum}
+              onChange={e => setOrderNum(e.target.value)}
+              className="w-full bg-[#18191c] border border-neutral-800 rounded-lg px-2.5 py-1.5 text-xs text-white focus:border-amber-500 outline-none mt-1"
+            />
+          </div>
+          <div>
+            <span className="text-[10px] text-neutral-500 uppercase font-semibold">Date & Time</span>
+            <input
+              type="text"
+              value={dateText}
+              onChange={e => setDateText(e.target.value)}
+              className="w-full bg-[#18191c] border border-neutral-800 rounded-lg px-2.5 py-1.5 text-xs text-white focus:border-amber-500 outline-none mt-1"
+            />
           </div>
         </div>
       </div>
 
-      {/* Canvas Area */}
-      <div className="flex-1 flex flex-col items-center justify-center p-8 bg-neutral-950 overflow-y-auto">
-        <div className="mb-6 flex gap-4 w-full max-w-[400px]">
-          <button onClick={() => navigate('/')} className="flex items-center justify-center gap-2 bg-neutral-800 text-white font-semibold py-3 px-6 rounded-xl hover:bg-neutral-700 transition-colors">
-            <ArrowLeft className="w-5 h-5" /> Back
-          </button>
-          <button onClick={handleDownload} className="flex-1 bg-white text-black font-semibold py-3 rounded-xl hover:bg-neutral-200 transition-colors">
-            Download PNG
+      {/* SECTION 3: LINE ITEMS EDITOR */}
+      <div className="p-4 rounded-xl bg-neutral-900/60 border border-neutral-800 space-y-3">
+        <div className="flex items-center justify-between">
+          <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-2">
+            <Sliders className="w-3.5 h-3.5 text-emerald-400" />
+            Receipt Line Items ({items.length})
+          </label>
+          <button
+            onClick={handleAddItem}
+            className="flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 transition-colors"
+          >
+            <Plus className="w-3 h-3" /> Add Item
           </button>
         </div>
-        <div ref={containerRef} className="shadow-2xl rounded-sm overflow-hidden flex-shrink-0" style={{ width: 400, height: 600 }} />
+
+        <div className="space-y-2 max-h-64 overflow-y-auto pr-1 custom-scrollbar">
+          {items.map((item, idx) => (
+            <div key={idx} className="flex items-center gap-2 p-2 rounded-lg bg-[#18191c] border border-neutral-800">
+              <input
+                type="text"
+                value={item.name}
+                onChange={e => handleItemChange(idx, 'name', e.target.value)}
+                placeholder="Item name"
+                className="flex-1 bg-transparent text-xs text-white focus:outline-none"
+              />
+              <input
+                type="text"
+                value={item.price}
+                onChange={e => handleItemChange(idx, 'price', e.target.value)}
+                placeholder="Price / Val"
+                className="w-24 bg-neutral-900 px-2 py-1 rounded text-xs text-right text-amber-300 font-mono focus:outline-none"
+              />
+              {items.length > 2 && (
+                <button
+                  onClick={() => handleRemoveItem(idx)}
+                  className="text-neutral-500 hover:text-rose-400 transition-colors p-1"
+                  title="Remove"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-2 gap-2 pt-2 border-t border-neutral-800">
+          <div>
+            <span className="text-[10px] text-neutral-500 uppercase font-semibold">Subtotal</span>
+            <input
+              type="text"
+              value={subtotal}
+              onChange={e => setSubtotal(e.target.value)}
+              className="w-full bg-[#18191c] border border-neutral-800 rounded-lg px-2.5 py-1.5 text-xs text-white focus:border-amber-500 outline-none mt-1"
+            />
+          </div>
+          <div>
+            <span className="text-[10px] text-neutral-500 uppercase font-semibold">Total Display</span>
+            <input
+              type="text"
+              value={total}
+              onChange={e => setTotal(e.target.value)}
+              className="w-full bg-[#18191c] border border-neutral-800 rounded-lg px-2.5 py-1.5 text-xs text-white font-bold focus:border-amber-500 outline-none mt-1"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* SECTION 4: BARCODE & FOOTER */}
+      <div className="p-4 rounded-xl bg-neutral-900/60 border border-neutral-800 space-y-3">
+        <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-2">
+          <Barcode className="w-3.5 h-3.5 text-purple-400" />
+          Barcode & Footer Text
+        </label>
+        <div>
+          <span className="text-[10px] text-neutral-500 uppercase font-semibold">Barcode Subtext</span>
+          <input
+            type="text"
+            value={barcodeText}
+            onChange={e => setBarcodeText(e.target.value)}
+            className="w-full bg-[#18191c] border border-neutral-800 rounded-lg px-3 py-2 text-xs text-white focus:border-amber-500 outline-none mt-1"
+          />
+        </div>
+        <div>
+          <span className="text-[10px] text-neutral-500 uppercase font-semibold">Footer Note</span>
+          <input
+            type="text"
+            value={footerText}
+            onChange={e => setFooterText(e.target.value)}
+            className="w-full bg-[#18191c] border border-neutral-800 rounded-lg px-3 py-2 text-xs text-white focus:border-amber-500 outline-none mt-1"
+          />
+        </div>
+      </div>
+
+      {/* SECTION 5: COLOR THEMES */}
+      <div className="p-4 rounded-xl bg-neutral-900/60 border border-neutral-800 space-y-3">
+        <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-2">
+          <Palette className="w-3.5 h-3.5 text-pink-400" />
+          Receipt Color Schemes
+        </label>
+        <div className="grid grid-cols-2 gap-2">
+          {RECEIPT_THEMES.map(th => (
+            <button
+              key={th.name}
+              onClick={() => {
+                setBgColor(th.bg);
+                setPaperColor(th.paper);
+                setTextColor(th.text);
+              }}
+              className="flex items-center gap-2.5 p-2 rounded-lg bg-neutral-950 border border-neutral-800 hover:border-neutral-700 text-left transition-all group"
+            >
+              <div 
+                className="w-5 h-5 rounded border border-neutral-600 shrink-0" 
+                style={{ backgroundColor: th.paper }}
+              />
+              <span className="text-[11px] font-medium text-neutral-300 group-hover:text-white truncate">
+                {th.name}
+              </span>
+            </button>
+          ))}
+        </div>
       </div>
     </div>
+  );
+
+  return (
+    <ModernStudioLayout
+      title="Vintage Receipt Studio"
+      category="Retro Paper"
+      onBack={() => navigate('/')}
+      onDownloadPNG={handleDownloadPNG}
+      onDownloadPDF={handleDownloadPDF}
+      isExporting={isExporting}
+      presets={receiptPresets}
+      activePreset={activePreset}
+      onSelectPreset={handlePresetSelect}
+      zoom={zoom}
+      setZoom={setZoom}
+      printSize={printSize}
+      setPrintSize={setPrintSize}
+      sidebarContent={sidebar}
+      canvasRef={canvasRef}
+      canvasWidth={600}
+      canvasHeight={800}
+    />
   );
 }

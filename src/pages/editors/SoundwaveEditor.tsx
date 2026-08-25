@@ -1,228 +1,615 @@
-import React, { useEffect, useRef, useState } from 'react';
+﻿import React, { useEffect, useRef, useState } from 'react';
 import * as fabric from 'fabric';
+import jsPDF from 'jspdf';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import ModernStudioLayout, { PresetItem } from '../../components/ModernStudioLayout';
+import { POSTER_PRESETS } from '../../lib/presets';
+import { 
+  Sparkles, Sliders, Palette, Type, QrCode, Music, 
+  RefreshCw, Check, AlignCenter, FileText
+} from 'lucide-react';
 
-const DEFAULT_PRESETS: Record<string, any> = {
-  heartbeat: { topLeft: "BABY BOY", topRight: "14.05.2024", mainTitle: "FIRST HEARTBEAT", subtitle: "142 BPM", bottom1: "ULTRASOUND RECORDING", bottom2: "MEMORIAL HOSPITAL" },
-  vows: { topLeft: "SARAH & JOHN", topRight: "OUR WEDDING DAY", mainTitle: "THE VOWS", subtitle: "A PROMISE FOREVER", bottom1: "RECORDED LIVE", bottom2: "24.08.2024" },
-  first_dance: { topLeft: "SARAH & JOHN", topRight: "24.08.2024", mainTitle: "OUR FIRST DANCE", subtitle: "PERFECT BY ED SHEERAN", bottom1: "FOREVER AND ALWAYS", bottom2: "WEDDING NIGHT" },
-  proposal: { topLeft: "SHE SAID YES", topRight: "24.08.2024", mainTitle: "WILL YOU MARRY ME?", subtitle: "THE PROPOSAL", bottom1: "HIDDEN AUDIO RECORDING", bottom2: "CENTRAL PARK, NY" },
-  apology: { topLeft: "FROM ALEX", topRight: "TO SOPHIA", mainTitle: "I AM SO SORRY", subtitle: "PLEASE FORGIVE ME", bottom1: "A LATE NIGHT VOICE MESSAGE", bottom2: "DISTANCE MEANS NOTHING" },
-  first_word: { topLeft: "EMMA'S FIRST WORD", topRight: "9 MONTHS OLD", mainTitle: "\"MAMA\"", subtitle: "RECORDED AT HOME", bottom1: "A MOMENT TO REMEMBER", bottom2: "12.10.2025" },
-  memorial: { topLeft: "GRANDPA GEORGE", topRight: "1940 - 2024", mainTitle: "\"I AM ALWAYS WITH YOU\"", subtitle: "A SAVED VOICEMAIL", bottom1: "IN LOVING MEMORY", bottom2: "FOREVER IN OUR HEARTS" },
-  pet_memorial: { topLeft: "CHARLIE THE GOLDEN", topRight: "2012 - 2025", mainTitle: "HAPPY BARKS", subtitle: "THE BEST BOY", bottom1: "THE SOUND OF HOME", bottom2: "WE WILL MISS YOU" },
-  movie_quote: { topLeft: "MATTHEW MCCONAUGHEY", topRight: "2014", mainTitle: "INTERSTELLAR", subtitle: "\"LOVE IS THE ONE THING WE'RE CAPABLE OF PERCEIVING...\"", bottom1: "DIRECTED BY CHRISTOPHER NOLAN", bottom2: "HANS ZIMMER SCORE" },
-  stand_up: { topLeft: "DAVE CHAPPELLE", topRight: "2023", mainTitle: "LAUGH OUT LOUD", subtitle: "THE CLOSER", bottom1: "COMEDY SPECIAL", bottom2: "NETFLIX" },
-  time_capsule: { topLeft: "TOP SECRET", topRight: "OPEN IN 2035", mainTitle: "TIME CAPSULE", subtitle: "A MESSAGE TO MY FUTURE SELF", bottom1: "RECORDED ON JAN 1ST, 2024", bottom2: "ENCRYPTED AUDIO" }
+const SOUNDWAVE_PRESET_DATA: Record<string, any> = {
+  'first-heartbeat': {
+    topBadge: 'BABY BOY',
+    dateText: '14 MAY 2026',
+    title: 'FIRST HEARTBEAT',
+    subtitle: '142 BPM • ULTRASOUND RECORDING',
+    bottom1: 'THE SWEETEST SOUND IN THE WORLD',
+    bottom2: 'MEMORIAL HOSPITAL • 08:42 AM',
+    qrText: 'https://musicpostershop.com',
+    bgColor: '#faf7f5',
+    textColor: '#1c1917',
+    subColor: '#78716c',
+    waveType: 'gradient',
+    waveColor1: '#f43f5e',
+    waveColor2: '#fb7185',
+    fontTitle: 'Playfair Display, serif',
+    fontBody: 'Inter, sans-serif'
+  },
+  'first-cry': {
+    topBadge: 'NEW ARRIVAL',
+    dateText: '24 AUGUST 2026',
+    title: 'THE FIRST CRY',
+    subtitle: 'LEO ALEXANDER • 3.42 KG • 51 CM',
+    bottom1: 'WELCOME TO OUR WORLD',
+    bottom2: 'FOREVER IN OUR HEARTS',
+    qrText: 'https://musicpostershop.com',
+    bgColor: '#fffdfa',
+    textColor: '#292524',
+    subColor: '#78716c',
+    waveType: 'gradient',
+    waveColor1: '#f59e0b',
+    waveColor2: '#ea580c',
+    fontTitle: 'Playfair Display, serif',
+    fontBody: 'Inter, sans-serif'
+  },
+  'wedding-vows-audio': {
+    topBadge: 'OUR WEDDING DAY',
+    dateText: '24.08.2026',
+    title: 'THE WEDDING VOWS',
+    subtitle: 'SARAH & DANIEL • FOREVER & ALWAYS',
+    bottom1: 'I PROMISE TO LOVE YOU IN EVERY LIFETIME',
+    bottom2: 'RECORDED LIVE AT ST. IVES CHAPEL',
+    qrText: 'https://musicpostershop.com',
+    bgColor: '#0f172a',
+    textColor: '#f8fafc',
+    subColor: '#94a3b8',
+    waveType: 'gradient',
+    waveColor1: '#38bdf8',
+    waveColor2: '#818cf8',
+    fontTitle: 'Cinzel, serif',
+    fontBody: 'Inter, sans-serif'
+  },
+  'first-dance-audio': {
+    topBadge: 'FIRST DANCE',
+    dateText: '24.08.2026',
+    title: 'PERFECT',
+    subtitle: 'ED SHEERAN • OUR SONG',
+    bottom1: '"BABY, I\'M DANCING IN THE DARK WITH YOU BETWEEN MY ARMS"',
+    bottom2: 'SARAH & DANIEL • FIRST DANCE',
+    qrText: 'https://musicpostershop.com',
+    bgColor: '#18181b',
+    textColor: '#ffffff',
+    subColor: '#a1a1aa',
+    waveType: 'gradient',
+    waveColor1: '#e11d48',
+    waveColor2: '#fb7185',
+    fontTitle: 'Playfair Display, serif',
+    fontBody: 'Inter, sans-serif'
+  },
+  'grandmas-voicemail': {
+    topBadge: 'SAVED VOICEMAIL',
+    dateText: '14.11.2024',
+    title: '"HELLO MY DEAR"',
+    subtitle: 'GRANDMA ELEANOR • 1938 - 2025',
+    bottom1: 'IN LOVING MEMORY • FOREVER IN OUR HEARTS',
+    bottom2: 'PRESERVED VOICEMAIL AUDIO',
+    qrText: 'https://musicpostershop.com',
+    bgColor: '#fbf8f3',
+    textColor: '#3e2723',
+    subColor: '#8d6e63',
+    waveType: 'solid',
+    waveColor1: '#8d6e63',
+    waveColor2: '#8d6e63',
+    fontTitle: 'Playfair Display, serif',
+    fontBody: 'Inter, sans-serif'
+  },
+  'song-chorus': {
+    topBadge: 'ICONIC SOLO',
+    dateText: '1979',
+    title: 'COMFORTABLY NUMB',
+    subtitle: 'PINK FLOYD • THE GUITAR SOLO',
+    bottom1: 'RECORDED AT PRODUCERS WORKSHOP, LA',
+    bottom2: 'HARVEST RECORDS • STEREO MASTER',
+    qrText: 'https://musicpostershop.com',
+    bgColor: '#09090b',
+    textColor: '#fafafa',
+    subColor: '#a1a1aa',
+    waveType: 'gradient',
+    waveColor1: '#06b6d4',
+    waveColor2: '#3b82f6',
+    fontTitle: 'Montserrat, sans-serif',
+    fontBody: 'Inter, sans-serif'
+  }
 };
+
+const COLOR_PALETTES = [
+  { name: 'Onyx & Cream', bg: '#0c0a09', text: '#fafaf9', sub: '#a8a29e', w1: '#f43f5e', w2: '#fb7185' },
+  { name: 'Pure Minimal', bg: '#ffffff', text: '#18181b', sub: '#71717a', w1: '#18181b', w2: '#3f3f46' },
+  { name: 'Warm Parchment', bg: '#faf6f0', text: '#292524', sub: '#78716c', w1: '#c2410c', w2: '#ea580c' },
+  { name: 'Midnight Navy', bg: '#0b1329', text: '#f8fafc', sub: '#94a3b8', w1: '#38bdf8', w2: '#818cf8' },
+  { name: 'Sage & Forest', bg: '#f4f7f4', text: '#14532d', sub: '#166534', w1: '#15803d', w2: '#22c55e' },
+  { name: 'Sepia Vintage', bg: '#fdfbf7', text: '#451a03', sub: '#78350f', w1: '#b45309', w2: '#d97706' },
+  { name: 'Cyberpunk Neon', bg: '#050505', text: '#f43f5e', sub: '#fb7185', w1: '#06b6d4', w2: '#ec4899' }
+];
 
 export default function SoundwaveEditor() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const presetKey = searchParams.get('preset') || 'heartbeat';
-  const initialData = DEFAULT_PRESETS[presetKey] || DEFAULT_PRESETS.heartbeat;
+  const presetParam = searchParams.get('preset') || 'first-heartbeat';
 
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [activePreset, setActivePreset] = useState<string>(presetParam);
+  const initial = SOUNDWAVE_PRESET_DATA[presetParam] || SOUNDWAVE_PRESET_DATA['first-heartbeat'];
+
+  const [topBadge, setTopBadge] = useState(initial.topBadge);
+  const [dateText, setDateText] = useState(initial.dateText);
+  const [title, setTitle] = useState(initial.title);
+  const [subtitle, setSubtitle] = useState(initial.subtitle);
+  const [bottom1, setBottom1] = useState(initial.bottom1);
+  const [bottom2, setBottom2] = useState(initial.bottom2);
+  const [qrText, setQrText] = useState(initial.qrText);
+  const [showQR, setShowQR] = useState(true);
+
+  const [bgColor, setBgColor] = useState(initial.bgColor);
+  const [textColor, setTextColor] = useState(initial.textColor);
+  const [subColor, setSubColor] = useState(initial.subColor);
+  const [waveColor1, setWaveColor1] = useState(initial.waveColor1);
+  const [waveColor2, setWaveColor2] = useState(initial.waveColor2);
+  const [waveType, setWaveType] = useState<'gradient' | 'solid'>(initial.waveType || 'gradient');
+
+  const [waveDensity, setWaveDensity] = useState(140);
+  const [waveHeightScale, setWaveHeightScale] = useState(140);
+  const [fontTitle, setFontTitle] = useState(initial.fontTitle || 'Playfair Display, serif');
+  const [fontBody, setFontBody] = useState(initial.fontBody || 'Inter, sans-serif');
+
+  const [zoom, setZoom] = useState(1);
+  const [printSize, setPrintSize] = useState('18x24');
+  const [isExporting, setIsExporting] = useState(false);
+
+  const canvasRef = useRef<HTMLDivElement>(null);
   const fabricRef = useRef<fabric.Canvas | null>(null);
 
-  const [topLeft, setTopLeft] = useState(initialData.topLeft);
-  const [topRight, setTopRight] = useState(initialData.topRight);
-  const [mainTitle, setMainTitle] = useState(initialData.mainTitle);
-  const [subtitle, setSubtitle] = useState(initialData.subtitle);
-  const [bottom1, setBottom1] = useState(initialData.bottom1);
-  const [bottom2, setBottom2] = useState(initialData.bottom2);
-  
-  const [bgColor, setBgColor] = useState('#111111');
-  const [waveColor, setWaveColor] = useState('#ffffff');
-  const [textColor, setTextColor] = useState('#ffffff');
-  const [waveDensity, setWaveDensity] = useState(120);
-
+  // Load Google Fonts
   useEffect(() => {
     const link = document.createElement('link');
-    link.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap';
+    link.href = 'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Cinzel:wght@400;700;900&family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@400;600;800&family=Space+Mono:wght@400;700&display=swap';
     link.rel = 'stylesheet';
     document.head.appendChild(link);
   }, []);
 
-  const generateWavePath = (w: number, h: number, density: number) => {
-    let path = '';
-    const cy = h / 2;
-    const step = w / density;
-    
-    for (let i = 0; i < density; i++) {
-      const x = i * step;
-      // create a bell curve envelope
-      const normalizedX = (i / density) * 2 - 1; 
-      const envelope = Math.exp(-Math.pow(normalizedX * 2, 2)); 
-      
-      const noise = Math.random();
-      const amplitude = h * 0.4 * envelope * noise;
-      
-      if (amplitude > 2) {
-        path += `M ${x} ${cy - amplitude} L ${x} ${cy + amplitude} `;
+  // Handle Preset Switching
+  const handlePresetSelect = (id: string) => {
+    setActivePreset(id);
+    const data = SOUNDWAVE_PRESET_DATA[id];
+    if (data) {
+      setTopBadge(data.topBadge);
+      setDateText(data.dateText);
+      setTitle(data.title);
+      setSubtitle(data.subtitle);
+      setBottom1(data.bottom1);
+      setBottom2(data.bottom2);
+      setBgColor(data.bgColor);
+      setTextColor(data.textColor);
+      setSubColor(data.subColor);
+      setWaveColor1(data.waveColor1);
+      setWaveColor2(data.waveColor2);
+      setWaveType(data.waveType);
+      if (data.fontTitle) setFontTitle(data.fontTitle);
+      if (data.fontBody) setFontBody(data.fontBody);
+    } else {
+      // Fallback for general preset list
+      const general = (POSTER_PRESETS.SOUNDWAVE as any[]).find(p => p.id === id);
+      if (general) {
+        setTitle(general.label.toUpperCase());
+        setSubtitle('CUSTOM AUDIO WAVEFORM RECORDING');
+        setTopBadge(general.category.toUpperCase());
       }
     }
-    return path;
   };
 
+  // Render Canvas with High-End Editorial Design
   const renderCanvas = () => {
-    if (!fabricRef.current) return;
+    if (!canvasRef.current) return;
+
+    if (!fabricRef.current) {
+      const c = document.createElement('canvas');
+      canvasRef.current.innerHTML = '';
+      canvasRef.current.appendChild(c);
+      fabricRef.current = new fabric.Canvas(c, {
+        width: 600,
+        height: 800,
+        backgroundColor: bgColor,
+        selection: false
+      });
+    }
+
     const canvas = fabricRef.current;
     canvas.clear();
 
     const w = 600;
     const h = 800;
-    
+
+    // 1. Luxury Textured Background
     const bg = new fabric.Rect({
       left: 0, top: 0, width: w, height: h, fill: bgColor, selectable: false
     });
     canvas.add(bg);
 
-    const fontSettings = {
-      fontFamily: 'Inter, sans-serif',
-      fill: textColor,
-      selectable: true,
-    };
+    // 2. Elegant Editorial Double Header Border
+    const headerLine = new fabric.Line([45, 75, w - 45, 75], {
+      stroke: textColor, strokeWidth: 0.75, opacity: 0.25, selectable: false
+    });
+    canvas.add(headerLine);
 
-    // Top texts
-    canvas.add(new fabric.Textbox(topLeft, {
-      ...fontSettings, left: 40, top: 40, fontSize: 14, fontWeight: 600, width: 200
-    }));
-    
-    canvas.add(new fabric.Textbox(topRight, {
-      ...fontSettings, left: w - 240, top: 40, fontSize: 14, fontWeight: 600, width: 200, textAlign: 'right'
+    // Top Left Badge
+    canvas.add(new fabric.Textbox(topBadge.toUpperCase(), {
+      left: 45, top: 52, fontSize: 10, fontWeight: 700, fill: textColor,
+      fontFamily: fontBody, charSpacing: 180, selectable: false
     }));
 
-    // Center Texts
-    const title = new fabric.Textbox(mainTitle, {
-      ...fontSettings, left: w/2, top: h * 0.2, fontSize: 36, fontWeight: 800, width: w - 80, originX: 'center', textAlign: 'center', charSpacing: 100
-    });
-    canvas.add(title);
+    // Top Right Date
+    canvas.add(new fabric.Textbox(dateText.toUpperCase(), {
+      left: w - 245, top: 52, width: 200, textAlign: 'right', fontSize: 10,
+      fontWeight: 600, fill: subColor, fontFamily: fontBody, charSpacing: 120, selectable: false
+    }));
 
-    const sub = new fabric.Textbox(subtitle, {
-      ...fontSettings, left: w/2, top: h * 0.2 + 50, fontSize: 16, fontWeight: 400, width: w - 80, originX: 'center', textAlign: 'center', charSpacing: 200
-    });
-    canvas.add(sub);
+    // 3. Audio Waveform Graphic (Smooth, Ultra-High Quality)
+    const cy = h * 0.46;
+    const step = (w - 110) / waveDensity;
+    const startX = 55;
 
-    // Soundwave Path
-    const pathString = generateWavePath(w - 120, h * 0.3, waveDensity);
-    const wave = new fabric.Path(pathString, {
-      left: w/2, top: h/2, originX: 'center', originY: 'center',
-      fill: '', stroke: waveColor, strokeWidth: 1.5, strokeLineCap: 'round', selectable: false
-    });
-    canvas.add(wave);
+    for (let i = 0; i < waveDensity; i++) {
+      const x = startX + (i * step);
+      // Dual envelope bell-curve for natural audio profile
+      const normalizedX = (i / waveDensity) * 2 - 1;
+      const env1 = Math.exp(-Math.pow(normalizedX * 2.2, 2));
+      const env2 = Math.sin((i / waveDensity) * Math.PI);
+      const combinedEnv = (env1 * 0.75) + (env2 * 0.25);
 
-    // Bottom Texts
-    const b1 = new fabric.Textbox(bottom1, {
-      ...fontSettings, left: w/2, top: h * 0.85, fontSize: 14, fontWeight: 600, width: w - 80, originX: 'center', textAlign: 'center', charSpacing: 100
-    });
-    canvas.add(b1);
+      // Deterministic smooth organic variation
+      const seed = Math.sin(i * 12.9898 + (i % 7) * 78.233);
+      const noise = (Math.abs(seed) % 1) * 0.65 + 0.35;
+      const amp = waveHeightScale * combinedEnv * noise;
 
-    const b2 = new fabric.Textbox(bottom2, {
-      ...fontSettings, left: w/2, top: h * 0.85 + 25, fontSize: 12, fontWeight: 400, fill: textColor, opacity: 0.7, width: w - 80, originX: 'center', textAlign: 'center', charSpacing: 50
+      if (amp > 2) {
+        // Gradient color interpolation across the width
+        const ratio = i / waveDensity;
+        const barColor = waveType === 'solid' ? waveColor1 : (ratio < 0.5 ? waveColor1 : waveColor2);
+
+        const bar = new fabric.Rect({
+          left: x,
+          top: cy - amp,
+          width: Math.max(1.2, step * 0.58),
+          height: amp * 2,
+          fill: barColor,
+          rx: 1.5,
+          ry: 1.5,
+          opacity: 0.92,
+          selectable: false
+        });
+        canvas.add(bar);
+      }
+    }
+
+    // Waveform subtle center horizon guideline
+    const centerGuide = new fabric.Line([45, cy, w - 45, cy], {
+      stroke: textColor, strokeWidth: 0.5, opacity: 0.15, selectable: false
     });
-    canvas.add(b2);
+    canvas.add(centerGuide);
+
+    // 4. Main Title & Subtitle Hierarchy
+    const titleEl = new fabric.Textbox(title, {
+      left: w / 2, top: h * 0.66, width: w - 90, originX: 'center', textAlign: 'center',
+      fontSize: 30, fontWeight: 700, fill: textColor, fontFamily: fontTitle,
+      charSpacing: 80, selectable: false
+    });
+    canvas.add(titleEl);
+
+    const subEl = new fabric.Textbox(subtitle.toUpperCase(), {
+      left: w / 2, top: h * 0.725, width: w - 90, originX: 'center', textAlign: 'center',
+      fontSize: 11, fontWeight: 600, fill: subColor, fontFamily: fontBody,
+      charSpacing: 160, selectable: false
+    });
+    canvas.add(subEl);
+
+    // 5. Divider & Dedication
+    const bottomDivider = new fabric.Line([w/2 - 30, h * 0.77, w/2 + 30, h * 0.77], {
+      stroke: textColor, strokeWidth: 1, opacity: 0.3, selectable: false
+    });
+    canvas.add(bottomDivider);
+
+    const b1El = new fabric.Textbox(bottom1, {
+      left: w / 2, top: h * 0.80, width: w - 100, originX: 'center', textAlign: 'center',
+      fontSize: 11, fontStyle: 'italic', fill: textColor, fontFamily: fontTitle,
+      selectable: false
+    });
+    canvas.add(b1El);
+
+    const b2El = new fabric.Textbox(bottom2.toUpperCase(), {
+      left: w / 2, top: h * 0.85, width: w - 100, originX: 'center', textAlign: 'center',
+      fontSize: 9, fontWeight: 600, fill: subColor, fontFamily: fontBody,
+      charSpacing: 140, selectable: false
+    });
+    canvas.add(b2El);
+
+    // 6. Optional Soundwave / Scannable Spotify Barcode Art Badge
+    if (showQR) {
+      const codeWidth = 140;
+      const codeY = h * 0.90;
+      
+      // Fine frame box around soundwave code
+      const codeFrame = new fabric.Rect({
+        left: w/2 - codeWidth/2, top: codeY, width: codeWidth, height: 26,
+        rx: 13, ry: 13, fill: bgColor, stroke: textColor, strokeWidth: 0.8,
+        opacity: 0.4, selectable: false
+      });
+      canvas.add(codeFrame);
+
+      // Mini scannable soundwave lines inside badge
+      for (let k = 0; k < 24; k++) {
+        const kx = (w/2 - codeWidth/2 + 18) + (k * 4.5);
+        const kh = (Math.sin(k * 0.8) * 6 + 7);
+        const kBar = new fabric.Rect({
+          left: kx, top: codeY + 13 - (kh / 2), width: 2, height: kh,
+          rx: 1, ry: 1, fill: textColor, opacity: 0.7, selectable: false
+        });
+        canvas.add(kBar);
+      }
+    }
 
     canvas.renderAll();
   };
 
   useEffect(() => {
-    if (!containerRef.current) return;
-    containerRef.current.innerHTML = '';
-    const canvasEl = document.createElement('canvas');
-    canvasEl.width = 600;
-    canvasEl.height = 800;
-    containerRef.current.appendChild(canvasEl);
-
-    fabricRef.current = new fabric.Canvas(canvasEl, {
-      width: 600, height: 800, backgroundColor: bgColor
-    });
     renderCanvas();
-    setTimeout(renderCanvas, 300);
-    return () => { fabricRef.current?.dispose(); };
-  }, []);
+  }, [
+    topBadge, dateText, title, subtitle, bottom1, bottom2, qrText, showQR,
+    bgColor, textColor, subColor, waveColor1, waveColor2, waveType,
+    waveDensity, waveHeightScale, fontTitle, fontBody
+  ]);
 
-  useEffect(() => {
-    renderCanvas();
-  }, [topLeft, topRight, mainTitle, subtitle, bottom1, bottom2, bgColor, waveColor, textColor, waveDensity]);
-
-  const handleDownload = () => {
+  // Export PNG
+  const handleDownloadPNG = () => {
     if (!fabricRef.current) return;
-    const dataUrl = fabricRef.current.toDataURL({ format: 'png', multiplier: 2 });
-    const a = document.createElement('a');
-    a.href = dataUrl;
-    a.download = 'soundwave-poster.png';
-    a.click();
+    setIsExporting(true);
+    const dataUrl = fabricRef.current.toDataURL({ format: 'png', multiplier: 3 });
+    const link = document.createElement('a');
+    link.download = `soundwave-poster-${activePreset}.png`;
+    link.href = dataUrl;
+    link.click();
+    setIsExporting(false);
   };
 
-  return (
-    <div className="min-h-screen flex bg-[#0a0a0a] text-white">
-      <div className="w-80 bg-neutral-900 border-r border-neutral-800 p-6 overflow-y-auto">
-        <h2 className="text-xl font-bold mb-6">Soundwave Editor</h2>
+  // Export 300 DPI Vector PDF
+  const handleDownloadPDF = () => {
+    if (!fabricRef.current) return;
+    setIsExporting(true);
+    const dataUrl = fabricRef.current.toDataURL({ format: 'png', multiplier: 4 });
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'in',
+      format: [18, 24]
+    });
+    pdf.addImage(dataUrl, 'PNG', 0, 0, 18, 24);
+    pdf.save(`soundwave-poster-300dpi-${activePreset}.pdf`);
+    setIsExporting(false);
+  };
+
+  // Preset list for Dropdown
+  const soundwavePresets: PresetItem[] = (POSTER_PRESETS.SOUNDWAVE as any[]).map(p => ({
+    id: p.id,
+    title: p.label,
+    label: p.category
+  }));
+
+  // Sidebar Controls JSX
+  const sidebar = (
+    <div className="space-y-6">
+      {/* SECTION 1: PRESET SELECTION */}
+      <div className="p-4 rounded-xl bg-neutral-900/60 border border-neutral-800 space-y-3">
+        <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-2">
+          <Sparkles className="w-3.5 h-3.5 text-rose-400" />
+          Choose Preset Theme ({soundwavePresets.length})
+        </label>
+        <select
+          value={activePreset}
+          onChange={e => handlePresetSelect(e.target.value)}
+          className="w-full bg-[#18191c] border border-neutral-700 rounded-lg px-3 py-2.5 text-xs text-white focus:border-rose-500 outline-none"
+        >
+          {soundwavePresets.map(p => (
+            <option key={p.id} value={p.id}>
+              {p.title} ({p.label})
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* SECTION 2: TEXT & TITLES */}
+      <div className="p-4 rounded-xl bg-neutral-900/60 border border-neutral-800 space-y-3">
+        <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-2">
+          <Type className="w-3.5 h-3.5 text-blue-400" />
+          Poster Texts & Details
+        </label>
         
-        <div className="space-y-4">
-          <div className="flex gap-2">
-            <div className="flex-1">
-              <label className="block text-xs font-bold text-neutral-500 uppercase mb-2">Top Left</label>
-              <input type="text" value={topLeft} onChange={e => setTopLeft(e.target.value)} className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-sm focus:border-white outline-none" />
-            </div>
-            <div className="flex-1">
-              <label className="block text-xs font-bold text-neutral-500 uppercase mb-2">Top Right</label>
-              <input type="text" value={topRight} onChange={e => setTopRight(e.target.value)} className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-sm focus:border-white outline-none" />
-            </div>
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <span className="text-[10px] text-neutral-500 uppercase font-semibold">Top Badge</span>
+            <input
+              type="text"
+              value={topBadge}
+              onChange={e => setTopBadge(e.target.value)}
+              className="w-full bg-[#18191c] border border-neutral-800 rounded-lg px-2.5 py-1.5 text-xs text-white focus:border-rose-500 outline-none mt-1"
+            />
           </div>
+          <div>
+            <span className="text-[10px] text-neutral-500 uppercase font-semibold">Date / Location</span>
+            <input
+              type="text"
+              value={dateText}
+              onChange={e => setDateText(e.target.value)}
+              className="w-full bg-[#18191c] border border-neutral-800 rounded-lg px-2.5 py-1.5 text-xs text-white focus:border-rose-500 outline-none mt-1"
+            />
+          </div>
+        </div>
 
-          <div className="pt-4 border-t border-neutral-800">
-            <label className="block text-xs font-bold text-neutral-500 uppercase mb-2">Main Title</label>
-            <input type="text" value={mainTitle} onChange={e => setMainTitle(e.target.value)} className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-sm focus:border-white outline-none mb-3" />
-            
-            <label className="block text-xs font-bold text-neutral-500 uppercase mb-2">Subtitle</label>
-            <input type="text" value={subtitle} onChange={e => setSubtitle(e.target.value)} className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-sm focus:border-white outline-none" />
-          </div>
+        <div>
+          <span className="text-[10px] text-neutral-500 uppercase font-semibold">Main Title</span>
+          <input
+            type="text"
+            value={title}
+            onChange={e => setTitle(e.target.value)}
+            className="w-full bg-[#18191c] border border-neutral-800 rounded-lg px-3 py-2 text-xs text-white font-semibold focus:border-rose-500 outline-none mt-1"
+          />
+        </div>
 
-          <div className="pt-4 border-t border-neutral-800">
-            <label className="block text-xs font-bold text-neutral-500 uppercase mb-2">Bottom Line 1</label>
-            <input type="text" value={bottom1} onChange={e => setBottom1(e.target.value)} className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-sm focus:border-white outline-none mb-3" />
-            
-            <label className="block text-xs font-bold text-neutral-500 uppercase mb-2">Bottom Line 2</label>
-            <input type="text" value={bottom2} onChange={e => setBottom2(e.target.value)} className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-sm focus:border-white outline-none" />
-          </div>
+        <div>
+          <span className="text-[10px] text-neutral-500 uppercase font-semibold">Subtitle / Artist</span>
+          <input
+            type="text"
+            value={subtitle}
+            onChange={e => setSubtitle(e.target.value)}
+            className="w-full bg-[#18191c] border border-neutral-800 rounded-lg px-3 py-2 text-xs text-white focus:border-rose-500 outline-none mt-1"
+          />
+        </div>
 
-          <div className="pt-4 border-t border-neutral-800">
-            <label className="block text-xs font-bold text-neutral-500 uppercase mb-2">Colors</label>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm">Background</span>
-              <input type="color" value={bgColor} onChange={e => setBgColor(e.target.value)} className="w-8 h-8 rounded bg-transparent cursor-pointer" />
-            </div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm">Wave</span>
-              <input type="color" value={waveColor} onChange={e => setWaveColor(e.target.value)} className="w-8 h-8 rounded bg-transparent cursor-pointer" />
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm">Text</span>
-              <input type="color" value={textColor} onChange={e => setTextColor(e.target.value)} className="w-8 h-8 rounded bg-transparent cursor-pointer" />
-            </div>
+        <div>
+          <span className="text-[10px] text-neutral-500 uppercase font-semibold">Dedication Message (Line 1)</span>
+          <input
+            type="text"
+            value={bottom1}
+            onChange={e => setBottom1(e.target.value)}
+            className="w-full bg-[#18191c] border border-neutral-800 rounded-lg px-3 py-2 text-xs text-white focus:border-rose-500 outline-none mt-1"
+          />
+        </div>
+
+        <div>
+          <span className="text-[10px] text-neutral-500 uppercase font-semibold">Footer Notes (Line 2)</span>
+          <input
+            type="text"
+            value={bottom2}
+            onChange={e => setBottom2(e.target.value)}
+            className="w-full bg-[#18191c] border border-neutral-800 rounded-lg px-3 py-2 text-xs text-white focus:border-rose-500 outline-none mt-1"
+          />
+        </div>
+      </div>
+
+      {/* SECTION 3: WAVEFORM ENGINE CONTROLS */}
+      <div className="p-4 rounded-xl bg-neutral-900/60 border border-neutral-800 space-y-4">
+        <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-2">
+          <Sliders className="w-3.5 h-3.5 text-emerald-400" />
+          Waveform Dynamics
+        </label>
+
+        <div>
+          <div className="flex justify-between text-xs text-neutral-400 mb-1.5">
+            <span>Wave Density</span>
+            <span className="font-mono text-white">{waveDensity} bars</span>
           </div>
-          
-          <div className="pt-4 border-t border-neutral-800">
-            <label className="block text-xs font-bold text-neutral-500 uppercase mb-2">Wave Density</label>
-            <input type="range" min="30" max="300" value={waveDensity} onChange={e => setWaveDensity(Number(e.target.value))} className="w-full accent-white" />
+          <input
+            type="range"
+            min="60"
+            max="220"
+            value={waveDensity}
+            onChange={e => setWaveDensity(Number(e.target.value))}
+            className="w-full accent-rose-500 cursor-pointer"
+          />
+        </div>
+
+        <div>
+          <div className="flex justify-between text-xs text-neutral-400 mb-1.5">
+            <span>Wave Amplitude</span>
+            <span className="font-mono text-white">{waveHeightScale}px</span>
+          </div>
+          <input
+            type="range"
+            min="60"
+            max="200"
+            value={waveHeightScale}
+            onChange={e => setWaveHeightScale(Number(e.target.value))}
+            className="w-full accent-rose-500 cursor-pointer"
+          />
+        </div>
+
+        {/* Wave Colors */}
+        <div className="pt-2 border-t border-neutral-800/80">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs text-neutral-400">Wave Color 1</span>
+            <input
+              type="color"
+              value={waveColor1}
+              onChange={e => setWaveColor1(e.target.value)}
+              className="w-7 h-7 rounded-lg bg-transparent cursor-pointer border border-neutral-700"
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-neutral-400">Wave Color 2 (Gradient)</span>
+            <input
+              type="color"
+              value={waveColor2}
+              onChange={e => setWaveColor2(e.target.value)}
+              className="w-7 h-7 rounded-lg bg-transparent cursor-pointer border border-neutral-700"
+            />
           </div>
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col items-center justify-center p-8 bg-neutral-950 overflow-y-auto">
-        <div className="mb-6 flex gap-4 w-full max-w-[600px]">
-          <button onClick={() => navigate('/')} className="flex items-center justify-center gap-2 bg-neutral-800 text-white font-semibold py-3 px-6 rounded-xl hover:bg-neutral-700 transition-colors">
-            <ArrowLeft className="w-5 h-5" /> Back
-          </button>
-          <button onClick={handleDownload} className="flex-1 bg-white text-black font-semibold py-3 rounded-xl hover:bg-neutral-200 transition-colors">
-            Download PNG
-          </button>
+      {/* SECTION 4: COLOR PALETTES */}
+      <div className="p-4 rounded-xl bg-neutral-900/60 border border-neutral-800 space-y-3">
+        <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-2">
+          <Palette className="w-3.5 h-3.5 text-pink-400" />
+          Curated Color Palettes
+        </label>
+        <div className="grid grid-cols-2 gap-2">
+          {COLOR_PALETTES.map(cp => (
+            <button
+              key={cp.name}
+              onClick={() => {
+                setBgColor(cp.bg);
+                setTextColor(cp.text);
+                setSubColor(cp.sub);
+                setWaveColor1(cp.w1);
+                setWaveColor2(cp.w2);
+              }}
+              className="flex items-center gap-2.5 p-2 rounded-lg bg-neutral-950 border border-neutral-800 hover:border-neutral-700 text-left transition-all group"
+            >
+              <div 
+                className="w-5 h-5 rounded-full border border-neutral-700 shrink-0" 
+                style={{ backgroundColor: cp.bg }}
+              />
+              <span className="text-[11px] font-medium text-neutral-300 group-hover:text-white truncate">
+                {cp.name}
+              </span>
+            </button>
+          ))}
         </div>
-        <div ref={containerRef} className="shadow-2xl rounded-sm overflow-hidden flex-shrink-0" style={{ width: 600, height: 800 }} />
+      </div>
+
+      {/* SECTION 5: SOUNDWAVE BADGE TOGGLE */}
+      <div className="p-4 rounded-xl bg-neutral-900/60 border border-neutral-800 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <QrCode className="w-4 h-4 text-neutral-400" />
+          <span className="text-xs font-medium text-neutral-200">Show Scannable Audio Badge</span>
+        </div>
+        <input
+          type="checkbox"
+          checked={showQR}
+          onChange={e => setShowQR(e.target.checked)}
+          className="w-4 h-4 accent-rose-600 rounded cursor-pointer"
+        />
       </div>
     </div>
+  );
+
+  return (
+    <ModernStudioLayout
+      title="Soundwave Art Studio"
+      category="Audio Memory"
+      onBack={() => navigate('/')}
+      onDownloadPNG={handleDownloadPNG}
+      onDownloadPDF={handleDownloadPDF}
+      isExporting={isExporting}
+      presets={soundwavePresets}
+      activePreset={activePreset}
+      onSelectPreset={handlePresetSelect}
+      zoom={zoom}
+      setZoom={setZoom}
+      printSize={printSize}
+      setPrintSize={setPrintSize}
+      sidebarContent={sidebar}
+      canvasRef={canvasRef}
+      canvasWidth={600}
+      canvasHeight={800}
+    />
   );
 }

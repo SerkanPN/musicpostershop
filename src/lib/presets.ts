@@ -384,3 +384,44 @@ export const POSTER_PRESETS = {
     { id: 'diwali-little-star', label: 'Diwali Little Star', category: 'Holiday' }
   ]
 };
+
+export const POSTER_CATEGORIES = {
+  SOUNDWAVE: 'SOUNDWAVE',
+  RECEIPT: 'RECEIPT',
+  TYPOGRAPHY: 'TYPOGRAPHY',
+  COORDINATES: 'COORDINATES',
+  STARMAP: 'STARMAP',
+  CASSETTE: 'CASSETTE',
+  TYPEWRITER: 'TYPEWRITER',
+  POLAROID: 'POLAROID',
+  PATENT: 'PATENT',
+  PANTONE: 'PANTONE',
+  NEWSPAPER: 'NEWSPAPER',
+  HEART: 'HEART',
+  AIRBNB: 'AIRBNB',
+  TODDLER: 'TODDLER'
+} as const;
+
+export type PosterCategory = keyof typeof POSTER_CATEGORIES;
+
+export const CATEGORY_META: Record<PosterCategory, { name: string; icon: string; editorRoute: string }> = {
+  SOUNDWAVE: { name: 'Soundwave Art', icon: '🎵', editorRoute: '/editor/soundwave' },
+  RECEIPT: { name: 'Vintage Receipt', icon: '🧾', editorRoute: '/editor/receipt' },
+  TYPOGRAPHY: { name: 'Typography & Manifesto', icon: '📖', editorRoute: '/editor/dictionary' },
+  COORDINATES: { name: 'Coordinates Map', icon: '📍', editorRoute: '/editor/coordinates' },
+  STARMAP: { name: 'StarMap Sky', icon: '✨', editorRoute: '/editor/starmap' },
+  CASSETTE: { name: 'Retro Cassette', icon: '📼', editorRoute: '/editor/cassette' },
+  TYPEWRITER: { name: 'Typewriter Letter', icon: '📜', editorRoute: '/editor/typewriter' },
+  POLAROID: { name: 'Polaroid Memory', icon: '📷', editorRoute: '/editor/polaroid' },
+  PATENT: { name: 'Patent Blueprint', icon: '📐', editorRoute: '/editor/patent' },
+  PANTONE: { name: 'Pantone Swatch', icon: '🎨', editorRoute: '/editor/pantone' },
+  NEWSPAPER: { name: 'Vintage Newspaper', icon: '📰', editorRoute: '/editor/newspaper' },
+  HEART: { name: 'Heart Typography', icon: '❤️', editorRoute: '/editor/heart' },
+  AIRBNB: { name: 'Villa Guide', icon: '🏡', editorRoute: '/editor/airbnb' },
+  TODDLER: { name: 'Nordic Nursery', icon: '👶', editorRoute: '/editor/toddler' }
+};
+
+export function getCategoryPresetCount(cat: PosterCategory): number {
+  return POSTER_PRESETS[cat]?.length || 0;
+}
+

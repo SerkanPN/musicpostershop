@@ -1,84 +1,317 @@
-import React, { useEffect, useRef, useState } from 'react';
+﻿import React, { useEffect, useRef, useState } from 'react';
 import * as fabric from 'fabric';
+import jsPDF from 'jspdf';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import ModernStudioLayout, { PresetItem } from '../../components/ModernStudioLayout';
+import { POSTER_PRESETS } from '../../lib/presets';
+import { Sparkles, FileText, Palette, Type, Check } from 'lucide-react';
+
+const PATENT_PRESETS_DATA: Record<string, any> = {
+  'electric-guitar-patent': {
+    patentNum: 'US PAT. 2,714,326',
+    title: 'ELECTRIC GUITAR',
+    inventor: 'LEO FENDER',
+    filedDate: 'FILED MARCH 29, 1954',
+    figText: 'FIG. 1',
+    bgColor: '#0f172a',
+    lineColor: '#38bdf8',
+    textColor: '#f8fafc'
+  },
+  'coffee-maker-patent': {
+    patentNum: 'US PAT. 1,607,854',
+    title: 'ESPRESSO COFFEE MACHINE',
+    inventor: 'L. BEZZERA',
+    filedDate: 'FILED JUNE 15, 1901',
+    figText: 'FIG. 1',
+    bgColor: '#18181b',
+    lineColor: '#fbbf24',
+    textColor: '#ffffff'
+  }
+};
 
 export default function PatentEditor() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const presetKey = searchParams.get('preset') || '';
-  const [title, setTitle] = useState(presetKey ? presetKey.replace(/-/g, ' ').toUpperCase() : 'CONTROLLER');
-  const [number, setNumber] = useState('US 1,234,567 B1');
-  const [date, setDate] = useState('Jan. 1, 2024');
-  
-  const containerRef = useRef<HTMLDivElement>(null);
+  const presetParam = searchParams.get('preset') || 'electric-guitar-patent';
+
+  const [activePreset, setActivePreset] = useState<string>(presetParam);
+  const initial = PATENT_PRESETS_DATA[presetParam] || PATENT_PRESETS_DATA['electric-guitar-patent'];
+
+  const [patentNum, setPatentNum] = useState(initial.patentNum);
+  const [title, setTitle] = useState(initial.title);
+  const [inventor, setInventor] = useState(initial.inventor);
+  const [filedDate, setFiledDate] = useState(initial.filedDate);
+
+  const [bgColor, setBgColor] = useState(initial.bgColor);
+  const [lineColor, setLineColor] = useState(initial.lineColor);
+  const [textColor, setTextColor] = useState(initial.textColor);
+
+  const [zoom, setZoom] = useState(1);
+  const [printSize, setPrintSize] = useState('18x24');
+  const [isExporting, setIsExporting] = useState(false);
+
+  const canvasRef = useRef<HTMLDivElement>(null);
   const fabricRef = useRef<fabric.Canvas | null>(null);
 
   useEffect(() => {
-    if (!containerRef.current) return;
-    containerRef.current.innerHTML = '';
-    const canvasEl = document.createElement('canvas');
-    canvasEl.width = 400;
-    canvasEl.height = 600;
-    containerRef.current.appendChild(canvasEl);
-
-    fabricRef.current = new fabric.Canvas(canvasEl, { width: 400, height: 600, backgroundColor: '#1a3c63' });
-    render();
-    return () => fabricRef.current?.dispose();
+    const link = document.createElement('link');
+    link.href = 'https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Playfair+Display:wght@700&family=Inter:wght@400;600&display=swap';
+    link.rel = 'stylesheet';
+    document.head.appendChild(link);
   }, []);
 
-  const render = () => {
-    const canvas = fabricRef.current;
-    if (!canvas) return;
-    canvas.clear();
-    
-    const bg = new fabric.Rect({ left: 0, top: 0, width: 400, height: 600, fill: '#1a3c63', selectable: false });
-    canvas.add(bg);
+  const handlePresetSelect = (id: string) => {
+    setActivePreset(id);
+    const data = PATENT_PRESETS_DATA[id];
+    if (data) {
+      setPatentNum(data.patentNum);
+      setTitle(data.title);
+      setInventor(data.inventor);
+      setFiledDate(data.filedDate);
+      setBgColor(data.bgColor);
+      setLineColor(data.lineColor);
+      setTextColor(data.textColor);
+    } else {
+      const general = (POSTER_PRESETS.PATENT as any[]).find(p => p.id === id);
+      if (general) {
+        setTitle(general.label.toUpperCase());
+      }
+    }
+  };
 
-    const fontSet = { fontFamily: 'Courier New, monospace', fill: '#fff', textAlign: 'center' as const };
-    
-    const headText = new fabric.Textbox(`U.S. Patent\n${date}\n${number}`, { ...fontSet, left: 200, top: 40, fontSize: 14, originX: 'center', width: 360 });
-    const tText = new fabric.Textbox(title, { ...fontSet, left: 200, top: 120, fontSize: 24, originX: 'center', width: 360, fontWeight: 'bold' });
-    
-    // Abstract lines mimicking blueprint
-    const l1 = new fabric.Line([50, 100, 350, 100], { stroke: '#fff', strokeWidth: 1 });
-    const box = new fabric.Rect({ left: 200, top: 320, width: 220, height: 220, fill: 'transparent', stroke: '#fff', strokeWidth: 2, originX: 'center', originY: 'center', strokeDashArray: [5, 5] });
-    
-    const fText = new fabric.Textbox("FIG. 1", { ...fontSet, left: 200, top: 460, fontSize: 18, originX: 'center', width: 360 });
-    
-    canvas.add(headText, l1, tText, box, fText);
+  const renderCanvas = () => {
+    if (!canvasRef.current) return;
+
+    if (!fabricRef.current) {
+      const c = document.createElement('canvas');
+      canvasRef.current.innerHTML = '';
+      canvasRef.current.appendChild(c);
+      fabricRef.current = new fabric.Canvas(c, {
+        width: 600,
+        height: 800,
+        backgroundColor: bgColor,
+        selection: false
+      });
+    }
+
+    const canvas = fabricRef.current;
+    canvas.clear();
+
+    const w = 600;
+    const h = 800;
+
+    // Background
+    canvas.add(new fabric.Rect({
+      left: 0, top: 0, width: w, height: h, fill: bgColor, selectable: false
+    }));
+
+    // Blueprint Grid Lines
+    for (let i = 40; i < w; i += 40) {
+      canvas.add(new fabric.Line([i, 30, i, h - 30], {
+        stroke: lineColor, strokeWidth: 0.3, opacity: 0.15, selectable: false
+      }));
+    }
+    for (let j = 40; j < h; j += 40) {
+      canvas.add(new fabric.Line([30, j, w - 30, j], {
+        stroke: lineColor, strokeWidth: 0.3, opacity: 0.15, selectable: false
+      }));
+    }
+
+    // Outer Double Border
+    canvas.add(new fabric.Rect({
+      left: 36, top: 36, width: w - 72, height: h - 72, fill: 'transparent',
+      stroke: lineColor, strokeWidth: 1.5, opacity: 0.8, selectable: false
+    }));
+    canvas.add(new fabric.Rect({
+      left: 42, top: 42, width: w - 84, height: h - 84, fill: 'transparent',
+      stroke: lineColor, strokeWidth: 0.5, opacity: 0.4, selectable: false
+    }));
+
+    // Header
+    canvas.add(new fabric.Textbox('UNITED STATES PATENT OFFICE', {
+      left: w / 2, top: 58, width: w - 100, originX: 'center', textAlign: 'center',
+      fontSize: 10, fontWeight: 700, fill: textColor, fontFamily: 'Space Mono, monospace',
+      charSpacing: 180, selectable: false
+    }));
+
+    canvas.add(new fabric.Textbox(patentNum, {
+      left: w / 2, top: 82, width: w - 100, originX: 'center', textAlign: 'center',
+      fontSize: 14, fontWeight: 700, fill: lineColor, fontFamily: 'Space Mono, monospace',
+      charSpacing: 140, selectable: false
+    }));
+
+    canvas.add(new fabric.Textbox(`${inventor.toUpperCase()} • ${title.toUpperCase()}`, {
+      left: w / 2, top: 110, width: w - 100, originX: 'center', textAlign: 'center',
+      fontSize: 16, fontWeight: 700, fill: textColor, fontFamily: 'Space Mono, monospace',
+      charSpacing: 80, selectable: false
+    }));
+
+    canvas.add(new fabric.Textbox(filedDate.toUpperCase(), {
+      left: w / 2, top: 138, width: w - 100, originX: 'center', textAlign: 'center',
+      fontSize: 9, fill: lineColor, fontFamily: 'Space Mono, monospace',
+      charSpacing: 120, opacity: 0.8, selectable: false
+    }));
+
+    // Technical Blueprint Drawing Schematic
+    const cx = w / 2;
+    const cy = h * 0.52;
+
+    canvas.add(new fabric.Rect({
+      left: cx - 120, top: cy - 140, width: 240, height: 280,
+      fill: 'transparent', stroke: lineColor, strokeWidth: 1, opacity: 0.6, selectable: false
+    }));
+    canvas.add(new fabric.Circle({
+      left: cx - 70, top: cy - 70, radius: 70,
+      fill: 'transparent', stroke: lineColor, strokeWidth: 1.2, opacity: 0.8, selectable: false
+    }));
+    canvas.add(new fabric.Line([cx - 100, cy, cx + 100, cy], {
+      stroke: lineColor, strokeWidth: 0.8, strokeDashArray: [4, 4], opacity: 0.6, selectable: false
+    }));
+    canvas.add(new fabric.Line([cx, cy - 120, cx, cy + 120], {
+      stroke: lineColor, strokeWidth: 0.8, strokeDashArray: [4, 4], opacity: 0.6, selectable: false
+    }));
+
+    canvas.add(new fabric.Textbox('FIG. 1', {
+      left: cx, top: cy + 155, width: 100, originX: 'center', textAlign: 'center',
+      fontSize: 11, fontWeight: 700, fill: lineColor, fontFamily: 'Space Mono, monospace', selectable: false
+    }));
+
+    // Bottom Signatures
+    canvas.add(new fabric.Textbox(`INVENTOR: ${inventor.toUpperCase()}`, {
+      left: 56, top: h - 75, fontSize: 8.5, fontWeight: 700, fill: textColor,
+      fontFamily: 'Space Mono, monospace', selectable: false
+    }));
+    canvas.add(new fabric.Textbox('ATTORNEY: J. DOE & ASSOC.', {
+      left: w - 240, top: h - 75, width: 184, textAlign: 'right', fontSize: 8.5,
+      fontWeight: 700, fill: textColor, fontFamily: 'Space Mono, monospace', selectable: false
+    }));
+
     canvas.renderAll();
   };
 
-  useEffect(() => { render(); }, [title, number, date]);
+  useEffect(() => {
+    renderCanvas();
+  }, [patentNum, title, inventor, filedDate, bgColor, lineColor, textColor]);
 
-  const handleDownload = () => {
+  const handleDownloadPNG = () => {
     if (!fabricRef.current) return;
-    const a = document.createElement('a');
-    a.href = fabricRef.current.toDataURL({ format: 'png', multiplier: 3 });
-    a.download = 'patent.png';
-    a.click();
+    setIsExporting(true);
+    const dataUrl = fabricRef.current.toDataURL({ format: 'png', multiplier: 3 });
+    const link = document.createElement('a');
+    link.download = `patent-poster-${activePreset}.png`;
+    link.href = dataUrl;
+    link.click();
+    setIsExporting(false);
   };
 
-  return (
-    <div className="min-h-screen flex bg-[#0a0a0a] text-white">
-      <div className="w-80 p-6 bg-neutral-900 border-r border-neutral-800 space-y-4 overflow-y-auto">
-        <h2 className="text-xl font-bold">Patent Editor</h2>
-        <div><label className="text-xs text-neutral-500 uppercase">Patent Title</label><input className="w-full mt-1 p-2 bg-black border border-neutral-800 rounded" value={title} onChange={e=>setTitle(e.target.value)} /></div>
-        <div><label className="text-xs text-neutral-500 uppercase">Patent No.</label><input className="w-full mt-1 p-2 bg-black border border-neutral-800 rounded" value={number} onChange={e=>setNumber(e.target.value)} /></div>
-        <div><label className="text-xs text-neutral-500 uppercase">Date</label><input className="w-full mt-1 p-2 bg-black border border-neutral-800 rounded" value={date} onChange={e=>setDate(e.target.value)} /></div>
+  const handleDownloadPDF = () => {
+    if (!fabricRef.current) return;
+    setIsExporting(true);
+    const dataUrl = fabricRef.current.toDataURL({ format: 'png', multiplier: 4 });
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'in',
+      format: [18, 24]
+    });
+    pdf.addImage(dataUrl, 'PNG', 0, 0, 18, 24);
+    pdf.save(`patent-poster-300dpi-${activePreset}.pdf`);
+    setIsExporting(false);
+  };
+
+  const patentPresetsList: PresetItem[] = (POSTER_PRESETS.PATENT as any[]).map(p => ({
+    id: p.id,
+    title: p.label,
+    label: p.category
+  }));
+
+  const sidebar = (
+    <div className="space-y-6">
+      <div className="p-4 rounded-xl bg-neutral-900/60 border border-neutral-800 space-y-3">
+        <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-2">
+          <Sparkles className="w-3.5 h-3.5 text-blue-400" />
+          Choose Patent Preset ({patentPresetsList.length})
+        </label>
+        <select
+          value={activePreset}
+          onChange={e => handlePresetSelect(e.target.value)}
+          className="w-full bg-[#18191c] border border-neutral-700 rounded-lg px-3 py-2.5 text-xs text-white focus:border-blue-500 outline-none"
+        >
+          {patentPresetsList.map(p => (
+            <option key={p.id} value={p.id}>
+              {p.title} ({p.label})
+            </option>
+          ))}
+        </select>
       </div>
-      <div className="flex-1 flex flex-col items-center justify-center p-8 bg-neutral-950 overflow-y-auto">
-        <div className="mb-6 flex gap-4 w-full max-w-[400px]">
-          <button onClick={() => navigate('/')} className="flex items-center justify-center gap-2 bg-neutral-800 text-white font-semibold py-3 px-6 rounded-xl hover:bg-neutral-700 transition-colors">
-            <ArrowLeft className="w-5 h-5" /> Back
-          </button>
-          <button onClick={handleDownload} className="flex-1 bg-white text-black font-semibold py-3 rounded-xl hover:bg-neutral-200 transition-colors">
-            Download PNG
-          </button>
+
+      <div className="p-4 rounded-xl bg-neutral-900/60 border border-neutral-800 space-y-3">
+        <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-2">
+          <FileText className="w-3.5 h-3.5 text-emerald-400" />
+          Patent Specification
+        </label>
+
+        <div>
+          <span className="text-[10px] text-neutral-500 uppercase font-semibold">Patent # / Reg</span>
+          <input
+            type="text"
+            value={patentNum}
+            onChange={e => setPatentNum(e.target.value)}
+            className="w-full bg-[#18191c] border border-neutral-800 rounded-lg px-3 py-2 text-xs text-white font-mono focus:border-blue-500 outline-none mt-1"
+          />
         </div>
-        <div ref={containerRef} className="shadow-2xl rounded-sm overflow-hidden flex-shrink-0" style={{ width: 400, height: 600 }} />
+
+        <div>
+          <span className="text-[10px] text-neutral-500 uppercase font-semibold">Invention Title</span>
+          <input
+            type="text"
+            value={title}
+            onChange={e => setTitle(e.target.value)}
+            className="w-full bg-[#18191c] border border-neutral-800 rounded-lg px-3 py-2 text-xs text-white font-semibold focus:border-blue-500 outline-none mt-1"
+          />
+        </div>
+
+        <div>
+          <span className="text-[10px] text-neutral-500 uppercase font-semibold">Inventor Name</span>
+          <input
+            type="text"
+            value={inventor}
+            onChange={e => setInventor(e.target.value)}
+            className="w-full bg-[#18191c] border border-neutral-800 rounded-lg px-3 py-2 text-xs text-white focus:border-blue-500 outline-none mt-1"
+          />
+        </div>
+
+        <div>
+          <span className="text-[10px] text-neutral-500 uppercase font-semibold">Filing Date</span>
+          <input
+            type="text"
+            value={filedDate}
+            onChange={e => setFiledDate(e.target.value)}
+            className="w-full bg-[#18191c] border border-neutral-800 rounded-lg px-3 py-2 text-xs text-white focus:border-blue-500 outline-none mt-1"
+          />
+        </div>
       </div>
     </div>
+  );
+
+  return (
+    <ModernStudioLayout
+      title="Vintage Patent Blueprint Studio"
+      category="Technical Art"
+      onBack={() => navigate('/')}
+      onDownloadPNG={handleDownloadPNG}
+      onDownloadPDF={handleDownloadPDF}
+      isExporting={isExporting}
+      presets={patentPresetsList}
+      activePreset={activePreset}
+      onSelectPreset={handlePresetSelect}
+      zoom={zoom}
+      setZoom={setZoom}
+      printSize={printSize}
+      setPrintSize={setPrintSize}
+      sidebarContent={sidebar}
+      canvasRef={canvasRef}
+      canvasWidth={600}
+      canvasHeight={800}
+    />
   );
 }
