@@ -113,7 +113,7 @@ async function insertOrder(orderId: string, sku: string) {
       'apikey': SUPABASE_KEY,
       'Authorization': `Bearer ${SUPABASE_KEY}`,
       'Content-Type': 'application/json',
-      'Prefer': 'return=representation'
+      'Prefer': 'resolution=ignore-duplicates,return=representation'
     },
     body: JSON.stringify({ order_id: orderId, sku, status: 'pending' })
   });
@@ -143,7 +143,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     sku = await getSkuFromReceipt(resource_url, accessToken);
   }
 
-  await insertOrder(receiptId, sku);
-  console.log(`Order inserted: ${receiptId} → ${sku}`);
+  try {
+    await insertOrder(receiptId, sku);
+    console.log(`Order inserted: ${receiptId} → ${sku}`);
+  } catch (err: any) {
+    if (err.message?.includes('duplicate key') || err.message?.includes('23505')) {
+      console.log(`Order already exists: ${receiptId}, skipping`);
+      return res.status(200).json({ success: true, order_id: receiptId, skipped: true });
+    }
+    throw err;
+  }
   return res.status(200).json({ success: true, order_id: receiptId, sku });
 }
